@@ -1,6 +1,8 @@
 import argparse
 import datetime
 import gym
+import os.path as osp
+import pickle
 import numpy as np
 import itertools
 import torch
@@ -69,8 +71,9 @@ env.seed(args.seed)
 agent = SAC(env.observation_space, env.action_space, args)
 
 #TesnorboardX
-writer = SummaryWriter(logdir='runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
-                                                             args.policy, "autotune" if args.automatic_entropy_tuning else ""))
+logdir='runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
+                                                             args.policy, "autotune" if args.automatic_entropy_tuning else "")
+writer = SummaryWriter(logdir=logdir)
 
 # Memory
 memory = ReplayMemory(args.replay_size)
@@ -78,6 +81,8 @@ memory = ReplayMemory(args.replay_size)
 # Training Loop
 total_numsteps = 0
 updates = 0
+
+test_rollouts = []
 
 for i_episode in itertools.count(1):
     episode_reward = 0
@@ -127,6 +132,7 @@ for i_episode in itertools.count(1):
         avg_reward = 0.
         episodes = 10
         for _  in range(episodes):
+            test_rollouts.append([])
             state = env.reset()
             # print("start state")
             # print(state)
@@ -135,7 +141,8 @@ for i_episode in itertools.count(1):
             while not done:
                 action = agent.select_action(state, eval=True)
 
-                next_state, reward, done, _ = env.step(action)
+                next_state, reward, done, info = env.step(action)
+                test_rollouts[-1].append(info)
                 # if reward > -1:
                 #     print(state, action, reward, next_state)
                 episode_reward += reward
@@ -154,6 +161,9 @@ for i_episode in itertools.count(1):
         print("----------------------------------------")
         print("Test Episodes: {}, Avg. Reward: {}".format(episodes, round(avg_reward, 2)))
         print("----------------------------------------")
+
+        with open(osp.join(logdir, "run_stats.pkl"), "rb") as f:
+            pickle.dump(test_rollouts, f)
 
 env.close()
 
