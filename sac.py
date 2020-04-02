@@ -3,11 +3,11 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from utils import soft_update, hard_update
-from model import GaussianPolicy, QNetwork, DeterministicPolicy
+from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN
 
 
 class SAC(object):
-    def __init__(self, num_inputs, action_space, args):
+    def __init__(self, observation_space, action_space, args):
 
         self.gamma = args.gamma
         self.tau = args.tau
@@ -19,10 +19,19 @@ class SAC(object):
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
 
-        self.critic = QNetwork(num_inputs, action_space.shape[0], args.hidden_size).to(device=self.device)
+        if args.cnn:
+            self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)
+        else:
+            self.critic = QNetwork(observation_space.shape[0], action_space.shape[0], args.hidden_size).to(device=self.device)
+
         self.critic_optim = Adam(self.critic.parameters(), lr=args.lr)
 
-        self.critic_target = QNetwork(num_inputs, action_space.shape[0], args.hidden_size).to(self.device)
+        if args.cnn:
+            self.critic_target = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)
+        else:
+            self.critic_target = QNetwork(observation_space.shape[0], action_space.shape[0], args.hidden_size).to(device=self.device)
+
+
         hard_update(self.critic_target, self.critic)
 
         if self.policy_type == "Gaussian":
@@ -32,18 +41,23 @@ class SAC(object):
                 self.log_alpha = torch.zeros(1, requires_grad=True, device=self.device)
                 self.alpha_optim = Adam([self.log_alpha], lr=args.lr)
 
-            self.policy = GaussianPolicy(num_inputs, action_space.shape[0], args.hidden_size, action_space).to(self.device)
+            if args.cnn:
+                self.policy = GaussianPolicyCNN(observation_space, action_space.shape[0], args.hidden_size, action_space).to(self.device)
+            else:
+                self.policy = GaussianPolicy(observation_space.shape[0], action_space.shape[0], args.hidden_size, action_space).to(self.device)
+
             self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
 
         else:
             self.alpha = 0
             self.automatic_entropy_tuning = False
-            self.policy = DeterministicPolicy(num_inputs, action_space.shape[0], args.hidden_size, action_space).to(self.device)
+            assert not args.cnn
+            self.policy = DeterministicPolicy(observation_space.shape[0], action_space.shape[0], args.hidden_size, action_space).to(self.device)
             self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
 
-    def select_action(self, state, evaluate=False):
+    def select_action(self, state, eval=False):
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
-        if evaluate is False:
+        if eval is False:
             action, _, _ = self.policy.sample(state)
         else:
             _, _, action = self.policy.sample(state)
@@ -76,12 +90,12 @@ class SAC(object):
         policy_loss = ((self.alpha * log_pi) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
 
         self.critic_optim.zero_grad()
-        qf1_loss.backward()
+        (qf1_loss + qf2_loss).backward()
         self.critic_optim.step()
 
-        self.critic_optim.zero_grad()
-        qf2_loss.backward()
-        self.critic_optim.step()
+        # self.critic_optim.zero_grad()
+        # qf2_loss.backward()
+        # self.critic_optim.step()
 
         self.policy_optim.zero_grad()
         policy_loss.backward()

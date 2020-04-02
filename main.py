@@ -7,6 +7,16 @@ import torch
 from sac import SAC
 from tensorboardX import SummaryWriter
 from replay_memory import ReplayMemory
+from maze import MazeNavigation
+
+
+gym.register(
+    id='Maze-v0',
+    entry_point='maze:MazeNavigation')
+
+gym.register(
+    id='SimplePointBot-v0',
+    entry_point='simplepointbot:SimplePointBot')
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="HalfCheetah-v2",
@@ -36,7 +46,7 @@ parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
-parser.add_argument('--start_steps', type=int, default=10000, metavar='N',
+parser.add_argument('--start_steps', type=int, default=1000, metavar='N',
                     help='Steps sampling random actions (default: 10000)')
 parser.add_argument('--target_update_interval', type=int, default=1, metavar='N',
                     help='Value target update per no. of updates per step (default: 1)')
@@ -44,6 +54,8 @@ parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 10000000)')
 parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
+parser.add_argument('--cnn', action="store_true", 
+                    help='visual observations (default: False)')
 args = parser.parse_args()
 
 # Environment
@@ -54,7 +66,7 @@ np.random.seed(args.seed)
 env.seed(args.seed)
 
 # Agent
-agent = SAC(env.observation_space.shape[0], env.action_space, args)
+agent = SAC(env.observation_space, env.action_space, args)
 
 #TesnorboardX
 writer = SummaryWriter(logdir='runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
@@ -116,16 +128,23 @@ for i_episode in itertools.count(1):
         episodes = 10
         for _  in range(episodes):
             state = env.reset()
+            # print("start state")
+            # print(state)
             episode_reward = 0
             done = False
             while not done:
                 action = agent.select_action(state, eval=True)
 
                 next_state, reward, done, _ = env.step(action)
+                # if reward > -1:
+                #     print(state, action, reward, next_state)
                 episode_reward += reward
 
 
                 state = next_state
+            print("final reward:%f"%reward)
+            # print("final state")
+            # print(next_state)
             avg_reward += episode_reward
         avg_reward /= episodes
 
