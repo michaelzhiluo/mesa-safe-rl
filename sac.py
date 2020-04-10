@@ -5,6 +5,12 @@ from torch.optim import Adam
 from utils import soft_update, hard_update
 from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN
 
+from constraint import get_value_function
+
+from simplepointbot import safe_action, CAUTION_ZONE
+
+torchify = lambda x: torch.FloatTensor(x).to('cuda')
+
 
 class SAC(object):
     def __init__(self, observation_space, action_space, args):
@@ -18,6 +24,8 @@ class SAC(object):
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
+
+        self.value = get_value_function()
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)
@@ -61,6 +69,13 @@ class SAC(object):
             action, _, _ = self.policy.sample(state)
         else:
             _, _, action = self.policy.sample(state)
+        # if self.value(state) > 0.8:
+        #     action = safe_action(state.detach().cpu().numpy()[0])
+        #     # if not CAUTION_ZONE(state.detach().cpu().numpy()[0]):
+        #     #     print(state, "wut", action)
+        #     # print("recovery")
+        #     return action
+        # assert not CAUTION_ZONE(state.detach().cpu().numpy()[0]), (state, self.value(state))
         return action.detach().cpu().numpy()[0]
 
     def update_parameters(self, memory, batch_size, updates):

@@ -11,6 +11,7 @@ from tensorboardX import SummaryWriter
 from replay_memory import ReplayMemory
 from maze import MazeNavigation
 
+from simplepointbot import safe_action, CAUTION_ZONE
 
 gym.register(
     id='Maze-v0',
@@ -42,13 +43,13 @@ parser.add_argument('--seed', type=int, default=123456, metavar='N',
                     help='random seed (default: 123456)')
 parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
-parser.add_argument('--num_steps', type=int, default=1000001, metavar='N',
+parser.add_argument('--num_steps', type=int, default=13000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
 parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
                     help='model updates per simulator step (default: 1)')
-parser.add_argument('--start_steps', type=int, default=1000, metavar='N',
+parser.add_argument('--start_steps', type=int, default=100, metavar='N',
                     help='Steps sampling random actions (default: 10000)')
 parser.add_argument('--target_update_interval', type=int, default=1, metavar='N',
                     help='Value target update per no. of updates per step (default: 1)')
@@ -78,24 +79,40 @@ writer = SummaryWriter(logdir=logdir)
 # Memory
 memory = ReplayMemory(args.replay_size)
 
+
+
+# NUM_DEMOS = 1000
+# teacher = env.teacher()
+# for i in range(NUM_DEMOS):
+#     demo = teacher._generate_trajectory()
+#     for t in demo:
+#         memory.push(t[0], t[1], t[2], t[3], t[4])
+
+
 # Training Loop
 total_numsteps = 0
 updates = 0
 
 test_rollouts = []
+train_rollouts = []
 
 for i_episode in itertools.count(1):
     episode_reward = 0
     episode_steps = 0
     done = False
     state = env.reset()
+    train_rollouts.append([])
 
     while not done:
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
+            real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
-
+            if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > 0.8:
+                real_action = safe_action(state)
+            else:
+                real_action = action
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
@@ -109,7 +126,8 @@ for i_episode in itertools.count(1):
                 writer.add_scalar('entropy_temprature/alpha', alpha, updates)
                 updates += 1
 
-        next_state, reward, done, _ = env.step(action) # Step
+        next_state, reward, done, info = env.step(real_action) # Step
+        train_rollouts[-1].append(info)
         episode_steps += 1
         total_numsteps += 1
         episode_reward += reward
@@ -121,6 +139,11 @@ for i_episode in itertools.count(1):
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
         state = next_state
+    num_violations = 0
+    for inf in train_rollouts[-1]:
+        num_violations += int(inf['constraint'])
+    print("final reward: %f"%reward)
+    print("num violations: %d"%num_violations)
 
     if total_numsteps > args.num_steps:
         break
@@ -141,7 +164,11 @@ for i_episode in itertools.count(1):
             while not done:
                 action = agent.select_action(state, eval=True)
 
-                next_state, reward, done, info = env.step(action)
+                if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > 0.8:
+                    real_action = safe_action(state)
+                else:
+                    real_action = action
+                next_state, reward, done, info = env.step(real_action)
                 test_rollouts[-1].append(info)
                 # if reward > -1:
                 #     print(state, action, reward, next_state)
@@ -149,7 +176,11 @@ for i_episode in itertools.count(1):
 
 
                 state = next_state
-            print("final reward:%f"%reward)
+            num_violations = 0
+            for inf in test_rollouts[-1]:
+                num_violations += int(inf['constraint'])
+            print("final reward: %f"%reward)
+            print("num violations: %d"%num_violations)
             # print("final state")
             # print(next_state)
             avg_reward += episode_reward
@@ -162,8 +193,12 @@ for i_episode in itertools.count(1):
         print("Test Episodes: {}, Avg. Reward: {}".format(episodes, round(avg_reward, 2)))
         print("----------------------------------------")
 
-        with open(osp.join(logdir, "run_stats.pkl"), "rb") as f:
-            pickle.dump(test_rollouts, f)
+        data = {
+            "test_stats": test_rollouts,
+            "train_stats": train_rollouts
+        }
+        with open(osp.join(logdir, "run_stats.pkl"), "wb") as f:
+            pickle.dump(data, f)
 
 env.close()
 
