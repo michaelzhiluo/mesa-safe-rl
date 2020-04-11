@@ -14,6 +14,7 @@ from gym import Env
 from gym import utils
 from gym.spaces import Box
 
+from obstacle import Obstacle, ComplexObstacle
 
 """
 Constants associated with the PointBot env.
@@ -33,28 +34,6 @@ AIR_RESIST = 0.2
 
 HARD_MODE = False
 
-
-class Obstacle:
-    def __init__(self, boundsx, boundsy, penalty=100):
-        self.boundsx = boundsx
-        self.boundsy = boundsy
-        self.penalty = 1
-
-
-    def __call__(self, x):
-        return (self.boundsx[0] <= x[0] <= self.boundsx[1] and self.boundsy[0] <= x[1] <= self.boundsy[1]) * self.penalty
-
-class ComplexObstacle(Obstacle):
-
-    def __init__(self, bounds):
-        self.obs = []
-        for boundsx, boundsy in bounds:
-            self.obs.append(Obstacle(boundsx, boundsy))
-
-    def __call__(self, x):
-        return np.max([o(x) for o in self.obs])
-
-
 OBSTACLE = [
         [[-100, 150], [5, 10]],
         [[-100, -80], [-10, 10]],
@@ -64,10 +43,6 @@ OBSTACLE = [
 CAUTION_ZONE = [
         [[-100, 150], [4, 5]],
         [[-100, 150], [-5, -4]]]
-
-
-# OBSTACLE = [
-#         [[-30, -20], [-10, 10]]]
 
 
         
@@ -183,7 +158,6 @@ def get_random_transitions(num_transitions):
         else:
             state = np.random.uniform(-80, 50), np.random.uniform(2, 6)
         action = np.clip(np.random.randn(2), -1, 1)
-        # action = np.array([0, 0])
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
         transitions.append((state, action, constraint, next_state))

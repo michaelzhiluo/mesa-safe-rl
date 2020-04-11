@@ -20,6 +20,10 @@ gym.register(
     id='SimplePointBot-v0',
     entry_point='simplepointbot:SimplePointBot')
 
+gym.register(
+    id='SimplePointBot-v1',
+    entry_point='pointbot_obs:SimplePointBot')
+
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="HalfCheetah-v2",
                     help='Mujoco Gym environment (default: HalfCheetah-v2)')
@@ -46,7 +50,7 @@ parser.add_argument('--seed', type=int, default=123456, metavar='N',
                     help='random seed (default: 123456)')
 parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
-parser.add_argument('--num_steps', type=int, default=13000, metavar='N',
+parser.add_argument('--num_steps', type=int, default=10000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
 parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                     help='hidden size (default: 256)')
