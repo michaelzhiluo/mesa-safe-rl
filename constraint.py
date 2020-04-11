@@ -1,11 +1,10 @@
-from model import ValueNetwork, QNetwork
-from simplepointbot import SimplePointBot, get_random_transitions
-
+import matplotlib.pyplot as plt
+import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
-import numpy as np
-import matplotlib.pyplot as plt
+
+from model import ValueNetwork, QNetwork
 
 
 def get_value_function(gamma_safe, data_function, device='cuda', batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False):

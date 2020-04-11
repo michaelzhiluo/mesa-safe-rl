@@ -7,13 +7,9 @@ from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, Ga
 
 from constraint import get_value_function
 
-from simplepointbot import safe_action, CAUTION_ZONE, get_random_transitions
-
-torchify = lambda x: torch.FloatTensor(x).to('cuda')
-
 
 class SAC(object):
-    def __init__(self, observation_space, action_space, args):
+    def __init__(self, observation_space, action_space, transition_function, args):
 
         self.gamma = args.gamma
         self.tau = args.tau
@@ -27,7 +23,7 @@ class SAC(object):
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
 
-        self.value = get_value_function(self.gamma_safe, get_random_transitions, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False)
+        self.value = get_value_function(self.gamma_safe, transition_function, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False)
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)

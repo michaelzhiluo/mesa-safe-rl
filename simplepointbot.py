@@ -100,6 +100,7 @@ class SimplePointBot(Env, utils.EzPickle):
         self._max_episode_steps = HORIZON
         self.obstacle = OBSTACLE
         self.caution_zone = CAUTION_ZONE
+        self.transition_function = get_random_transitions
 
     def step(self, a):
         a = process_action(a)
@@ -168,6 +169,9 @@ class SimplePointBot(Env, utils.EzPickle):
 
     def expert_action(self, s):
         return self.teacher._expert_control(s, 0)
+
+    def safe_action(self, s):
+        return safe_action(s)
 
 
 def get_random_transitions(num_transitions):

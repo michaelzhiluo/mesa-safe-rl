@@ -11,7 +11,6 @@ from tensorboardX import SummaryWriter
 from replay_memory import ReplayMemory
 from maze import MazeNavigation
 
-from simplepointbot import safe_action, CAUTION_ZONE
 
 gym.register(
     id='Maze-v0',
@@ -73,7 +72,7 @@ np.random.seed(args.seed)
 env.seed(args.seed)
 
 # Agent
-agent = SAC(env.observation_space, env.action_space, args)
+agent = SAC(env.observation_space, env.action_space, env.transition_function, args)
 
 #TesnorboardX
 logdir='runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
@@ -82,16 +81,6 @@ writer = SummaryWriter(logdir=logdir)
 
 # Memory
 memory = ReplayMemory(args.replay_size)
-
-
-
-# NUM_DEMOS = 1000
-# teacher = env.teacher()
-# for i in range(NUM_DEMOS):
-#     demo = teacher._generate_trajectory()
-#     for t in demo:
-#         memory.push(t[0], t[1], t[2], t[3], t[4])
-
 
 # Training Loop
 total_numsteps = 0
@@ -111,13 +100,13 @@ for i_episode in itertools.count(1):
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
             if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                real_action = safe_action(state)
+                real_action = env.safe_action(state)
             else:
                 real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
             if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                real_action = safe_action(state)
+                real_action = env.safe_action(state)
             else:
                 real_action = action
         if len(memory) > args.batch_size:
@@ -170,7 +159,7 @@ for i_episode in itertools.count(1):
                 action = agent.select_action(state, eval=True)
 
                 if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                    real_action = safe_action(state)
+                    real_action = env.safe_action(state)
                 else:
                     real_action = action
                 next_state, reward, done, info = env.step(real_action)
