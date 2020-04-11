@@ -57,7 +57,7 @@ class ComplexObstacle(Obstacle):
 
 OBSTACLE = [
         [[-100, 150], [5, 10]],
-        [[-100, -60], [-10, 10]],
+        [[-100, -80], [-10, 10]],
         [[-100, 150],[-10, -5]]]
 
 
@@ -131,9 +131,9 @@ class SimplePointBot(Env, utils.EzPickle):
         if self.obstacle(s):
             print("obs", s)
             return s
-        if self.caution_zone(s) and not override:
-            if np.abs(a - safe_action(s, GOAL_STATE)).max() > 0.001:
-                print(s, a, safe_action(s, GOAL_STATE))
+        # if self.caution_zone(s) and not override:
+        #     if np.abs(a - safe_action(s, GOAL_STATE)).max() > 0.001:
+        #         print(s, a, safe_action(s, GOAL_STATE))
             # print(a, safe_action(s, GOAL_STATE))
             # a = safe_action(s, GOAL_STATE)
         return self.A.dot(s) + self.B.dot(a) + NOISE_SCALE * np.random.randn(len(s))
@@ -175,13 +175,13 @@ def get_random_transitions(num_transitions):
     transitions = []
     for i in range(num_transitions):
         if np.random.uniform(0, 1) < 0.5:
-            state = np.random.uniform(-50, 50), np.random.uniform(-6, -4)
+            state = np.random.uniform(-80, 50), np.random.uniform(-6, -2)
         else:
-            state = np.random.uniform(-50, 50), np.random.uniform(4, 6)
+            state = np.random.uniform(-80, 50), np.random.uniform(2, 6)
         action = np.clip(np.random.randn(2), -1, 1)
         # action = np.array([0, 0])
         next_state = env._next_state(state, action, override=True)
-        constraint = env.obstacle(state)
+        constraint = env.obstacle(next_state)
         transitions.append((state, action, constraint, next_state))
     return transitions
 

@@ -30,9 +30,9 @@ parser.add_argument('--eval', type=bool, default=True,
                     help='Evaluates a policy a policy every 10 episode (default: True)')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
-parser.add_argument('--gamma_safe', type=float, default=0.9, metavar='G',
+parser.add_argument('--gamma_safe', type=float, default=0.5, metavar='G',
                     help='discount factor for constraints (default: 0.9)')
-parser.add_argument('--eps_safe', type=float, default=0.7, metavar='G',
+parser.add_argument('--eps_safe', type=float, default=0.1, metavar='G',
                     help='threshold constraints (default: 0.8)')
 parser.add_argument('--tau', type=float, default=0.005, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
@@ -110,7 +110,10 @@ for i_episode in itertools.count(1):
     while not done:
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
-            real_action = action
+            if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+                real_action = safe_action(state)
+            else:
+                real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
             if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:

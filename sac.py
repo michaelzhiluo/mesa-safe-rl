@@ -27,7 +27,7 @@ class SAC(object):
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
 
-        self.value = get_value_function(self.gamma_safe, get_random_transitions, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=True)
+        self.value = get_value_function(self.gamma_safe, get_random_transitions, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False)
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)
