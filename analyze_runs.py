@@ -12,9 +12,12 @@ baselinefull = "2020-04-09_15-05-57_SAC_SimplePointBot-v0_Gaussian_"
 
 recoveryhardcode = "2020-04-09_15-17-43_SAC_SimplePointBot-v0_Gaussian_"
 
+norecovery = "2020-04-10_16-23-28_SAC_SimplePointBot-v0_Gaussian_"
+
+recovery = "2020-04-10_16-20-07_SAC_SimplePointBot-v0_Gaussian_"
 if __name__ == '__main__':
 	fname = "run_stats.pkl"
-	exp_dir = osp.join("runs", recoveryhardcode)
+	exp_dir = osp.join("runs", norecovery)
 	# exp_dir = osp.join("runs", baselinefull)
 
 	with open(osp.join(exp_dir, fname), "rb") as f:
@@ -30,7 +33,7 @@ if __name__ == '__main__':
 		for step_stats in traj_stats:
 			train_violations[-1].append(step_stats['constraint'])
 
-	train_means = np.array(train_violations).sum(1)
+	train_means = np.array(train_violations).sum(1) > 0
 
 
 
@@ -42,15 +45,16 @@ if __name__ == '__main__':
 		for step_stats in traj_stats:
 			test_violations[-1].append(step_stats['constraint'])
 
-	test_means = np.array(test_violations).sum(1)
+	test_means = np.array(test_violations).sum(1) > 0
 
 
 	plt.plot(train_means, c='r')
 	plt.plot(test_means)
-	plt.title("Constraint Violations vs. Episode: Fixed Recovery Policy")
+	plt.title("Constraint Violations vs. Episode: No Recovery Policy")
 	plt.xlabel("Episode")
 	plt.ylabel("Num Constraint Violations")
-	plt.savefig("recoveryhardcodefull.png")
+	plt.ylim(-0.1, 1.1)
+	plt.savefig("norecovery.png")
 	plt.show()
 
 
@@ -80,9 +84,9 @@ if __name__ == '__main__':
 
 	plt.plot(train_means, c='r')
 	plt.plot(test_means)
-	plt.title("Reward vs. Episode: Fixed Recovery Policy")
+	plt.title("Reward vs. Episode: No Recovery Policy")
 	plt.xlabel("Episode")
 	plt.ylabel("Reward")
-	plt.savefig("recoveryhardcoderewardsfull.png")
+	plt.savefig("norecoveryrewardsfull.png")
 	plt.show()
 

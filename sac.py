@@ -7,7 +7,7 @@ from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, Ga
 
 from constraint import get_value_function
 
-from simplepointbot import safe_action, CAUTION_ZONE
+from simplepointbot import safe_action, CAUTION_ZONE, get_random_transitions
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
@@ -19,13 +19,15 @@ class SAC(object):
         self.tau = args.tau
         self.alpha = args.alpha
 
+        self.gamma_safe = args.gamma_safe
+
         self.policy_type = args.policy
         self.target_update_interval = args.target_update_interval
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
 
-        self.value = get_value_function()
+        self.value = get_value_function(self.gamma_safe, get_random_transitions, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=True)
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)
@@ -69,13 +71,6 @@ class SAC(object):
             action, _, _ = self.policy.sample(state)
         else:
             _, _, action = self.policy.sample(state)
-        # if self.value(state) > 0.8:
-        #     action = safe_action(state.detach().cpu().numpy()[0])
-        #     # if not CAUTION_ZONE(state.detach().cpu().numpy()[0]):
-        #     #     print(state, "wut", action)
-        #     # print("recovery")
-        #     return action
-        # assert not CAUTION_ZONE(state.detach().cpu().numpy()[0]), (state, self.value(state))
         return action.detach().cpu().numpy()[0]
 
     def update_parameters(self, memory, batch_size, updates):
@@ -107,10 +102,6 @@ class SAC(object):
         self.critic_optim.zero_grad()
         (qf1_loss + qf2_loss).backward()
         self.critic_optim.step()
-
-        # self.critic_optim.zero_grad()
-        # qf2_loss.backward()
-        # self.critic_optim.step()
 
         self.policy_optim.zero_grad()
         policy_loss.backward()

@@ -30,6 +30,10 @@ parser.add_argument('--eval', type=bool, default=True,
                     help='Evaluates a policy a policy every 10 episode (default: True)')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
+parser.add_argument('--gamma_safe', type=float, default=0.9, metavar='G',
+                    help='discount factor for constraints (default: 0.9)')
+parser.add_argument('--eps_safe', type=float, default=0.7, metavar='G',
+                    help='threshold constraints (default: 0.8)')
 parser.add_argument('--tau', type=float, default=0.005, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
 parser.add_argument('--lr', type=float, default=0.0003, metavar='G',
@@ -109,7 +113,7 @@ for i_episode in itertools.count(1):
             real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
-            if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > 0.8:
+            if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 real_action = safe_action(state)
             else:
                 real_action = action
@@ -157,21 +161,17 @@ for i_episode in itertools.count(1):
         for _  in range(episodes):
             test_rollouts.append([])
             state = env.reset()
-            # print("start state")
-            # print(state)
             episode_reward = 0
             done = False
             while not done:
                 action = agent.select_action(state, eval=True)
 
-                if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > 0.8:
+                if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                     real_action = safe_action(state)
                 else:
                     real_action = action
                 next_state, reward, done, info = env.step(real_action)
                 test_rollouts[-1].append(info)
-                # if reward > -1:
-                #     print(state, action, reward, next_state)
                 episode_reward += reward
 
 
@@ -181,8 +181,6 @@ for i_episode in itertools.count(1):
                 num_violations += int(inf['constraint'])
             print("final reward: %f"%reward)
             print("num violations: %d"%num_violations)
-            # print("final state")
-            # print(next_state)
             avg_reward += episode_reward
         avg_reward /= episodes
 
