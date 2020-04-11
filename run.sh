@@ -1,3 +1,4 @@
+# To run channel/tightrope env
 python main.py --cuda --env-name SimplePointBot-v0
 
 # To run obstacle env
