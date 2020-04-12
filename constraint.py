@@ -15,8 +15,9 @@ def get_value_function(gamma_safe, data_function, recovery_policy, learned_recov
     # TODO: may need to fix later, this works now because all the transition data is contiguous in time
     if learned_recovery:
         data_states = np.array([d[0] for d in data])
-        data_actions = np.array([d[1] for d in data][:-1])
-        recovery_policy.train([data_states], [data_actions], epochs=50)
+        data_actions = np.array([d[1] for d in data])
+        data_next_states = np.array([d[3] for d in data])
+        recovery_policy.train(data_states, data_actions, random=True, next_obs=data_next_states, epochs=50)
 
     test_size = int(len(data) * 0.1)
     train_size = len(data) - test_size

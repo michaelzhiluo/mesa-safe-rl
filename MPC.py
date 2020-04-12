@@ -186,7 +186,7 @@ class MPC(Controller):
         self.value_func = None
         self.use_value = params.get("use_value", False)
 
-    def train(self, obs_trajs, acs_trajs, epochs=None):
+    def train(self, obs_trajs, acs_trajs, random=False, next_obs=False, epochs=None):
         """Trains the internal model of this controller. Once trained,
         this controller switches from applying random actions to using MPC.
 
@@ -200,9 +200,15 @@ class MPC(Controller):
 
         # Construct new training points and add to training set
         new_train_in, new_train_targs = [], []
-        for obs, acs in zip(obs_trajs, acs_trajs):
-            new_train_in.append(np.concatenate([self.obs_preproc(obs[:-1]), acs], axis=-1))
-            new_train_targs.append(self.targ_proc(obs[:-1], obs[1:]))
+        if random:
+            assert next_obs is not None
+            # import IPython; IPython.embed()
+            new_train_in = [np.concatenate([self.obs_preproc(obs_trajs), acs_trajs], axis=-1)]
+            new_train_targs = [self.targ_proc(obs_trajs, next_obs)]
+        else:
+            for obs, acs in zip(obs_trajs, acs_trajs):
+                new_train_in.append(np.concatenate([self.obs_preproc(obs[:-1]), acs], axis=-1))
+                new_train_targs.append(self.targ_proc(obs[:-1], obs[1:]))
         self.train_in = np.concatenate([self.train_in] + new_train_in, axis=0)
         self.train_targs = np.concatenate([self.train_targs] + new_train_targs, axis=0)
 

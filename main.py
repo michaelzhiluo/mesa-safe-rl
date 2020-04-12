@@ -17,6 +17,21 @@ from env.simplepointbot0 import SimplePointBot
 from env.simplepointbot1 import SimplePointBot
 # from env.maze import MazeNavigation
 
+torchify = lambda x: torch.FloatTensor(x).to('cuda')
+
+# def get_action(state, value):
+#     # gt dynamics random shooting mpc for 2D single integrator
+#     actions = np.clip(np.random.randn(10000, 4, 2), -1, 1)
+#     noise_realizations = np.random.randn(10000, 4, 2) * 0.05
+#     delta_pos = actions.sum(1) + noise_realizations.sum(1)
+#     final_state = state + delta_pos
+#     costs = value(torchify(final_state)).detach().cpu().numpy()
+
+#     # import IPython; IPython.embed()
+#     # assert 0
+#     return actions[np.argmin(costs)][0]
+
+
 ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 'simplepointbot1': 'SimplePointBot-v1'}
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
@@ -83,6 +98,8 @@ if args.learned_recovery:
     cfg.pprint()
     cfg.ctrl_cfg.use_value = True
     recovery_policy = MPC(cfg.ctrl_cfg)
+else:
+    recovery_policy = None
 # Environment
 # env = NormalizedActions(gym.make(args.env_name))
 
@@ -174,7 +191,7 @@ for i_episode in itertools.count(1):
     ep_states = np.array(ep_states)
     ep_actions = np.array(ep_actions)
 
-    if i_episode % args.recovery_policy_update_freq == 0:
+    if i_episode % args.recovery_policy_update_freq == 0 and args.learned_recovery:
         recovery_policy.train(
             [ep_data['obs'] for ep_data in all_ep_data],
             [ep_data['ac'] for ep_data in all_ep_data]
