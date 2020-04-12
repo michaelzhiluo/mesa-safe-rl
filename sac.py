@@ -9,7 +9,7 @@ from constraint import get_value_function
 
 
 class SAC(object):
-    def __init__(self, observation_space, action_space, transition_function, args):
+    def __init__(self, observation_space, action_space, transition_function, recovery_policy, args):
 
         self.gamma = args.gamma
         self.tau = args.tau
@@ -23,7 +23,7 @@ class SAC(object):
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
 
-        self.value = get_value_function(self.gamma_safe, transition_function, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False)
+        self.value = get_value_function(self.gamma_safe, transition_function, recovery_policy, args.learned_recovery, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False)
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)

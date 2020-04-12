@@ -7,11 +7,16 @@ from torch.optim import Adam
 from model import ValueNetwork, QNetwork
 
 
-def get_value_function(gamma_safe, data_function, device='cuda', batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False):
+def get_value_function(gamma_safe, data_function, recovery_policy, learned_recovery, device='cuda', batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False):
 
     torchify = lambda x: torch.FloatTensor(x).to(device)
 
     data = data_function(num_transitions)
+    # TODO: may need to fix later, this works now because all the transition data is contiguous in time
+    if learned_recovery:
+        data_states = np.array([d[0] for d in data])
+        data_actions = np.array([d[1] for d in data][:-1])
+        recovery_policy.train([data_states], [data_actions], epochs=50)
 
     test_size = int(len(data) * 0.1)
     train_size = len(data) - test_size

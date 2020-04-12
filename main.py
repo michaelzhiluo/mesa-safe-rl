@@ -9,20 +9,15 @@ import torch
 from sac import SAC
 from tensorboardX import SummaryWriter
 from replay_memory import ReplayMemory
-from maze import MazeNavigation
+from MPC import MPC
+from dotmap import DotMap
+from config import create_config
+import os
+from env.simplepointbot0 import SimplePointBot
+from env.simplepointbot1 import SimplePointBot
+# from env.maze import MazeNavigation
 
-
-gym.register(
-    id='Maze-v0',
-    entry_point='maze:MazeNavigation')
-
-gym.register(
-    id='SimplePointBot-v0',
-    entry_point='simplepointbot:SimplePointBot')
-
-gym.register(
-    id='SimplePointBot-v1',
-    entry_point='pointbot_obs:SimplePointBot')
+ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 'simplepointbot1': 'SimplePointBot-v1'}
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="HalfCheetah-v2",
@@ -66,22 +61,45 @@ parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--cnn', action="store_true", 
                     help='visual observations (default: False)')
+
+# For PETS
+parser.add_argument('--learned_recovery', action="store_true")
+parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
+parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
+                    help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
+parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
+                    help='Override default parameters, see https://github.com/kchua/handful-of-trials#overrides')
 args = parser.parse_args()
-
-# Environment
-# env = NormalizedActions(gym.make(args.env_name))
-env = gym.make(args.env_name)
-torch.manual_seed(args.seed)
-np.random.seed(args.seed)
-env.seed(args.seed)
-
-# Agent
-agent = SAC(env.observation_space, env.action_space, env.transition_function, args)
 
 #TesnorboardX
 logdir='runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
 writer = SummaryWriter(logdir=logdir)
+pickle.dump(args, open(os.path.join(logdir, "args.pkl"), "wb") )
+
+if args.learned_recovery:
+    ctrl_args = DotMap(**{key: val for (key, val) in args.ctrl_arg})
+    cfg = create_config(args.env_name, "MPC", ctrl_args, args.override, logdir)
+    cfg.pprint()
+    # cfg.ctrl_cfg.use_value = True
+    recovery_policy = MPC(cfg.ctrl_cfg)
+# Environment
+# env = NormalizedActions(gym.make(args.env_name))
+
+if args.learned_recovery:
+    env = cfg.ctrl_cfg.env
+else:
+    env = gym.make(ENV_ID[args.env_name])
+
+torch.manual_seed(args.seed)
+np.random.seed(args.seed)
+env.seed(args.seed)
+
+# Agent
+agent = SAC(env.observation_space, env.action_space, env.transition_function, recovery_policy, args)
+
+if args.learned_recovery:
+    recovery_policy.update_value_func(agent.value)
 
 # Memory
 memory = ReplayMemory(args.replay_size)
@@ -93,24 +111,34 @@ updates = 0
 test_rollouts = []
 train_rollouts = []
 
+all_ep_data = []
+
 for i_episode in itertools.count(1):
     episode_reward = 0
     episode_steps = 0
     done = False
     state = env.reset()
     train_rollouts.append([])
+    ep_states = [state]
+    ep_actions = []
 
     while not done:
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
             if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                real_action = env.safe_action(state)
+                if args.learned_recovery:
+                    real_action = recovery_policy.act(state, 0)
+                else:
+                    real_action = env.safe_action(state)
             else:
                 real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
             if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                real_action = env.safe_action(state)
+                if args.learned_recovery:
+                    real_action = recovery_policy.act(state, 0)
+                else:
+                    real_action = env.safe_action(state)
             else:
                 real_action = action
         if len(memory) > args.batch_size:
@@ -139,6 +167,22 @@ for i_episode in itertools.count(1):
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
         state = next_state
+
+        ep_states.append(state)
+        ep_actions.append(real_action)
+
+    ep_states = np.array(ep_states)
+    ep_actions = np.array(ep_actions)
+
+    if i_episode % args.recovery_policy_update_freq == 0:
+        recovery_policy.train(
+            [ep_data['obs'] for ep_data in all_ep_data],
+            [ep_data['ac'] for ep_data in all_ep_data]
+        )
+        all_ep_data = []
+    else:
+        all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
+
     num_violations = 0
     for inf in train_rollouts[-1]:
         num_violations += int(inf['constraint'])
@@ -163,7 +207,10 @@ for i_episode in itertools.count(1):
                 action = agent.select_action(state, eval=True)
 
                 if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                    real_action = env.safe_action(state)
+                    if args.learned_recovery:
+                        real_action = recovery_policy.act(state, 0)
+                    else:
+                        real_action = env.safe_action(state)
                 else:
                     real_action = action
                 next_state, reward, done, info = env.step(real_action)
