@@ -144,19 +144,23 @@ for i_episode in itertools.count(1):
             action = env.action_space.sample()  # Sample random action
             if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 if args.learned_recovery:
+                    print("RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
+                print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
             if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 if args.learned_recovery:
+                    print("RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
+                print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
@@ -191,14 +195,15 @@ for i_episode in itertools.count(1):
     ep_states = np.array(ep_states)
     ep_actions = np.array(ep_actions)
 
-    if i_episode % args.recovery_policy_update_freq == 0 and args.learned_recovery:
-        recovery_policy.train(
-            [ep_data['obs'] for ep_data in all_ep_data],
-            [ep_data['ac'] for ep_data in all_ep_data]
-        )
-        all_ep_data = []
-    else:
-        all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
+    if args.learned_recovery:
+        if i_episode % args.recovery_policy_update_freq == 0:
+            recovery_policy.train(
+                [ep_data['obs'] for ep_data in all_ep_data],
+                [ep_data['ac'] for ep_data in all_ep_data]
+            )
+            all_ep_data = []
+        else:
+            all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
 
     num_violations = 0
     for inf in train_rollouts[-1]:
@@ -222,7 +227,6 @@ for i_episode in itertools.count(1):
             done = False
             while not done:
                 action = agent.select_action(state, eval=True)
-
                 if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                     if args.learned_recovery:
                         real_action = recovery_policy.act(state, 0)
