@@ -81,7 +81,7 @@ if args.learned_recovery:
     ctrl_args = DotMap(**{key: val for (key, val) in args.ctrl_arg})
     cfg = create_config(args.env_name, "MPC", ctrl_args, args.override, logdir)
     cfg.pprint()
-    # cfg.ctrl_cfg.use_value = True
+    cfg.ctrl_cfg.use_value = True
     recovery_policy = MPC(cfg.ctrl_cfg)
 # Environment
 # env = NormalizedActions(gym.make(args.env_name))

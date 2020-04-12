@@ -356,10 +356,16 @@ class MPC(Controller):
             cur_acs = ac_seqs[t]
 
             next_obs = self._predict_next_obs(cur_obs, cur_acs)
+            # print("NEXT OBS", next_obs)
+            # print("------------------------------------------")
+            # print("OBS COST", list(self.obs_cost_fn(next_obs).shape))
+            # print("------------------------------------------")
+            # print("VALUE COST", list(self.value_func(next_obs).squeeze().shape))
+            # print("------------------------------------------")
 
             if self.use_value:
-                assert(self.value)
-                cost = self.value(next_obs) + self.ac_cost_fn(cur_acs)
+                assert(self.value_func)
+                cost = self.value_func(next_obs).squeeze() + self.ac_cost_fn(cur_acs)
             else:
                 cost = self.obs_cost_fn(next_obs) + self.ac_cost_fn(cur_acs)
 
