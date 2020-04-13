@@ -117,7 +117,7 @@ class SimplePointBot(Env, utils.EzPickle):
 
     def step_cost(self, s, a):
         if HARD_MODE:
-            return int(np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
+            return -int(np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
         return -np.linalg.norm(np.subtract(GOAL_STATE, s))
 
     def values(self):

@@ -86,13 +86,13 @@ class PtModel(nn.Module):
         return mean, torch.exp(logvar)
 
 
-class SimplePointBotConfig1Module:
-    ENV_NAME = "SimplePointBot-v1"
+class CliffCheetahConfigModule:
+    ENV_NAME = "CliffCheetah-v0"
     TASK_HORIZON = 100
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
-    PLAN_HOR = 5
-    MODEL_IN, MODEL_OUT = 4, 2
+    PLAN_HOR = 15
+    MODEL_IN, MODEL_OUT = 24, 18
 
     def __init__(self):
         self.ENV = gym.make(self.ENV_NAME)
@@ -109,9 +109,6 @@ class SimplePointBotConfig1Module:
                 "alpha": 0.1
             }
         }
-        # self.UPDATE_FNS = [self.update_goal]
-
-        self.goal = self.ENV.goal
 
     @staticmethod
     def obs_postproc(obs, pred):
@@ -121,17 +118,8 @@ class SimplePointBotConfig1Module:
     def targ_proc(obs, next_obs):
         return next_obs - obs
 
-    def update_goal(self):
-        self.goal = self.ENV.goal
-
     def obs_cost_fn(self, obs):
-
-        assert isinstance(obs, torch.Tensor)
-        assert self.goal is not None
-
-        obs = obs.detach().cpu().numpy()
-        cost = np.linalg.norm(np.subtract(self.goal, obs), axis=1)
-        return torch.from_numpy(cost).float().to(TORCH_DEVICE)
+        pass
 
     @staticmethod
     def ac_cost_fn(acs):
@@ -153,4 +141,4 @@ class SimplePointBotConfig1Module:
         return model
 
 
-CONFIG_MODULE = SimplePointBotConfig1Module
+CONFIG_MODULE = CliffCheetahConfigModule

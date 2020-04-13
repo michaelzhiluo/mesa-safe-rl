@@ -6,7 +6,7 @@ from torch.optim import Adam
 
 from model import ValueNetwork, QNetwork
 
-
+# TODO: rewrite to make a value function class and to not hardcode things...
 def get_value_function(gamma_safe, data_function, recovery_policy, learned_recovery, device='cuda', batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False):
 
     torchify = lambda x: torch.FloatTensor(x).to(device)
@@ -25,7 +25,7 @@ def get_value_function(gamma_safe, data_function, recovery_policy, learned_recov
     train_data = data[:-1000]
     test_data = data[-1000:]
 
-    model = ValueNetwork(2, 200).to(device)
+    model = ValueNetwork(data[0][0].shape[0], 200).to(device)
     optim = Adam(model.parameters(), lr=1e-3)
 
     for j in range(training_iterations):

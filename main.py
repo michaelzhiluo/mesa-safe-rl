@@ -31,8 +31,11 @@ torchify = lambda x: torch.FloatTensor(x).to('cuda')
 #     # assert 0
 #     return actions[np.argmin(costs)][0]
 
-
-ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 'simplepointbot1': 'SimplePointBot-v1'}
+ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 
+          'simplepointbot1': 'SimplePointBot-v1',
+          'cliffwalker': 'CliffWalker-v0',
+          'cliffcheetah': 'CliffCheetah-v0'
+          }
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="HalfCheetah-v2",
@@ -60,7 +63,7 @@ parser.add_argument('--seed', type=int, default=123456, metavar='N',
                     help='random seed (default: 123456)')
 parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
-parser.add_argument('--num_steps', type=int, default=10000, metavar='N',
+parser.add_argument('--num_steps', type=int, default=1000000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
 parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                     help='hidden size (default: 256)')
@@ -77,6 +80,8 @@ parser.add_argument('--cuda', action="store_true",
 parser.add_argument('--cnn', action="store_true", 
                     help='visual observations (default: False)')
 
+parser.add_argument('--value_func_update_freq', type=int, default=-1)
+parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 # For PETS
 parser.add_argument('--learned_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
@@ -149,7 +154,7 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
@@ -160,7 +165,7 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
@@ -180,6 +185,9 @@ for i_episode in itertools.count(1):
         episode_steps += 1
         total_numsteps += 1
         episode_reward += reward
+
+        if args.constraint_reward_penalty > 0:
+            reward -= args.constraint_reward_penalty
 
         # Ignore the "done" signal if it comes from hitting the time horizon.
         # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
