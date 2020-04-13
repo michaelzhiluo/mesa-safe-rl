@@ -41,12 +41,12 @@
       </body>
     </body>
 
-    <geom type="box" pos="-2 0 1" size="0.1 .2 1" conaffinity="1"/>
+    <geom type="box" pos="-4 0 1" size="0.1 .2 1" conaffinity="1"/>
 
-    <geom type="box" pos="2 0 -0.05" size="4 .2 .1" conaffinity="1"/>
-    <geom type="box" pos="6 0 -1" size="0.1 .2 1" conaffinity="1"/>
-    <geom type="box" pos="8 0 0" size="0.1 .2 2" conaffinity="1"/>
-    <geom type="box" pos="7 0 -2" size="1 .2 0.1" conaffinity="1"/>
+    <geom type="box" pos="0 0 -0.05" size="4 .2 .1" conaffinity="1"/>
+    <geom type="box" pos="4 0 -1" size="0.1 .2 1" conaffinity="1"/>
+    <geom type="box" pos="6 0 0" size="0.1 .2 2" conaffinity="1"/>
+    <geom type="box" pos="5 0 -2" size="1 .2 0.1" conaffinity="1"/>
 
 
 

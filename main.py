@@ -75,20 +75,25 @@ parser.add_argument('--target_update_interval', type=int, default=1, metavar='N'
                     help='Value target update per no. of updates per step (default: 1)')
 parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 10000000)')
+parser.add_argument('--safe_replay_size', type=int, default=1000000, metavar='N',
+                    help='size of replay buffer for V safe (default: 10000000)')
 parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--cnn', action="store_true", 
                     help='visual observations (default: False)')
 
-parser.add_argument('--value_func_update_freq', type=int, default=-1)
 parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
-# For PETS
+
+# For recovery policy
 parser.add_argument('--learned_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
+parser.add_argument('--V_safe_update_freq', type=int, default=1e10) # TODO: by default, not updating on-policy, but will need to for non-pointbot envs
+
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
 parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
                     help='Override default parameters, see https://github.com/kchua/handful-of-trials#overrides')
+parser.add_argument('--num_demo_transitions', type=int, default=10000)
 args = parser.parse_args()
 
 #TesnorboardX
@@ -118,17 +123,32 @@ np.random.seed(args.seed)
 env.seed(args.seed)
 
 # Agent
-agent = SAC(env.observation_space, env.action_space, env.transition_function, recovery_policy, args)
+agent = SAC(env.observation_space, env.action_space, args)
 
 if args.learned_recovery:
-    recovery_policy.update_value_func(agent.value)
+    recovery_policy.update_value_func(agent.V_safe)
 
 # Memory
 memory = ReplayMemory(args.replay_size)
+V_safe_memory = ReplayMemory(args.safe_replay_size)
 
 # Training Loop
 total_numsteps = 0
 updates = 0
+
+# Seed with demonstrations
+demo_data = env.transition_function(args.num_demo_transitions)
+# Train recovery policy on demos
+if args.learned_recovery:
+    demo_data_states = np.array([d[0] for d in demo_data])
+    demo_data_actions = np.array([d[1] for d in demo_data])
+    demo_data_next_states = np.array([d[3] for d in demo_data])
+    recovery_policy.train(demo_data_states, demo_data_actions, random=True, next_obs=demo_data_next_states, epochs=50)
+# Train value function on demos
+for transition in demo_data:
+    V_safe_memory.push(*transition)
+
+agent.V_safe.train(V_safe_memory)
 
 test_rollouts = []
 train_rollouts = []
@@ -147,25 +167,25 @@ for i_episode in itertools.count(1):
     while not done:
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
-            if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+            if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 if args.learned_recovery:
-                    print("RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY", agent.V_safe(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
-            if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+            if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 if args.learned_recovery:
-                    print("RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY", agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY", agent.V_safe(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
@@ -194,6 +214,7 @@ for i_episode in itertools.count(1):
         mask = 1 if episode_steps == env._max_episode_steps else float(not done)
 
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
+        V_safe_memory.push(state, action, info['constraint'], next_state, mask)
 
         state = next_state
 
@@ -202,6 +223,9 @@ for i_episode in itertools.count(1):
 
     ep_states = np.array(ep_states)
     ep_actions = np.array(ep_actions)
+
+    if args.env_name == 'cliffwalker':
+        print("FINAL X POSITION", ep_states[-1][0])
 
     if args.learned_recovery:
         if i_episode % args.recovery_policy_update_freq == 0:
@@ -212,6 +236,9 @@ for i_episode in itertools.count(1):
             all_ep_data = []
         else:
             all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
+
+        if i_episode % args.V_safe_update_freq == 0:
+            agent.V_safe.train(V_safe_memory, epochs=10, training_iterations=50)
 
     num_violations = 0
     for inf in train_rollouts[-1]:
@@ -235,7 +262,7 @@ for i_episode in itertools.count(1):
             done = False
             while not done:
                 action = agent.select_action(state, eval=True)
-                if agent.value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+                if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                     if args.learned_recovery:
                         real_action = recovery_policy.act(state, 0)
                     else:

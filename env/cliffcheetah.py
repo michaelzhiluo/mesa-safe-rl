@@ -12,7 +12,7 @@ def get_random_transitions(num_transitions):
         action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
         constraint = False # TODO: fix this
-        transitions.append((state, action, constraint, next_state))
+        transitions.append((state, action, constraint, next_state, done))
         state = next_state
     return transitions
 
@@ -43,7 +43,7 @@ class CliffCheetahEnv(HalfCheetahEnv):
         xml_filename = os.path.join(envs_folder,
                                     'assets/cliff_cheetah.xml')
         mujoco_env.MujocoEnv.__init__(self, xml_filename, 5)
-        self._max_episode_steps = np.inf
+        self._max_episode_steps = 1000
 
     def step(self, a):
         curr_state = self._get_obs()

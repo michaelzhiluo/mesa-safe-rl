@@ -149,7 +149,7 @@ def get_random_transitions(num_transitions):
         action = np.clip(np.random.randn(2), -1, 1)
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
-        transitions.append((state, action, constraint, next_state))
+        transitions.append((state, action, constraint, next_state, False))
     return transitions
 
 

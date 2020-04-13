@@ -11,8 +11,8 @@ def get_random_transitions(num_transitions):
     for i in range(num_transitions):
         action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
-        constraint = False # TODO: fix this
-        transitions.append((state, action, constraint, next_state))
+        constraint = (next_state[0] > 4).astype(int)
+        transitions.append((state, action, constraint, next_state, done))
         state = next_state
     return transitions
 
@@ -26,14 +26,14 @@ class CliffWalkerEnv(Walker2dEnv):
                                     'assets/cliff_walker.xml')
         mujoco_env.MujocoEnv.__init__(self, xml_filename, 5)
         self.transition_function = get_random_transitions
-        self._max_episode_steps = np.inf
+        self._max_episode_steps = 1000
 
     def step(self, a):
         curr_state = self._get_obs()
         (s, _, done, info) = super(CliffWalkerEnv, self).step(a)
         r = self._get_rewards(s, a)[0]
-        # TODO: actually implement constraint
-        info = {"constraint": False,
+        # TODO: check if this constraint implementation is correct
+        info = {"constraint": (s[0] > 4).astype(int),
                 "reward": r,
                 "state": curr_state,
                 "next_state": s,
@@ -49,7 +49,6 @@ class CliffWalkerEnv(Walker2dEnv):
 
     def _get_rewards(self, s, a):
         x = s[0]
-        print("X", x)
         running_vel = s[9] - 2.0
         torso_height = s[1]
         is_standing = float(torso_height > 1.2)
