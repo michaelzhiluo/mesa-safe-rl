@@ -12,7 +12,7 @@ class ValueFunction:
         self.gamma_safe = params.gamma_safe
         self.device = params.device
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
-        self.model = ValueNetwork(2, params.hidden_size).to(self.device)
+        self.model = ValueNetwork(params.hidden_dim, params.hidden_size).to(self.device)
 
     def train(self, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
         optim = Adam(self.model.parameters(), lr=lr)

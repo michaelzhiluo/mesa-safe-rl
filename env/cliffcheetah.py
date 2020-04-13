@@ -43,6 +43,7 @@ class CliffCheetahEnv(HalfCheetahEnv):
         xml_filename = os.path.join(envs_folder,
                                     'assets/cliff_cheetah.xml')
         mujoco_env.MujocoEnv.__init__(self, xml_filename, 5)
+        self.transition_function = get_random_transitions
         self._max_episode_steps = 1000
 
     def step(self, a):

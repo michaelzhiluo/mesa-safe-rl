@@ -224,7 +224,7 @@ for i_episode in itertools.count(1):
     ep_states = np.array(ep_states)
     ep_actions = np.array(ep_actions)
 
-    if args.env_name == 'cliffwalker':
+    if args.env_name == 'cliffwalker' or args.env_name == 'cliffcheetah':
         print("FINAL X POSITION", ep_states[-1][0])
 
     if args.learned_recovery:
