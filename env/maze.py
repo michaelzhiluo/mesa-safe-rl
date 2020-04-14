@@ -15,9 +15,23 @@ import cv2
 def process_action(a):
     return np.clip(a, -MAX_FORCE, MAX_FORCE)
 
+
+def get_random_transitions(num_transitions):
+    env = MazeNavigation()
+    transitions = []
+    for i in range(num_transitions):
+        if i %(num_transitions//100) == 0:
+            state = env.reset()
+        action = env.action_space.sample()
+        next_state, reward, done, info = env.step(action)
+        constraint = info['constraint']
+        transitions.append((state, action, constraint, next_state, done))
+        state = next_state
+    return transitions
+
 class MazeNavigation(Env, utils.EzPickle):
 
-    def __init__(self, args):
+    def __init__(self):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
         
@@ -25,21 +39,23 @@ class MazeNavigation(Env, utils.EzPickle):
         filename = os.path.join(dirname, 'simple_maze.xml')
         self.sim = MjSim(load_model_from_path(filename))
         self.horizon = HORIZON
-        
+        self._max_episode_steps = self.horizon
+        self.transition_function = get_random_transitions
         self.steps = 0
-        self.images = not args.gt_state
+        self.images = not GT_STATE
         self.action_space = Box(-MAX_FORCE*np.ones(2), MAX_FORCE*np.ones(2))
+        self.transition_function = get_random_transitions
         obs = self._get_obs()
         # print("OBS", obs.shape)
         # print("OBS", np.max(obs), np.min(obs))
         # cv2.imwrite('maze.jpg', 255*obs)
         # assert(False)
-        self.dense_reward = args.dense_reward
+        self.dense_reward = DENSE_REWARD
 
         if self.images:
             self.observation_space = obs.shape
         else:
-            self.observation_space = Box(-0.3, 0.3, shape=obs.shape, dtype='float32')
+            self.observation_space = Box(-0.3, 0.3, shape=obs.shape)
 
         self.gain = 1.05
         self.goal = np.zeros((2,))
@@ -56,6 +72,7 @@ class MazeNavigation(Env, utils.EzPickle):
         action = process_action(action)
         self.sim.data.qvel[:] = 0
         self.sim.data.ctrl[:] = action
+        cur_obs = self._get_obs()
         for _ in range(500):
           self.sim.step()
         obs = self._get_obs()
@@ -67,7 +84,13 @@ class MazeNavigation(Env, utils.EzPickle):
         else:
             reward = -self.get_distance_score()
 
-        return obs, reward, self.done, 0 # TODO: implement constraint check here
+        info = {"constraint": int(self.sim.data.ncon > 3),
+                "reward": reward,
+                "state": cur_obs,
+                "next_state": obs,
+                "action": action}
+
+        return obs, reward, self.done, info
       
     def _get_obs(self):
         #joint poisitions and velocities

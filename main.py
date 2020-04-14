@@ -14,8 +14,7 @@ from dotmap import DotMap
 from config import create_config
 import os
 from env.simplepointbot0 import SimplePointBot
-from env.simplepointbot1 import SimplePointBot
-# from env.maze import MazeNavigation
+from env.maze import MazeNavigation
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
@@ -34,7 +33,9 @@ torchify = lambda x: torch.FloatTensor(x).to('cuda')
 ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 
           'simplepointbot1': 'SimplePointBot-v1',
           'cliffwalker': 'CliffWalker-v0',
-          'cliffcheetah': 'CliffCheetah-v0'
+          'cliffcheetah': 'CliffCheetah-v0',
+          'maze': 'Maze-v0',
+          'shelf_env': 'Shelf-v0'
           }
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
@@ -88,6 +89,7 @@ parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 parser.add_argument('--learned_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
 parser.add_argument('--V_safe_update_freq', type=int, default=1e10) # TODO: by default, not updating on-policy, but will need to for non-pointbot envs
+parser.add_argument('--task_demos', action="store_true")
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
@@ -137,18 +139,26 @@ total_numsteps = 0
 updates = 0
 
 # Seed with demonstrations
-demo_data = env.transition_function(args.num_demo_transitions)
+if not args.task_demos:
+    constraint_demo_data = env.transition_function(args.num_demo_transitions)
+else:
+    constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=args.task_demos)
 # Train recovery policy on demos
 if args.learned_recovery:
-    demo_data_states = np.array([d[0] for d in demo_data])
-    demo_data_actions = np.array([d[1] for d in demo_data])
-    demo_data_next_states = np.array([d[3] for d in demo_data])
+    demo_data_states = np.array([d[0] for d in constraint_demo_data])
+    demo_data_actions = np.array([d[1] for d in constraint_demo_data])
+    demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
     recovery_policy.train(demo_data_states, demo_data_actions, random=True, next_obs=demo_data_next_states, epochs=50)
 # Train value function on demos
-for transition in demo_data:
+for transition in constraint_demo_data:
     V_safe_memory.push(*transition)
-
 agent.V_safe.train(V_safe_memory)
+
+# If use task demos, add them to memory
+if args.task_demos:
+    for transition in task_demo_data:
+        memory.push(*transition)
+
 test_rollouts = []
 train_rollouts = []
 

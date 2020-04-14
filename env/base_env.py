@@ -1,9 +1,10 @@
 import numpy as np
 import random
 from tensorflow.contrib.training import HParams
+from gym import Env
+from gym import utils
 
-
-class BaseEnv:
+class BaseEnv(Env, utils.EzPickle):
     def step(self, action):
         """
         Applies the action and steps simulation
