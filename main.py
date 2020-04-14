@@ -214,7 +214,7 @@ for i_episode in itertools.count(1):
         # mask = 1 if episode_steps == env._max_episode_steps else float(not done)
         if episode_steps == env._max_episode_steps:
             done = True
-            
+
         mask = float(not done)
         # done = done or episode_steps == env._max_episode_steps
 
@@ -286,6 +286,10 @@ for i_episode in itertools.count(1):
             print("final reward: %f"%reward)
             print("num violations: %d"%num_violations)
             avg_reward += episode_reward
+
+            if episode_steps == env._max_episode_steps:
+                done = True
+            
         avg_reward /= episodes
 
 
