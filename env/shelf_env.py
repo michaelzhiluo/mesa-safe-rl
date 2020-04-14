@@ -68,7 +68,7 @@ class ShelfEnv(BaseMujocoEnv):
         self.randomize_objects = not FIXED_ENV
         self.dense_reward = DENSE_REWARD
         self.gt_state = GT_STATE
-        self._max_episode_steps = 50
+        self._max_episode_steps = 25
         self.transition_function = get_random_transitions
 
         if self.gt_state:

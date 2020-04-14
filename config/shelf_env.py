@@ -91,7 +91,7 @@ class ShelfConfigModule:
     TASK_HORIZON = 150
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
-    PLAN_HOR = 10
+    PLAN_HOR = 15
     MODEL_IN, MODEL_OUT = 31, 27
     GP_NINDUCING_POINTS = 200
 
