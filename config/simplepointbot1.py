@@ -91,7 +91,7 @@ class SimplePointBotConfig1Module:
     TASK_HORIZON = 100
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
-    PLAN_HOR = 25
+    PLAN_HOR = 5
     MODEL_IN, MODEL_OUT = 4, 2
 
     def __init__(self):
