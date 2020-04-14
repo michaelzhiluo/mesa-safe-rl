@@ -149,7 +149,6 @@ for transition in demo_data:
     V_safe_memory.push(*transition)
 
 agent.V_safe.train(V_safe_memory)
-
 test_rollouts = []
 train_rollouts = []
 
@@ -163,8 +162,8 @@ for i_episode in itertools.count(1):
     train_rollouts.append([])
     ep_states = [state]
     ep_actions = []
-
     while not done:
+        # print("EP STEP", episode_steps)
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
             if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
@@ -174,7 +173,7 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY", agent.V_safe(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         else:
             action = agent.select_action(state)  # Sample action from policy
@@ -185,8 +184,9 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY", agent.V_safe(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
+
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
@@ -211,7 +211,12 @@ for i_episode in itertools.count(1):
 
         # Ignore the "done" signal if it comes from hitting the time horizon.
         # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
-        mask = 1 if episode_steps == env._max_episode_steps else float(not done)
+        # mask = 1 if episode_steps == env._max_episode_steps else float(not done)
+        if episode_steps == env._max_episode_steps:
+            done = True
+            
+        mask = float(not done)
+        # done = done or episode_steps == env._max_episode_steps
 
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
         V_safe_memory.push(state, action, info['constraint'], next_state, mask)

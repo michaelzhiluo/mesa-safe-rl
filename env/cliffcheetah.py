@@ -52,7 +52,7 @@ class CliffCheetahEnv(HalfCheetahEnv):
 
         r = self._get_rewards(s, a)[0]
         # TODO: actually implement constraint
-        info = {"constraint": False,
+        info = {"constraint": s[0] > 14,
                 "reward": r,
                 "state": curr_state,
                 "next_state": s,
