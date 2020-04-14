@@ -12,8 +12,19 @@ register(
 
 register(
     id='Maze-v0',
-    entry_point='maze:MazeNavigation'
+    entry_point='env.maze:MazeNavigation'
 )
+
+register(
+    id='CliffWalker-v0',
+    entry_point='env.cliffwalker:CliffWalkerEnv'
+)
+
+register(
+    id='CliffCheetah-v0',
+    entry_point='env.cliffcheetah:CliffCheetahEnv'
+)
+
 
 # register(
 #     id='MBRLReacherSparse3D-v0',

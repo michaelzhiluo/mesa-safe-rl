@@ -4,12 +4,12 @@ import torch.nn.functional as F
 from torch.optim import Adam
 from utils import soft_update, hard_update
 from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN
-
-from constraint import get_value_function
+from dotmap import DotMap
+from constraint import ValueFunction
 
 
 class SAC(object):
-    def __init__(self, observation_space, action_space, transition_function, recovery_policy, args):
+    def __init__(self, observation_space, action_space, args):
 
         self.gamma = args.gamma
         self.tau = args.tau
@@ -22,8 +22,7 @@ class SAC(object):
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
-
-        self.value = get_value_function(self.gamma_safe, transition_function, recovery_policy, args.learned_recovery, device=self.device, batch_size=1000, num_transitions=10000, training_iterations=3000, plot=False)
+        self.V_safe = ValueFunction(DotMap(gamma_safe=self.gamma_safe, device=self.device, hidden_dim=observation_space.shape[0], hidden_size=200))
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)

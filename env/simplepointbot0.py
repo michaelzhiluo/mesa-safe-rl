@@ -117,7 +117,7 @@ class SimplePointBot(Env, utils.EzPickle):
 
     def step_cost(self, s, a):
         if HARD_MODE:
-            return int(np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
+            return -int(np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
         return -np.linalg.norm(np.subtract(GOAL_STATE, s))
 
     def values(self):
@@ -155,13 +155,13 @@ def get_random_transitions(num_transitions):
     transitions = []
     for i in range(num_transitions):
         if np.random.uniform(0, 1) < 0.5:
-            state = np.random.uniform(-80, 50), np.random.uniform(-6, -2)
+            state = np.array([np.random.uniform(-80, 50), np.random.uniform(-6, -2)])
         else:
-            state = np.random.uniform(-80, 50), np.random.uniform(2, 6)
+            state = np.array([np.random.uniform(-80, 50), np.random.uniform(2, 6)])
         action = np.clip(np.random.randn(2), -1, 1)
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
-        transitions.append((state, action, constraint, next_state))
+        transitions.append((state, action, constraint, next_state, False))
     return transitions
 
 
