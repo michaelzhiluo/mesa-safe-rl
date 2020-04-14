@@ -278,6 +278,8 @@ for i_episode in itertools.count(1):
                 test_rollouts[-1].append(info)
                 episode_reward += reward
 
+                if episode_steps == env._max_episode_steps:
+                    done = True
 
                 state = next_state
             num_violations = 0
@@ -287,9 +289,6 @@ for i_episode in itertools.count(1):
             print("num violations: %d"%num_violations)
             avg_reward += episode_reward
 
-            if episode_steps == env._max_episode_steps:
-                done = True
-            
         avg_reward /= episodes
 
 
