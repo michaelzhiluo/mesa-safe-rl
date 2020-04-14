@@ -91,7 +91,7 @@ class MazeConfigModule:
     TASK_HORIZON = 150
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
-    PLAN_HOR = 15
+    PLAN_HOR = 10
     MODEL_IN, MODEL_OUT = 4, 2
     GP_NINDUCING_POINTS = 200
 
