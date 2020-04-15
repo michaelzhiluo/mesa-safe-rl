@@ -152,20 +152,21 @@ if args.learned_recovery:
     demo_data_actions = np.array([d[1] for d in constraint_demo_data])
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
     recovery_policy.train(demo_data_states, demo_data_actions, random=True, next_obs=demo_data_next_states, epochs=50)
-# Train value function on demos
-for transition in constraint_demo_data:
-    V_safe_memory.push(*transition)
-agent.V_safe.train(V_safe_memory)
+
 # If use task demos, add them to memory
 if args.task_demos:
     for transition in task_demo_data:
         memory.push(*transition)
 
-# If doing filtering, train Q-value function on demos, initially do it with the random init policy (TODO: maybe make this uniform samples
-# from action space in the future? )
-for transition in constraint_demo_data:
-    Q_safe_memory.push(*transition)
-agent.Q_safe.train(Q_safe_memory, agent.policy_sample)
+# Train value function on demoss
+if args.filter:
+    for transition in constraint_demo_data:
+        Q_safe_memory.push(*transition)
+    agent.Q_safe.train(Q_safe_memory, agent.policy_sample)
+else:
+    for transition in constraint_demo_data:
+        V_safe_memory.push(*transition)
+    agent.V_safe.train(V_safe_memory)
 
 test_rollouts = []
 train_rollouts = []
@@ -275,8 +276,10 @@ for i_episode in itertools.count(1):
             all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
 
         if i_episode % args.critic_safe_update_freq == 0:
-            agent.V_safe.train(V_safe_memory, epochs=10, training_iterations=50)
-            agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50)
+            if args.filter:
+                agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50)
+            else:
+                agent.V_safe.train(V_safe_memory, epochs=10, training_iterations=50)
 
     num_violations = 0
     for inf in train_rollouts[-1]:
