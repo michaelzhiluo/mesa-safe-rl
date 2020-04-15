@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 
-from model import ValueNetwork, QNetwork
+from model import ValueNetwork, QNetworkConstraint
 from replay_memory import ReplayMemory
 from utils import soft_update
 
@@ -55,8 +55,8 @@ class QFunction:
         self.gamma_safe = params.gamma_safe
         self.device = params.device
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
-        self.model = QNetwork(params.state_dim, params.ac_dim, params.hidden_size).to(self.device)
-        self.model_target = QNetwork(params.state_dim, params.ac_dim, params.hidden_size).to(self.device)
+        self.model = QNetworkConstraint(params.state_dim, params.ac_dim, params.hidden_size).to(self.device)
+        self.model_target = QNetworkConstraint(params.state_dim, params.ac_dim, params.hidden_size).to(self.device)
         self.tau = params.tau
 
     def train(self, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000):
