@@ -30,6 +30,11 @@ register(
     entry_point='env.shelf_env:ShelfEnv'
 )
 
+register(
+    id='CliffPusher-v0',
+    entry_point='env.cliffpusher:PusherEnv'
+)
+
 # register(
 #     id='MBRLReacherSparse3D-v0',
 #     entry_point='dmbrl.env.reachersparse:ReacherSparse3DEnv')

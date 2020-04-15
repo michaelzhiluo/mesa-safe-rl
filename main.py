@@ -14,7 +14,6 @@ from dotmap import DotMap
 from config import create_config
 import os
 from env.simplepointbot0 import SimplePointBot
-from env.maze import MazeNavigation
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
@@ -35,7 +34,8 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'cliffwalker': 'CliffWalker-v0',
           'cliffcheetah': 'CliffCheetah-v0',
           'maze': 'Maze-v0',
-          'shelf_env': 'Shelf-v0'
+          'shelf_env': 'Shelf-v0',
+          'cliffpusher': 'CliffPusher-v0'
           }
 
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
