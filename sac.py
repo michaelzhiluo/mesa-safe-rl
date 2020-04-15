@@ -22,7 +22,11 @@ class SAC(object):
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
-        self.V_safe = ValueFunction(DotMap(gamma_safe=self.gamma_safe, device=self.device, hidden_dim=observation_space.shape[0], hidden_size=200))
+        self.V_safe = ValueFunction(DotMap(gamma_safe=self.gamma_safe,
+                device=self.device,
+                hidden_dim=observation_space.shape[0],
+                hidden_size=200,
+                tau_safe = args.tau_safe))
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)

@@ -52,6 +52,8 @@ parser.add_argument('--eps_safe', type=float, default=0.1, metavar='G',
                     help='threshold constraints (default: 0.8)')
 parser.add_argument('--tau', type=float, default=0.005, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
+parser.add_argument('--tau_safe', type=float, default=0.005, metavar='G',
+                    help='target smoothing coefficient(τ) (default: 0.005)')
 parser.add_argument('--lr', type=float, default=0.0003, metavar='G',
                     help='learning rate (default: 0.0003)')
 parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
