@@ -88,8 +88,10 @@ parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 # For recovery policy
 parser.add_argument('--learned_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
-parser.add_argument('--V_safe_update_freq', type=int, default=1e10) # TODO: by default, not updating on-policy, but will need to for non-pointbot envs
+parser.add_argument('--critic_safe_update_freq', type=int, default=1e10) # TODO: by default, not updating on-policy, but will need to for non-pointbot envs
 parser.add_argument('--task_demos', action="store_true")
+parser.add_argument('--filter', action="store_true")
+parser.add_argument('--num_filter_samples', type=int, default=100)
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
@@ -133,12 +135,13 @@ if args.learned_recovery:
 # Memory
 memory = ReplayMemory(args.replay_size)
 V_safe_memory = ReplayMemory(args.safe_replay_size)
+Q_safe_memory = ReplayMemory(args.safe_replay_size)
 
 # Training Loop
 total_numsteps = 0
 updates = 0
 
-# Seed with demonstrations
+# Get demonstrations
 if not args.task_demos:
     constraint_demo_data = env.transition_function(args.num_demo_transitions)
 else:
@@ -153,11 +156,16 @@ if args.learned_recovery:
 for transition in constraint_demo_data:
     V_safe_memory.push(*transition)
 agent.V_safe.train(V_safe_memory)
-
 # If use task demos, add them to memory
 if args.task_demos:
     for transition in task_demo_data:
         memory.push(*transition)
+
+# If doing filtering, train Q-value function on demos, initially do it with the random init policy (TODO: maybe make this uniform samples
+# from action space in the future? )
+for transition in constraint_demo_data:
+    Q_safe_memory.push(*transition)
+agent.Q_safe.train(Q_safe_memory, agent.policy_sample)
 
 test_rollouts = []
 train_rollouts = []
@@ -176,26 +184,40 @@ for i_episode in itertools.count(1):
         # print("EP STEP", episode_steps)
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
-            if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                if args.learned_recovery:
-                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                    real_action = recovery_policy.act(state, 0)
+            if not args.filter:
+                if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+                    if args.learned_recovery:
+                        print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                        real_action = recovery_policy.act(state, 0)
+                    else:
+                        real_action = env.safe_action(state)
                 else:
-                    real_action = env.safe_action(state)
+                    # print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    real_action = action
             else:
-                # print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                real_action = action
+                state_batch = np.tile(state, [args.num_filter_samples, 1])
+                action_batch = np.array([env.action_space.sample() for _ in range(args.num_filter_samples)])
+                Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
+                real_action = action_batch[np.argmin(Q_safe_values)]
+                action = real_action # TODO: may want to remove...
         else:
             action = agent.select_action(state)  # Sample action from policy
-            if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                if args.learned_recovery:
-                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                    real_action = recovery_policy.act(state, 0)
+            if not args.filter:
+                if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+                    if args.learned_recovery:
+                        print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
+                        real_action = recovery_policy.act(state, 0)
+                    else:
+                        real_action = env.safe_action(state)
                 else:
-                    real_action = env.safe_action(state)
+                    # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    real_action = action
             else:
-                # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                real_action = action
+                state_batch = np.tile(state, [args.num_filter_samples, 1])
+                action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
+                Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
+                real_action = action_batch[np.argmin(Q_safe_values)]
+                action = real_action # TODO: may want to remove...
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
@@ -252,8 +274,9 @@ for i_episode in itertools.count(1):
         else:
             all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
 
-        if i_episode % args.V_safe_update_freq == 0:
+        if i_episode % args.critic_safe_update_freq == 0:
             agent.V_safe.train(V_safe_memory, epochs=10, training_iterations=50)
+            agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50)
 
     num_violations = 0
     for inf in train_rollouts[-1]:
@@ -277,13 +300,20 @@ for i_episode in itertools.count(1):
             done = False
             while not done:
                 action = agent.select_action(state, eval=True)
-                if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                    if args.learned_recovery:
-                        real_action = recovery_policy.act(state, 0)
+                if not args.filter:
+                    if agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+                        if args.learned_recovery:
+                            real_action = recovery_policy.act(state, 0)
+                        else:
+                            real_action = env.safe_action(state)
                     else:
-                        real_action = env.safe_action(state)
+                        real_action = action
                 else:
-                    real_action = action
+                    state_batch = np.tile(state, [args.num_filter_samples, 1])
+                    action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
+                    Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
+                    real_action = action_batch[np.argmin(Q_safe_values)]
+
                 next_state, reward, done, info = env.step(real_action)
                 test_rollouts[-1].append(info)
                 episode_reward += reward
