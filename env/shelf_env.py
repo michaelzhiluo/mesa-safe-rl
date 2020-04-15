@@ -128,9 +128,9 @@ class ShelfEnv(BaseMujocoEnv):
                 "action": action}
 
         if self.gt_state:
-            return self.position, self.reward_fn(), False, info
+            return self.position, self.reward_fn(), self.topple_check(), info
         else:
-            return self.render(), self.reward_fn(), False, info
+            return self.render(), self.reward_fn(), self.topple_check(), info
 
     def topple_check(self, debug=False):
         quat = self.object_poses[:,3:]

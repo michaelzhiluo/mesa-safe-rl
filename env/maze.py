@@ -78,13 +78,14 @@ class MazeNavigation(Env, utils.EzPickle):
         obs = self._get_obs()
         self.sim.data.qvel[:] = 0
         self.steps +=1 
-        self.done = self.steps >= self.horizon
+        constraint = int(self.sim.data.ncon > 3)
+        self.done = self.steps >= self.horizon or constraint
         if not self.dense_reward:
             reward = - (self.get_distance_score() > GOAL_THRESH).astype(float)
         else:
             reward = -self.get_distance_score()
 
-        info = {"constraint": int(self.sim.data.ncon > 3),
+        info = {"constraint": constraint,
                 "reward": reward,
                 "state": cur_obs,
                 "next_state": obs,
@@ -168,7 +169,7 @@ class MazeTeacher(object):
         if mode == "eps_greedy":
             if noise_param_in is None:
                 noise_param = 0
-            else:
+            else: 
                 noise_param = noise_param_in
 
         elif mode == "gaussian_noise":
