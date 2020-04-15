@@ -26,7 +26,8 @@ class SAC(object):
                 device=self.device,
                 hidden_dim=observation_space.shape[0],
                 hidden_size=200,
-                tau_safe = args.tau_safe))
+                tau_safe = args.tau_safe,
+                use_target = args.use_target_safe))
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)

@@ -15,6 +15,8 @@ class ValueFunction:
         self.model = ValueNetwork(params.hidden_dim, params.hidden_size).to(self.device)
         self.target = ValueNetwork(params.hidden_dim, params.hidden_size).to(self.device)
         self.tau = params.tau_safe
+        if not params.use_target:
+            self.tau = 1.
         hard_update(self.target, self.model)
 
     def train(self, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):

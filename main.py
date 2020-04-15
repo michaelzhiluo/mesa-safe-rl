@@ -88,6 +88,7 @@ parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 
 # For recovery policy
 parser.add_argument('--learned_recovery', action="store_true")
+parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
 parser.add_argument('--V_safe_update_freq', type=int, default=1e10) # TODO: by default, not updating on-policy, but will need to for non-pointbot envs
 
@@ -266,6 +267,7 @@ for i_episode in itertools.count(1):
             test_rollouts.append([])
             state = env.reset()
             episode_reward = 0
+            episode_steps = 0
             done = False
             while not done:
                 action = agent.select_action(state, eval=True)
@@ -279,6 +281,7 @@ for i_episode in itertools.count(1):
                 next_state, reward, done, info = env.step(real_action)
                 test_rollouts[-1].append(info)
                 episode_reward += reward
+                episode_steps += 1
 
                 if episode_steps == env._max_episode_steps:
                     done = True
