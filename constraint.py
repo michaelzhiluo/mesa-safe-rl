@@ -69,7 +69,7 @@ class QFunction:
             next_state_batch = self.torchify(next_state_batch)
 
             with torch.no_grad():
-                next_state_action = pi(state_batch)
+                next_state_action = pi(next_state_batch)
                 qf1_next_target, qf2_next_target = self.model_target(next_state_batch, next_state_action)
                 max_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
                 next_qf = constraint_batch.unsqueeze(1) + self.gamma_safe * max_qf_next_target * (1 - constraint_batch.unsqueeze(1) )

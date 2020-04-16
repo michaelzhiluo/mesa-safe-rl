@@ -159,10 +159,10 @@ class MazeNavigation(Env, utils.EzPickle):
 
 class MazeTeacher(object):
 
-    def __init__(self, mode):
-        self.env = MazeNavigation(mode=mode)
+    def __init__(self):
+        self.env = MazeNavigation()
         self.demonstrations = []
-        self.default_noise = 0.2
+        self.default_noise = 0
 
     # all get_rollout functions for all envs should have a noise parameter
     def get_rollout(self, noise_param_in=None, mode="eps_greedy"):
@@ -230,5 +230,11 @@ class MazeTeacher(object):
             "rewards": -np.array(costs),
             "values": -np.array(values)
         }
+
+if __name__ == "__main__": 
+    teacher = MazeTeacher()
+    rollout_stats = teacher.get_rollout()
+    print(rollout_stats['reward_sum'])
+    print(len(rollout_stats['rewards']))
 
     
