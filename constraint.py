@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 
-from model import ValueNetwork, QNetworkConstraint
+from model import ValueNetwork, QNetworkConstraint, hard_update, soft_update
 from replay_memory import ReplayMemory
 from utils import soft_update
 
@@ -14,6 +14,11 @@ class ValueFunction:
         self.device = params.device
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
         self.model = ValueNetwork(params.state_dim, params.hidden_size).to(self.device)
+        self.target = ValueNetwork(params.state_dim, params.hidden_size).to(self.device)
+        self.tau = params.tau_safe
+        if not params.use_target:
+            self.tau = 1.
+        hard_update(self.target, self.model)
 
     def train(self, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
         optim = Adam(self.model.parameters(), lr=lr)
@@ -22,7 +27,7 @@ class ValueFunction:
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
 
             with torch.no_grad():
-                target = self.torchify(constraint_batch) + self.gamma_safe * self.model(self.torchify(next_state_batch))[:,0] * (1 - self.torchify(constraint_batch) )
+                target = self.torchify(constraint_batch) + self.gamma_safe * self.target(self.torchify(next_state_batch))[:,0] * (1 - self.torchify(constraint_batch) )
             preds = self.model(self.torchify(state_batch))[:,0]
             optim.zero_grad()
             loss = F.mse_loss(preds, target)
@@ -32,6 +37,7 @@ class ValueFunction:
             if j % 100 == 0:
                 with torch.no_grad():
                     print("Value Training Iteration %d    Loss: %f"%(j, loss))
+            soft_update(self.target, self.model, self.tau)
 
         if plot:
             pts = []

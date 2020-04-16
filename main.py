@@ -53,6 +53,8 @@ parser.add_argument('--eps_safe', type=float, default=0.1, metavar='G',
                     help='threshold constraints (default: 0.8)')
 parser.add_argument('--tau', type=float, default=0.0002, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
+parser.add_argument('--tau_safe', type=float, default=0.005, metavar='G',
+                    help='target smoothing coefficient(τ) (default: 0.005)')
 parser.add_argument('--lr', type=float, default=0.0003, metavar='G',
                     help='learning rate (default: 0.0003)')
 parser.add_argument('--alpha', type=float, default=0.2, metavar='G',
@@ -85,6 +87,7 @@ parser.add_argument('--cnn', action="store_true",
 
 parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 # For recovery policy
+parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
 parser.add_argument('--use_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
@@ -342,6 +345,7 @@ for i_episode in itertools.count(1):
             test_rollouts.append([])
             state = env.reset()
             episode_reward = 0
+            episode_steps = 0
             done = False
             while not done:
                 action = agent.select_action(state, eval=True)
@@ -383,6 +387,7 @@ for i_episode in itertools.count(1):
                 next_state, reward, done, info = env.step(real_action)
                 test_rollouts[-1].append(info)
                 episode_reward += reward
+                episode_steps += 1
 
                 if episode_steps == env._max_episode_steps:
                     done = True
