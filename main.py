@@ -206,21 +206,21 @@ for i_episode in itertools.count(1):
                         action_batch = np.array([env.action_space.sample() for _ in range(args.num_filter_samples)])
                         Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                         thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                        print("THRESH IDXS", thresh_idxs)
-                        print("Q safe values", Q_safe_values)
+                        # print("THRESH IDXS", thresh_idxs)
+                        # print("Q safe values", Q_safe_values)
                         if len(thresh_idxs): # If there is something safe we done
                             found_safe_action = True
                             break
                     if found_safe_action:
-                        print("GOT HERE!!")
+                        # print("GOT HERE!!")
                         filtered_state_batch = state_batch[thresh_idxs]
                         filtered_action_batch = action_batch[thresh_idxs]
-                        print(state_batch.shape)
-                        print(action_batch.shape)
-                        print(filtered_state_batch.shape)
-                        print(filtered_action_batch.shape)
+                        # print(state_batch.shape)
+                        # print(action_batch.shape)
+                        # print(filtered_state_batch.shape)
+                        # print(filtered_action_batch.shape)
                         Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                        print("Q_Values", Q_values)
+                        # print("Q_Values", Q_values)
                         real_action = filtered_action_batch[np.argmax(Q_values)]
                     else: # Backup action
                         real_action = action_batch[np.argmin(Q_safe_values)]
@@ -243,21 +243,21 @@ for i_episode in itertools.count(1):
                         action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
                         Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                         thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                        print("THRESH IDXS", thresh_idxs)
-                        print("Q safe values", Q_safe_values)
+                        # print("THRESH IDXS", thresh_idxs)
+                        # print("Q safe values", Q_safe_values)
                         if len(thresh_idxs): # If there is something safe we done
                             found_safe_action = True
                             break
                     if found_safe_action:
-                        print("GOT HERE!!")
+                        # print("GOT HERE!!")
                         filtered_state_batch = state_batch[thresh_idxs]
                         filtered_action_batch = action_batch[thresh_idxs]
-                        print(state_batch.shape)
-                        print(action_batch.shape)
-                        print(filtered_state_batch.shape)
-                        print(filtered_action_batch.shape)
+                        # print(state_batch.shape)
+                        # print(action_batch.shape)
+                        # print(filtered_state_batch.shape)
+                        # print(filtered_action_batch.shape)
                         Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                        print("Q values", Q_values)
+                        # print("Q values", Q_values)
                         real_action = filtered_action_batch[np.argmax(Q_values)]
                     else: # Backup action
                         real_action = action_batch[np.argmin(Q_safe_values)]
@@ -352,7 +352,7 @@ for i_episode in itertools.count(1):
                     else:
                         real_action = env.safe_action(state)
                 else:
-                    # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     if not args.filter or i_episode < args.Q_safe_start_ep:
                         real_action = action
                     else:
@@ -362,20 +362,20 @@ for i_episode in itertools.count(1):
                             action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
                             Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                             thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                            print("THRESH IDXS", thresh_idxs)
-                            print("Q safe values", Q_safe_values)
+                            # print("THRESH IDXS", thresh_idxs)
+                            # print("Q safe values", Q_safe_values)
                             if len(thresh_idxs): # If there is something safe we done
                                 found_safe_action = True
                                 break
                         if found_safe_action:
                             filtered_state_batch = state_batch[thresh_idxs]
                             filtered_action_batch = action_batch[thresh_idxs]
-                            print(state_batch.shape)
-                            print(action_batch.shape)
-                            print(filtered_state_batch.shape)
-                            print(filtered_action_batch.shape)
+                            # print(state_batch.shape)
+                            # print(action_batch.shape)
+                            # print(filtered_state_batch.shape)
+                            # print(filtered_action_batch.shape)
                             Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                            print("Q values", Q_values)
+                            # print("Q values", Q_values)
                             real_action = filtered_action_batch[np.argmax(Q_values)]
                         else: # Backup action
                             real_action = action_batch[np.argmin(Q_safe_values)]
