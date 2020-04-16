@@ -5,7 +5,7 @@ from torch.optim import Adam
 from utils import soft_update, hard_update
 from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN
 from dotmap import DotMap
-from constraint import ValueFunction
+from constraint import ValueFunction, QFunction
 
 
 class SAC(object):
@@ -24,10 +24,12 @@ class SAC(object):
         self.device = torch.device("cuda" if args.cuda else "cpu")
         self.V_safe = ValueFunction(DotMap(gamma_safe=self.gamma_safe,
                 device=self.device,
-                hidden_dim=observation_space.shape[0],
+                state_dim=observation_space.shape[0],
                 hidden_size=200,
                 tau_safe = args.tau_safe,
                 use_target = args.use_target_safe))
+        if args.filter:
+            self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, device=self.device, state_dim=observation_space.shape[0], ac_dim=action_space.shape[0], hidden_size=200, tau=0.0002))
 
         if args.cnn:
             self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size).to(device=self.device)
@@ -72,6 +74,10 @@ class SAC(object):
         else:
             _, _, action = self.policy.sample(state)
         return action.detach().cpu().numpy()[0]
+
+    def policy_sample(self, states):
+        actions, _, _ = self.policy.sample(states)
+        return actions
 
     def update_parameters(self, memory, batch_size, updates):
         # Sample a batch from memory

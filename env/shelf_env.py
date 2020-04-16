@@ -5,9 +5,11 @@ import os.path as osp
 from env.base_mujoco_env import BaseMujocoEnv
 import matplotlib.pyplot as plt
 from gym.spaces import Box
+import os
 
-BASE_DIR = '/'.join(str.split(__file__, '/')[:-2])
-asset_base_path = osp.join(BASE_DIR, 'envs', 'cartgripper_assets')
+FIXED_ENV = False
+DENSE_REWARD = True
+GT_STATE = True
 
 def no_rot_dynamics(prev_target_qpos, action):
     target_qpos = np.zeros_like(prev_target_qpos)
@@ -19,11 +21,37 @@ def clip_target_qpos(target, lb, ub):
     target[:len(lb)] = np.clip(target[:len(lb)], lb, ub)
     return target
 
+def get_random_transitions(num_transitions, task_demos=False):
+    env = ShelfEnv()
+    transitions = []
+    task_transitions = []
+    for i in range(num_transitions):
+        if i %(num_transitions//100) == 0:
+            state = env.reset()
+            print("Transition: ", i)
+        action = env.expert_action(noise_std=0.03)
+        next_state, reward, done, info = env.step(action)
+        constraint = info['constraint']
+        # if constraint:
+        #     print("CONSTRAINT!")
+        transitions.append((state, action, constraint, next_state, done))
+        if task_demos:
+            task_transitions.append((state, action, reward, next_state, done))
+
+        state = next_state
+
+    if not task_demos:
+        return transitions
+    else:
+        return transitions, task_transitions
+
 class ShelfEnv(BaseMujocoEnv):
 
-    def __init__(self, args):
+    def __init__(self):
         parent_params = super()._default_hparams()
-        self.reset_xml = osp.join(asset_base_path, "shelf.xml")
+        envs_folder = os.path.dirname(os.path.abspath(__file__))
+        self.reset_xml  = os.path.join(envs_folder,
+                                    'cartgripper_assets/shelf.xml')
         super().__init__(self.reset_xml, parent_params)
         self._adim = 4
         self.substeps = 500
@@ -37,9 +65,11 @@ class ShelfEnv(BaseMujocoEnv):
         self.object_fall_thresh = -0.03
         self.obj_y_dist_range = np.array([0.05, 0.2])
         self.obj_x_range = np.array([-0.2, -0.05])
-        self.randomize_objects = not args.fixed_env
-        self.dense_reward = args.dense_reward
-        self.gt_state = args.gt_state
+        self.randomize_objects = not FIXED_ENV
+        self.dense_reward = DENSE_REWARD
+        self.gt_state = GT_STATE
+        self._max_episode_steps = 25
+        self.transition_function = get_random_transitions
 
         if self.gt_state:
             self.observation_space = Box(low=-np.inf, high=np.inf, shape=(27,))
@@ -91,10 +121,16 @@ class ShelfEnv(BaseMujocoEnv):
 
         self._previous_target_qpos = target_qpos
 
+        info = {"constraint": self.topple_check(),
+                "reward": self.reward_fn(),
+                "state": position,
+                "next_state": self.position,
+                "action": action}
+
         if self.gt_state:
-            return self.position, self.reward_fn(), False, self.topple_check()
+            return self.position, self.reward_fn(), self.topple_check(), info
         else:
-            return self.render(), self.reward_fn(), False, self.topple_check()
+            return self.render(), self.reward_fn(), self.topple_check(), info
 
     def topple_check(self, debug=False):
         quat = self.object_poses[:,3:]
