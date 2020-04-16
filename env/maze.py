@@ -233,8 +233,25 @@ class MazeTeacher(object):
 
 if __name__ == "__main__": 
     teacher = MazeTeacher()
-    rollout_stats = teacher.get_rollout()
-    print(rollout_stats['reward_sum'])
-    print(len(rollout_stats['rewards']))
+    avg_reward_sum = 0
+    completed_counter = 0
+    reward_sum_completed = 0
+    for i in range(1000):
+        rollout_stats = teacher.get_rollout()
+        print("Iter: ", i)
+        print(rollout_stats['reward_sum'])
+        print(len(rollout_stats['rewards']))
+        avg_reward_sum += rollout_stats['reward_sum']/len(rollout_stats['rewards'])
+
+        if len(rollout_stats['rewards']) == HORIZON:
+            reward_sum_completed += rollout_stats['reward_sum']
+            completed_counter += 1
+
+    avg_reward_sum /= 1000
+    print("Avg reward sum", avg_reward_sum)
+
+    reward_sum_completed /= completed_counter
+    print("completed reward sum", completed_counter, reward_sum_completed)
+
 
     
