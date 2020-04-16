@@ -79,6 +79,11 @@ class SAC(object):
         actions, _, _ = self.policy.sample(states)
         return actions
 
+    def get_critic_value(self, states, actions):
+        with torch.no_grad():
+            q1, q2 = self.critic(states, actions)
+            return torch.max(q1, q2).detach().cpu().numpy()
+
     def update_parameters(self, memory, batch_size, updates):
         # Sample a batch from memory
         state_batch, action_batch, reward_batch, next_state_batch, mask_batch = memory.sample(batch_size=batch_size)
