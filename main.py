@@ -26,6 +26,14 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'cliffpusher': 'CliffPusher-v0'
           }
 
+def npy_to_gif(im_list, filename, fps=4):
+    clip = mpy.ImageSequenceClip(im_list, fps=fps)
+    clip.write_gif(filename + '.gif')
+
+def process_obs(obs):
+    im = np.transpose(obs, (2, 0, 1))
+    return im
+
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="HalfCheetah-v2",
                     help='Mujoco Gym environment (default: HalfCheetah-v2)')
@@ -121,7 +129,11 @@ np.random.seed(args.seed)
 env.seed(args.seed)
 
 # Agent
-agent = SAC(env.observation_space, env.action_space, args)
+# TODO; cleanup for now this is hard-coded for maze
+if args.cnn and args.env_name == 'maze':
+    agent = SAC(env.observation_space, env.action_space, args, im_shape=(64, 64, 3))
+else:
+    agent = SAC(env.observation_space, env.action_space, args)
 
 if args.use_recovery and not args.disable_learned_recovery:
     recovery_policy.update_value_func(agent.V_safe)
@@ -141,13 +153,33 @@ task_demos = args.task_demos or (not args.filter) or (args.eps_safe == 1)
 if not task_demos:
     constraint_demo_data = env.transition_function(args.num_demo_transitions)
 else:
-    constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=task_demos)
-# Train recovery policy on demos
+    # TODO: cleanup, for now this is hard-coded for maze
+    if args.cnn and args.env_name == 'maze':
+        constraint_demo_data, task_demo_data_images = env.transition_function(args.num_demo_transitions, task_demos=task_demos, images=True)
+    else:
+        constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=task_demos)
+
+# Train recovery policy and associated value function on demos
 if args.use_recovery and not args.disable_learned_recovery:
     demo_data_states = np.array([d[0] for d in constraint_demo_data])
     demo_data_actions = np.array([d[1] for d in constraint_demo_data])
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
     recovery_policy.train(demo_data_states, demo_data_actions, random=True, next_obs=demo_data_next_states, epochs=50)
+
+for transition in constraint_demo_data:
+    V_safe_memory.push(*transition)
+agent.V_safe.train(V_safe_memory)
+
+# Train Qsafe on demos for filtering
+if args.filter:
+    for i, transition in enumerate(constraint_demo_data):
+        if i < 100:
+            Q_safe_memory.push(*transition)
+    agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50, batch_size=50)
+
+# TODO: cleanup, for now this is hard-coded for maze
+if args.cnn and args.env_name == 'maze':
+    task_demo_data = task_demo_data_images
 
 # If use task demos, add them to memory and train agent
 if task_demos:
@@ -157,16 +189,6 @@ if task_demos:
         agent.update_parameters(memory, args.batch_size, updates)
         updates += 1
 
-# Train value function on demos
-if args.filter:
-    for i, transition in enumerate(constraint_demo_data):
-        if i < 100:
-            Q_safe_memory.push(*transition)
-    agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50, batch_size=50)
-
-for transition in constraint_demo_data:
-    V_safe_memory.push(*transition)
-agent.V_safe.train(V_safe_memory)
 
 test_rollouts = []
 train_rollouts = []
@@ -178,6 +200,14 @@ for i_episode in itertools.count(1):
     episode_steps = 0
     done = False
     state = env.reset()
+    # TODO; cleanup for now this is hard-coded for maze
+    if args.cnn:
+        if args.env_name == 'maze':
+            im_state = env.sim.render(64, 64, camera_name= "cam0")
+            im_state = process_obs(im_state)
+        else:
+            state = process_obs(state)
+
     train_rollouts.append([])
     ep_states = [state]
     ep_actions = []
@@ -213,7 +243,12 @@ for i_episode in itertools.count(1):
                     else: # Backup action
                         real_action = action_batch[np.argmin(Q_safe_values)]
         else:
-            action = agent.select_action(state)  # Sample action from policy
+            # TODO; cleanup for now this is hard-coded for maze
+            if args.cnn and args.env_name == 'maze':
+                action = agent.select_action(im_state) 
+            else:
+                action = agent.select_action(state)  # Sample action from policy
+
             if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 if not args.disable_learned_recovery:
                     print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
@@ -228,7 +263,12 @@ for i_episode in itertools.count(1):
                     state_batch = np.tile(state, [args.num_filter_samples, 1])
                     found_safe_action = False
                     for _ in range(args.max_filter_iters):
-                        action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
+                         # TODO; cleanup for now this is hard-coded for maze
+                        if args.cnn and args.env_name == 'maze':
+                            action_batch = np.array([agent.select_action(im_state) for _ in range(args.num_filter_samples)])
+                        else:
+                            action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
+
                         Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                         thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
 
@@ -257,12 +297,20 @@ for i_episode in itertools.count(1):
                 updates += 1
 
         next_state, reward, done, info = env.step(real_action) # Step
+        # TODO; cleanup for now this is hard-coded for maze
+        if args.cnn:
+            if args.env_name == 'maze':
+                im_next_state = env.sim.render(64, 64, camera_name= "cam0")
+                im_next_state = process_obs(im_next_state)
+            else:
+                next_state = process_obs(next_state)
+
         train_rollouts[-1].append(info)
         episode_steps += 1
         total_numsteps += 1
         episode_reward += reward
 
-        if args.constraint_reward_penalty > 0:
+        if args.constraint_reward_penalty > 0 and info['constraint']:
             reward -= args.constraint_reward_penalty
 
         # Ignore the "done" signal if it comes from hitting the time horizon.
@@ -274,10 +322,20 @@ for i_episode in itertools.count(1):
         mask = float(not done)
         # done = done or episode_steps == env._max_episode_steps
 
-        memory.push(state, action, reward, next_state, mask) # Append transition to memory
+        # TODO; cleanup for now this is hard-coded for maze
+        if args.cnn and args.env_name == 'maze':
+            memory.push(im_state, action, reward, im_next_state, mask) # Append transition to memory
+        else:
+            memory.push(state, action, reward, next_state, mask) # Append transition to memory
+
+
         V_safe_memory.push(state, action, info['constraint'], next_state, mask)
 
         state = next_state
+
+        # TODO; cleanup for now this is hard-coded for maze
+        if args.cnn and args.env_name == 'maze':
+            im_state = im_next_state
 
         ep_states.append(state)
         ep_actions.append(real_action)
@@ -322,11 +380,24 @@ for i_episode in itertools.count(1):
         for _  in range(episodes):
             test_rollouts.append([])
             state = env.reset()
+            # TODO; cleanup for now this is hard-coded for maze
+            if args.cnn:
+                if args.env_name == 'maze':
+                    im_state = env.sim.render(64, 64, camera_name= "cam0")
+                    im_state = process_obs(im_state)
+                else:
+                    state = process_obs(state)
+
             episode_reward = 0
             episode_steps = 0
             done = False
             while not done:
-                action = agent.select_action(state, eval=True)
+                # TODO; cleanup for now this is hard-coded for maze
+                if args.cnn and args.env_name == 'maze':
+                    action = agent.select_action(im_state, eval=True) 
+                else:
+                    action = agent.select_action(state, eval=True)  # Sample action from policy
+
                 if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                     if not args.disable_learned_recovery:
                         print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
@@ -341,7 +412,12 @@ for i_episode in itertools.count(1):
                         state_batch = np.tile(state, [args.num_filter_samples, 1])
                         found_safe_action = False
                         for _ in range(args.max_filter_iters):
-                            action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
+                            # TODO; cleanup for now this is hard-coded for maze
+                            if args.cnn and args.env_name == 'maze':
+                                action_batch = np.array([agent.select_action(im_state) for _ in range(args.num_filter_samples)])
+                            else:
+                                action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
+
                             Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                             thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
                             if len(thresh_idxs): # If there is something safe we done
@@ -355,7 +431,16 @@ for i_episode in itertools.count(1):
                         else: # Backup action
                             real_action = action_batch[np.argmin(Q_safe_values)]
 
-                next_state, reward, done, info = env.step(real_action)
+                next_state, reward, done, info = env.step(real_action) # Step
+
+                # TODO; cleanup for now this is hard-coded for maze
+                if args.cnn:
+                    if args.env_name == 'maze':
+                        im_next_state = env.sim.render(64, 64, camera_name= "cam0")
+                        im_next_state = process_obs(im_next_state)
+                    else:
+                        next_state = process_obs(next_state)
+
                 test_rollouts[-1].append(info)
                 episode_reward += reward
                 episode_steps += 1
@@ -364,6 +449,10 @@ for i_episode in itertools.count(1):
                     done = True
 
                 state = next_state
+                # TODO; cleanup for now this is hard-coded for maze
+                if args.cnn and args.env_name == 'maze':
+                    im_state = im_next_state
+
             num_violations = 0
             for inf in test_rollouts[-1]:
                 num_violations += int(inf['constraint'])

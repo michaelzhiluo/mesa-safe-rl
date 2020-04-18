@@ -15,22 +15,44 @@ import cv2
 def process_action(a):
     return np.clip(a, -MAX_FORCE, MAX_FORCE)
 
+def process_obs(obs):
+    im = np.transpose(obs, (2, 0, 1))
+    return im
 
-def get_random_transitions(num_transitions, task_demos=False):
+def get_random_transitions(num_transitions, task_demos=False, images=False):
     env = MazeNavigation()
     transitions = []
     task_transitions = []
     for i in range(num_transitions):
         if i %(num_transitions//100) == 0:
+            print("Iter: ", i)
             state = env.reset()
+            # TODO hardcoded for maze, fix later
+            if images:
+                im_state = env.sim.render(64, 64, camera_name= "cam0")
+                im_state = process_obs(im_state)
+
         action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
+
+        # TODO hardcoded for maze, fix later
+        if images:
+            im_next_state = env.sim.render(64, 64, camera_name= "cam0")
+            im_next_state = process_obs(im_next_state)
+
         constraint = info['constraint']
+
         transitions.append((state, action, constraint, next_state, done))
 
         if task_demos:
-            task_transitions.append((state, action, reward, next_state, done))
+            if images:
+                task_transitions.append((im_state, action, reward, im_next_state, done))
+            else:
+                task_transitions.append((state, action, reward, next_state, done))
+
         state = next_state
+        if images:
+            im_state = im_next_state
 
     if not task_demos:
         return transitions
@@ -71,10 +93,6 @@ class MazeNavigation(Env, utils.EzPickle):
         # self.goal[1] = np.random.uniform(-0.27, 0.27)
         self.goal[0] = 0.25
         self.goal[1] = 0
-        
-
-    def disable_images(self):
-        self.images = False
 
     def step(self, action):
         action = process_action(action)
