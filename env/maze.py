@@ -16,9 +16,10 @@ def process_action(a):
     return np.clip(a, -MAX_FORCE, MAX_FORCE)
 
 
-def get_random_transitions(num_transitions):
+def get_random_transitions(num_transitions, task_demos=False):
     env = MazeNavigation()
     transitions = []
+    task_transitions = []
     for i in range(num_transitions):
         if i %(num_transitions//100) == 0:
             state = env.reset()
@@ -26,8 +27,15 @@ def get_random_transitions(num_transitions):
         next_state, reward, done, info = env.step(action)
         constraint = info['constraint']
         transitions.append((state, action, constraint, next_state, done))
+
+        if task_demos:
+            task_transitions.append((state, action, reward, next_state, done))
         state = next_state
-    return transitions
+
+    if not task_demos:
+        return transitions
+    else:
+        return transitions, task_transitions
 
 class MazeNavigation(Env, utils.EzPickle):
 
@@ -233,25 +241,20 @@ class MazeTeacher(object):
 
 if __name__ == "__main__": 
     teacher = MazeTeacher()
-    avg_reward_sum = 0
-    completed_counter = 0
-    reward_sum_completed = 0
+    reward_sum_completed = []
+    constraint_sat = 0
     for i in range(1000):
         rollout_stats = teacher.get_rollout()
         print("Iter: ", i)
         print(rollout_stats['reward_sum'])
         print(len(rollout_stats['rewards']))
-        avg_reward_sum += rollout_stats['reward_sum']/len(rollout_stats['rewards'])
+        ep_len = len(rollout_stats['rewards'])
+        diff = HORIZON - ep_len
+        if ep_len == HORIZON:
+            constraint_sat += 1
+        reward_sum_completed.append(rollout_stats['reward_sum'] + diff * rollout_stats['rewards'][-1])
 
-        if len(rollout_stats['rewards']) == HORIZON:
-            reward_sum_completed += rollout_stats['reward_sum']
-            completed_counter += 1
-
-    avg_reward_sum /= 1000
-    print("Avg reward sum", avg_reward_sum)
-
-    reward_sum_completed /= completed_counter
-    print("completed reward sum", completed_counter, reward_sum_completed)
+    print("completed reward sum", np.mean(reward_sum_completed), np.std(reward_sum_completed), constraint_sat)
 
 
     

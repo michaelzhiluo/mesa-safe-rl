@@ -17,18 +17,6 @@ from env.simplepointbot0 import SimplePointBot
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
-# def get_action(state, value):
-#     # gt dynamics random shooting mpc for 2D single integrator
-#     actions = np.clip(np.random.randn(10000, 4, 2), -1, 1)
-#     noise_realizations = np.random.randn(10000, 4, 2) * 0.05
-#     delta_pos = actions.sum(1) + noise_realizations.sum(1)
-#     final_state = state + delta_pos
-#     costs = value(torchify(final_state)).detach().cpu().numpy()
-
-#     # import IPython; IPython.embed()
-#     # assert 0
-#     return actions[np.argmin(costs)][0]
-
 ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 
           'simplepointbot1': 'SimplePointBot-v1',
           'cliffwalker': 'CliffWalker-v0',
@@ -84,6 +72,7 @@ parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--cnn', action="store_true", 
                     help='visual observations (default: False)')
+parser.add_argument('--critic_pretraining_steps', type=int, default=200)
 
 parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 # For recovery policy
@@ -146,11 +135,13 @@ Q_safe_memory = ReplayMemory(args.safe_replay_size)
 total_numsteps = 0
 updates = 0
 
+task_demos = args.task_demos or (not args.filter) or (args.eps_safe == 1)
+
 # Get demonstrations
-if not args.task_demos:
+if not task_demos:
     constraint_demo_data = env.transition_function(args.num_demo_transitions)
 else:
-    constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=args.task_demos)
+    constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=task_demos)
 # Train recovery policy on demos
 if args.use_recovery and not args.disable_learned_recovery:
     demo_data_states = np.array([d[0] for d in constraint_demo_data])
@@ -158,13 +149,15 @@ if args.use_recovery and not args.disable_learned_recovery:
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
     recovery_policy.train(demo_data_states, demo_data_actions, random=True, next_obs=demo_data_next_states, epochs=50)
 
-# If use task demos, add them to memory
-if args.task_demos:
+# If use task demos, add them to memory and train agent
+if task_demos:
     for transition in task_demo_data:
         memory.push(*transition)
+    for _ in range(args.critic_pretraining_steps):
+        agent.update_parameters(memory, args.batch_size, updates)
+        updates += 1
 
 # Train value function on demos
-# NOTE: don't init Q_safe from demos to prevent distribution shift...
 if args.filter:
     for i, transition in enumerate(constraint_demo_data):
         if i < 100:
@@ -209,21 +202,13 @@ for i_episode in itertools.count(1):
                         action_batch = np.array([env.action_space.sample() for _ in range(args.num_filter_samples)])
                         Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                         thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                        # print("THRESH IDXS", thresh_idxs)
-                        # print("Q safe values", Q_safe_values)
                         if len(thresh_idxs): # If there is something safe we done
                             found_safe_action = True
                             break
                     if found_safe_action:
-                        # print("GOT HERE!!")
                         filtered_state_batch = state_batch[thresh_idxs]
                         filtered_action_batch = action_batch[thresh_idxs]
-                        # print(state_batch.shape)
-                        # print(action_batch.shape)
-                        # print(filtered_state_batch.shape)
-                        # print(filtered_action_batch.shape)
                         Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                        # print("Q_Values", Q_values)
                         real_action = filtered_action_batch[np.argmax(Q_values)]
                     else: # Backup action
                         real_action = action_batch[np.argmin(Q_safe_values)]
@@ -246,21 +231,14 @@ for i_episode in itertools.count(1):
                         action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
                         Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                         thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                        # print("THRESH IDXS", thresh_idxs)
-                        # print("Q safe values", Q_safe_values)
+
                         if len(thresh_idxs): # If there is something safe we done
                             found_safe_action = True
                             break
                     if found_safe_action:
-                        # print("GOT HERE!!")
                         filtered_state_batch = state_batch[thresh_idxs]
                         filtered_action_batch = action_batch[thresh_idxs]
-                        # print(state_batch.shape)
-                        # print(action_batch.shape)
-                        # print(filtered_state_batch.shape)
-                        # print(filtered_action_batch.shape)
                         Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                        # print("Q values", Q_values)
                         real_action = filtered_action_batch[np.argmax(Q_values)]
                     else: # Backup action
                         real_action = action_batch[np.argmin(Q_safe_values)]
@@ -366,20 +344,13 @@ for i_episode in itertools.count(1):
                             action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
                             Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
                             thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                            # print("THRESH IDXS", thresh_idxs)
-                            # print("Q safe values", Q_safe_values)
                             if len(thresh_idxs): # If there is something safe we done
                                 found_safe_action = True
                                 break
                         if found_safe_action:
                             filtered_state_batch = state_batch[thresh_idxs]
                             filtered_action_batch = action_batch[thresh_idxs]
-                            # print(state_batch.shape)
-                            # print(action_batch.shape)
-                            # print(filtered_state_batch.shape)
-                            # print(filtered_action_batch.shape)
                             Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                            # print("Q values", Q_values)
                             real_action = filtered_action_batch[np.argmax(Q_values)]
                         else: # Backup action
                             real_action = action_batch[np.argmin(Q_safe_values)]
