@@ -9,3 +9,4 @@ GOAL_THRESH = 5e-2
 
 GT_STATE = True
 DENSE_REWARD = True
+# DENSE_REWARD = False

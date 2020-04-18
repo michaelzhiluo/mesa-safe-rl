@@ -374,13 +374,15 @@ for i_episode in itertools.count(1):
     writer.add_scalar('reward/train', episode_reward, i_episode)
     print("Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
 
-    if i_episode % 100 == 0 and args.eval is True:
+    if i_episode % 10 == 0 and args.eval is True:
         avg_reward = 0.
         episodes = 10
-        for _  in range(episodes):
+        for j in range(episodes):
             test_rollouts.append([])
             state = env.reset()
             # TODO; cleanup for now this is hard-coded for maze
+            if args.env_name == 'maze':
+                im_list = [env.sim.render(64, 64, camera_name= "cam0")]
             if args.cnn:
                 if args.env_name == 'maze':
                     im_state = env.sim.render(64, 64, camera_name= "cam0")
@@ -433,6 +435,8 @@ for i_episode in itertools.count(1):
 
                 next_state, reward, done, info = env.step(real_action) # Step
 
+                if args.env_name == 'maze':
+                    im_list.append(env.sim.render(64, 64, camera_name= "cam0"))
                 # TODO; cleanup for now this is hard-coded for maze
                 if args.cnn:
                     if args.env_name == 'maze':
@@ -459,6 +463,9 @@ for i_episode in itertools.count(1):
             print("final reward: %f"%reward)
             print("num violations: %d"%num_violations)
             avg_reward += episode_reward
+
+            if args.env_name == 'maze':
+                npy_to_gif(im_list, osp.join(logdir, "test_" + str(i_episode) + "_" + str(j)))
 
         avg_reward /= episodes
 
