@@ -14,6 +14,7 @@ from dotmap import DotMap
 from config import create_config
 import os
 from env.simplepointbot0 import SimplePointBot
+import moviepy.editor as mpy
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
