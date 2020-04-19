@@ -199,7 +199,7 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 if not args.filter or i_episode < args.Q_safe_start_ep:
                     real_action = action
                 else:
@@ -236,7 +236,7 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 if not args.filter or i_episode < args.Q_safe_start_ep:
                     real_action = action
                 else:
@@ -330,6 +330,7 @@ for i_episode in itertools.count(1):
     for inf in train_rollouts[-1]:
         num_violations += int(inf['constraint'])
     print("final reward: %f"%reward)
+    print(ep_states[-1])
     print("num violations: %d"%num_violations)
 
     if total_numsteps > args.num_steps:
@@ -356,7 +357,7 @@ for i_episode in itertools.count(1):
                     else:
                         real_action = env.safe_action(state)
                 else:
-                    print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    # print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     if not args.filter or i_episode < args.Q_safe_start_ep:
                         real_action = action
                     else:

@@ -21,7 +21,8 @@ experiment_map = {
 			"sac_norecovery": "2020-04-15_21-42-14_SAC_simplepointbot1_Gaussian_",
 			"sac_penalty1": "2020-04-15_21-42-32_SAC_simplepointbot1_Gaussian_",
 			"sac_penalty10": "2020-04-15_21-43-02_SAC_simplepointbot1_Gaussian_",
-			"sac_penalty100": "2020-04-15_21-43-28_SAC_simplepointbot1_Gaussian_"
+			"sac_penalty100": "2020-04-15_21-43-28_SAC_simplepointbot1_Gaussian_",
+			"q-filter": "2020-04-16_12-47-18_SAC_simplepointbot1_Gaussian_"
 		},
 		"outfile": "pointbot1.png"
 	}
@@ -56,7 +57,7 @@ def plot_experiment(experiment):
 	axs[0].set_ylabel("Num Constraint Violations")
 
 	axs[1].title.set_text("Reward vs. Episode")
-	axs[1].set_ylim(-10000, 0)
+	axs[1].set_ylim(-4000, -1000)
 	axs[1].set_xlabel("Episode")
 	axs[1].set_ylabel("Reward")
 
@@ -84,13 +85,13 @@ def plot_experiment(experiment):
 		axs[0].plot(train_violations, c=colors[alg], label=names[alg])
 		axs[1].plot(train_rewards, c=colors[alg], label=names[alg])
 
-	axs[0].legend(loc="lower right")
-	axs[1].legend(loc="lower right")
+	# axs[0].legend(loc="lower right")
+	# axs[1].legend(loc="lower right")
 	plt.savefig(experiment_map[experiment]["outfile"])
-	plt.show()
+	# plt.show()
 
 
-experiment = "pointbot0"
+experiment = "pointbot1"
 
 if __name__ == '__main__':
 	plot_experiment(experiment)

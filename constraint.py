@@ -41,17 +41,18 @@ class ValueFunction:
 
         if plot:
             pts = []
-            for i in range(1000):
-                x = -75 + i * 0.1
-                for j in range(1000):
-                    y = -50 + j * 0.1
+            for i in range(100):
+                x = -0.5 + i * 0.01
+                for j in range(100):
+                    y = -0.5 + j * 0.01
                     pts.append([x, y])
-            grid = self.model(self.torchify(np.array(pts))).detach().cpu().numpy().reshape(-1, 1000).T
+            grid = self.model(self.torchify(np.array(pts))).detach().cpu().numpy().reshape(-1, 100).T
 
-            plt.imshow(grid > 0.8)
-            plt.show()
+            # plt.imshow(grid > 0.8)
+            # plt.show()
             plt.imshow(grid)
             plt.show()
+            # assert 0
 
     def get_value(self, states):
         return self.model(states)

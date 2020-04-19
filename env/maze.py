@@ -1,9 +1,9 @@
 import os
 import pickle
+import matplotlib.pyplot as plt
 
 import os.path as osp
 import numpy as np
-import tensorflow as tf
 from gym import Env
 from gym import utils
 from gym.spaces import Box
@@ -19,14 +19,43 @@ def process_action(a):
 def get_random_transitions(num_transitions):
     env = MazeNavigation()
     transitions = []
-    for i in range(num_transitions):
-        if i %(num_transitions//100) == 0:
-            state = env.reset()
-        action = env.action_space.sample()
+    num_constraints = 0
+    total = 0
+    for i in range(num_transitions//2):
+        if i %30 == 0:
+            sample = np.random.uniform(0, 1, 1)[0]
+            if sample < 0.33:
+                mode = 'e'
+            elif sample < 0.67:
+                mode = 'm'
+            else:
+                mode = 'h'
+            state = env.reset(mode)
+        action = env.action_space.sample() * 0.25
         next_state, reward, done, info = env.step(action)
         constraint = info['constraint']
         transitions.append((state, action, constraint, next_state, done))
+        total += 1
+        num_constraints += int(constraint)
         state = next_state
+    for i in range(num_transitions//2):
+        if i %30 == 0:
+            sample = np.random.uniform(0, 1, 1)[0]
+            if sample < 0.33:
+                mode = 'e'
+            elif sample < 0.67:
+                mode = 'm'
+            else:
+                mode = 'h'
+            state = env.reset(mode)
+        action = env.expert_action() * 0.25
+        next_state, reward, done, info = env.step(action)
+        constraint = info['constraint']
+        transitions.append((state, action, constraint, next_state, done))
+        total += 1
+        num_constraints += int(constraint)
+        state = next_state
+    print("data dist", total, num_constraints)
     return transitions
 
 class MazeNavigation(Env, utils.EzPickle):
@@ -73,8 +102,10 @@ class MazeNavigation(Env, utils.EzPickle):
         self.sim.data.qvel[:] = 0
         self.sim.data.ctrl[:] = action
         cur_obs = self._get_obs()
-        for _ in range(500):
-          self.sim.step()
+        constraint = int(self.sim.data.ncon > 3)
+        if not constraint:
+            for _ in range(500):
+              self.sim.step()
         obs = self._get_obs()
         self.sim.data.qvel[:] = 0
         self.steps +=1 
@@ -131,7 +162,18 @@ class MazeNavigation(Env, utils.EzPickle):
         self.sim.model.geom_pos[7, 1] = -0.25 + w1
         self.sim.model.geom_pos[6, 1] = 0.25 + w2
         self.sim.model.geom_pos[8, 1] = -0.25 + w2
+        self.sim.forward()
         # print("RESET!", self._get_obs())
+        constraint = int(self.sim.data.ncon > 3)
+        # if constraint:
+        #     self.reset(difficulty)
+        #     # self.render()
+        #     im = self.sim.render(64, 64, camera_name= "cam0")
+        #     print('aaa',self.sim.data.ncon, self.sim.data.qpos, im.sum())
+        #     plt.imshow(im)
+        #     plt.show()
+        #     plt.pause(0.1)
+            # assert 0
         return self._get_obs()
 
     def get_distance_score(self):
