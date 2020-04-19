@@ -145,6 +145,7 @@ def get_random_transitions(num_transitions, task_demos=False):
     env = SimplePointBot()
     transitions = []
     task_transitions = []
+    done = False
     for i in range(num_transitions):
         state = np.random.uniform(-50, 10), np.random.uniform(-40, 40)
         action = np.clip(np.random.randn(2), -1, 1)

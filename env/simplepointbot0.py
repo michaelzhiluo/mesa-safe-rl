@@ -154,6 +154,7 @@ def get_random_transitions(num_transitions, task_demos=False):
     env = SimplePointBot()
     transitions = []
     task_transitions = []
+    done = False
     for i in range(num_transitions):
         if np.random.uniform(0, 1) < 0.5:
             state = np.array([np.random.uniform(-80, 50), np.random.uniform(-6, -2)])
