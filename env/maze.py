@@ -15,8 +15,12 @@ import cv2
 def process_action(a):
     return np.clip(a, -MAX_FORCE, MAX_FORCE)
 
+def process_obs(obs):
+    im = np.transpose(obs, (2, 0, 1))
+    return im
 
-def get_random_transitions(num_transitions):
+def get_random_transitions(num_transitions, task_demos=False, images=False):
+    assert not task_demos
     env = MazeNavigation()
     transitions = []
     num_constraints = 0
@@ -31,13 +35,25 @@ def get_random_transitions(num_transitions):
             else:
                 mode = 'h'
             state = env.reset(mode)
+            if images:
+                im_state = env.sim.render(64, 64, camera_name= "cam0")
+                im_state = process_obs(im_state)
         action = env.action_space.sample() * 0.25
         next_state, reward, done, info = env.step(action)
+        if images:
+            im_next_state = env.sim.render(64, 64, camera_name= "cam0")
+            im_next_state = process_obs(im_next_state)
         constraint = info['constraint']
-        transitions.append((state, action, constraint, next_state, done))
+        if images:
+            transitions.append((im_state, action, constraint, im_next_state, done))
+        else:
+            transitions.append((state, action, constraint, next_state, done))
         total += 1
         num_constraints += int(constraint)
         state = next_state
+        if images:
+            im_state = im_next_state
+
     for i in range(num_transitions//2):
         if i %30 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
@@ -49,14 +65,48 @@ def get_random_transitions(num_transitions):
                 mode = 'h'
             state = env.reset(mode)
         action = env.expert_action() * 0.25
+# =======
+#     task_transitions = []
+#     for i in range(num_transitions):
+#         if i %(num_transitions//100) == 0:
+#             print("Iter: ", i)
+#             state = env.reset()
+#             # TODO hardcoded for maze, fix later
+#             
+
+#         action = env.action_space.sample()
+# >>>>>>> e3bd3107b93f8c2a9d9b3ad1d2c2cce473306458
         next_state, reward, done, info = env.step(action)
+
+        # TODO hardcoded for maze, fix later
+        
+
         constraint = info['constraint']
+
         transitions.append((state, action, constraint, next_state, done))
+# <<<<<<< HEAD
         total += 1
         num_constraints += int(constraint)
         state = next_state
     print("data dist", total, num_constraints)
     return transitions
+# =======
+
+#         if task_demos:
+#             if images:
+#                 task_transitions.append((im_state, action, reward, im_next_state, done))
+#             else:
+#                 task_transitions.append((state, action, reward, next_state, done))
+
+#         state = next_state
+#         if images:
+#             im_state = im_next_state
+
+#     if not task_demos:
+#         return transitions
+#     else:
+#         return transitions, task_transitions
+# >>>>>>> e3bd3107b93f8c2a9d9b3ad1d2c2cce473306458
 
 class MazeNavigation(Env, utils.EzPickle):
 
@@ -92,10 +142,6 @@ class MazeNavigation(Env, utils.EzPickle):
         # self.goal[1] = np.random.uniform(-0.27, 0.27)
         self.goal[0] = 0.25
         self.goal[1] = 0
-        
-
-    def disable_images(self):
-        self.images = False
 
     def step(self, action):
         action = process_action(action)
@@ -275,25 +321,20 @@ class MazeTeacher(object):
 
 if __name__ == "__main__": 
     teacher = MazeTeacher()
-    avg_reward_sum = 0
-    completed_counter = 0
-    reward_sum_completed = 0
+    reward_sum_completed = []
+    constraint_sat = 0
     for i in range(1000):
         rollout_stats = teacher.get_rollout()
         print("Iter: ", i)
         print(rollout_stats['reward_sum'])
         print(len(rollout_stats['rewards']))
-        avg_reward_sum += rollout_stats['reward_sum']/len(rollout_stats['rewards'])
+        ep_len = len(rollout_stats['rewards'])
+        diff = HORIZON - ep_len
+        if ep_len == HORIZON:
+            constraint_sat += 1
+        reward_sum_completed.append(rollout_stats['reward_sum'] + diff * rollout_stats['rewards'][-1])
 
-        if len(rollout_stats['rewards']) == HORIZON:
-            reward_sum_completed += rollout_stats['reward_sum']
-            completed_counter += 1
-
-    avg_reward_sum /= 1000
-    print("Avg reward sum", avg_reward_sum)
-
-    reward_sum_completed /= completed_counter
-    print("completed reward sum", completed_counter, reward_sum_completed)
+    print("completed reward sum", np.mean(reward_sum_completed), np.std(reward_sum_completed), constraint_sat)
 
 
     
