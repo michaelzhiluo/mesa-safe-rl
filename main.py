@@ -377,7 +377,7 @@ for i_episode in itertools.count(1):
 
     if i_episode % 10 == 0 and args.eval is True:
         avg_reward = 0.
-        episodes = 10
+        episodes = 5
         for j in range(episodes):
             test_rollouts.append([])
             state = env.reset()
