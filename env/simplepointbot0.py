@@ -164,7 +164,7 @@ def get_random_transitions(num_transitions, task_demos=False):
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
         reward = env.step_cost(state, action)
-        transitions.append((state, action, constraint, next_state, False))
+        transitions.append((state, action, constraint, next_state, done))
 
         if task_demos:
             task_transitions.append((state, action, reward, next_state, done))

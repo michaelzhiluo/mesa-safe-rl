@@ -48,7 +48,7 @@ parser.add_argument('--gamma_safe', type=float, default=0.5, metavar='G',
                     help='discount factor for constraints (default: 0.9)')
 parser.add_argument('--eps_safe', type=float, default=0.1, metavar='G',
                     help='threshold constraints (default: 0.8)')
-parser.add_argument('--tau', type=float, default=0.0002, metavar='G',
+parser.add_argument('--tau', type=float, default=0.005, metavar='G', # TODO: idk if this should be 0.005 or 0.0002...
                     help='target smoothing coefficient(τ) (default: 0.005)')
 parser.add_argument('--tau_safe', type=float, default=0.005, metavar='G',
                     help='target smoothing coefficient(τ) (default: 0.005)')
@@ -132,9 +132,9 @@ env.seed(args.seed)
 # Agent
 # TODO; cleanup for now this is hard-coded for maze
 if args.cnn and args.env_name == 'maze':
-    agent = SAC(env.observation_space, env.action_space, args, im_shape=(64, 64, 3))
+    agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
 else:
-    agent = SAC(env.observation_space, env.action_space, args)
+    agent = SAC(env.observation_space, env.action_space, args, logdir)
 
 if args.use_recovery and not args.disable_learned_recovery:
     recovery_policy.update_value_func(agent.V_safe)
@@ -172,7 +172,7 @@ if args.use_recovery and not args.disable_learned_recovery:
 
 for transition in constraint_demo_data:
     V_safe_memory.push(*transition)
-agent.V_safe.train(V_safe_memory)
+agent.V_safe.train(0, V_safe_memory)
 
 # Train Qsafe on demos for filtering
 if args.filter:
@@ -182,7 +182,7 @@ if args.filter:
     agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50, batch_size=50)
 
 # TODO: cleanup, for now this is hard-coded for maze
-if args.cnn and args.env_name == 'maze':
+if args.cnn and args.env_name == 'maze' and task_demos:
     task_demo_data = task_demo_data_images
 
 # If use task demos, add them to memory and train agent
@@ -226,7 +226,7 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 if not args.filter or i_episode < args.Q_safe_start_ep:
                     real_action = action
                 else:
@@ -260,7 +260,7 @@ for i_episode in itertools.count(1):
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 if not args.filter or i_episode < args.Q_safe_start_ep:
                     real_action = action
                 else:
@@ -361,10 +361,10 @@ for i_episode in itertools.count(1):
             all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
 
         if i_episode % args.critic_safe_update_freq == 0:
-            agent.V_safe.train(V_safe_memory, epochs=10, training_iterations=50)
+            agent.V_safe.train(i_episode, V_safe_memory, epochs=50, training_iterations=50, batch_size=100)
     if i_episode % args.critic_safe_update_freq == 0:
         if args.filter:
-            agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50, batch_size=50)
+            agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=50, training_iterations=50, batch_size=100)
 
     num_violations = 0
     for inf in train_rollouts[-1]:
@@ -412,7 +412,7 @@ for i_episode in itertools.count(1):
                     else:
                         real_action = env.safe_action(state)
                 else:
-                    # print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     if not args.filter or i_episode < args.Q_safe_start_ep:
                         real_action = action
                     else:

@@ -9,7 +9,7 @@ from constraint import ValueFunction, QFunction
 
 
 class SAC(object):
-    def __init__(self, observation_space, action_space, args, im_shape=None):
+    def __init__(self, observation_space, action_space, args, logdir, im_shape=None):
         self.gamma = args.gamma
         self.tau = args.tau
         self.alpha = args.alpha
@@ -26,7 +26,8 @@ class SAC(object):
                 state_dim=observation_space.shape[0],
                 hidden_size=200,
                 tau_safe = args.tau_safe,
-                use_target = args.use_target_safe))
+                use_target = args.use_target_safe,
+                logdir=logdir))
         if args.filter:
             self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, device=self.device, state_dim=observation_space.shape[0], ac_dim=action_space.shape[0], hidden_size=200, tau=0.0002))
 

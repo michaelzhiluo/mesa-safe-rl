@@ -20,34 +20,39 @@ def process_obs(obs):
     return im
 
 def get_random_transitions(num_transitions, task_demos=False, images=False):
-    assert not task_demos
     env = MazeNavigation()
     transitions = []
+    task_transitions = []
     num_constraints = 0
     total = 0
     for i in range(num_transitions//2):
-        if i %30 == 0:
+        if i % 25 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
-            if sample < 0.33:
+            if sample < 0.2: # maybe make 0.2 to 0.3
                 mode = 'e'
-            elif sample < 0.67:
+            elif sample < 0.4:
                 mode = 'm'
             else:
                 mode = 'h'
-            state = env.reset(mode)
+            state = env.reset(mode, check_constraint=False)
             if images:
                 im_state = env.sim.render(64, 64, camera_name= "cam0")
                 im_state = process_obs(im_state)
-        action = env.action_space.sample() * 0.25
+        action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
         if images:
             im_next_state = env.sim.render(64, 64, camera_name= "cam0")
             im_next_state = process_obs(im_next_state)
         constraint = info['constraint']
+        transitions.append((state, action, constraint, next_state, done))
+
         if images:
-            transitions.append((im_state, action, constraint, im_next_state, done))
+            if task_demos:
+                task_transitions.append((im_state, action, reward, im_next_state, done))
         else:
-            transitions.append((state, action, constraint, next_state, done))
+            if task_demos:
+                task_transitions.append((state, action, reward, next_state, done))
+
         total += 1
         num_constraints += int(constraint)
         state = next_state
@@ -55,58 +60,45 @@ def get_random_transitions(num_transitions, task_demos=False, images=False):
             im_state = im_next_state
 
     for i in range(num_transitions//2):
-        if i %30 == 0:
+        if i % 25 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
-            if sample < 0.33:
+            if sample < 0.2: # maybe make 0.2 to 0.3
                 mode = 'e'
-            elif sample < 0.67:
+            elif sample < 0.6:
                 mode = 'm'
             else:
                 mode = 'h'
-            state = env.reset(mode)
-        action = env.expert_action() * 0.25
-# =======
-#     task_transitions = []
-#     for i in range(num_transitions):
-#         if i %(num_transitions//100) == 0:
-#             print("Iter: ", i)
-#             state = env.reset()
-#             # TODO hardcoded for maze, fix later
-#             
-
-#         action = env.action_space.sample()
-# >>>>>>> e3bd3107b93f8c2a9d9b3ad1d2c2cce473306458
+            state = env.reset(mode, check_constraint=False)
+            if images:
+                im_state = env.sim.render(64, 64, camera_name= "cam0")
+                im_state = process_obs(im_state)
+        action = env.expert_action()
         next_state, reward, done, info = env.step(action)
-
-        # TODO hardcoded for maze, fix later
-        
-
+        if images:
+            im_next_state = env.sim.render(64, 64, camera_name= "cam0")
+            im_next_state = process_obs(im_next_state)
         constraint = info['constraint']
-
         transitions.append((state, action, constraint, next_state, done))
-# <<<<<<< HEAD
+
+        if images:
+            if task_demos:
+                task_transitions.append((im_state, action, reward, im_next_state, done))
+        else:
+            if task_demos:
+                task_transitions.append((state, action, reward, next_state, done))
+
         total += 1
         num_constraints += int(constraint)
         state = next_state
+        if images:
+            im_state = im_next_state
+
     print("data dist", total, num_constraints)
-    return transitions
-# =======
+    if not task_demos:
+        return transitions
+    else:
+        return transitions, task_transitions
 
-#         if task_demos:
-#             if images:
-#                 task_transitions.append((im_state, action, reward, im_next_state, done))
-#             else:
-#                 task_transitions.append((state, action, reward, next_state, done))
-
-#         state = next_state
-#         if images:
-#             im_state = im_next_state
-
-#     if not task_demos:
-#         return transitions
-#     else:
-#         return transitions, task_transitions
-# >>>>>>> e3bd3107b93f8c2a9d9b3ad1d2c2cce473306458
 
 class MazeNavigation(Env, utils.EzPickle):
 
@@ -156,7 +148,7 @@ class MazeNavigation(Env, utils.EzPickle):
         self.sim.data.qvel[:] = 0
         self.steps +=1 
         constraint = int(self.sim.data.ncon > 3)
-        self.done = self.steps >= self.horizon or constraint
+        self.done = self.steps >= self.horizon or constraint or (self.get_distance_score() < GOAL_THRESH)
         if not self.dense_reward:
             reward = - (self.get_distance_score() > GOAL_THRESH).astype(float)
         else:
@@ -181,7 +173,7 @@ class MazeNavigation(Env, utils.EzPickle):
         ims = self.sim.render(64, 64, camera_name= "cam0")
         return ims/255
 
-    def reset(self, difficulty='h'):
+    def reset(self, difficulty='h', check_constraint=True):
         if difficulty is None:
           self.sim.data.qpos[0] = np.random.uniform(-0.27, 0.27)
         elif difficulty == 'e':
@@ -200,19 +192,19 @@ class MazeNavigation(Env, utils.EzPickle):
         # assert(False)
 
         # Randomize wal positions
-        w1 = -0.15#np.random.uniform(-0.2, 0.2)
-        w2 = 0.15 #np.random.uniform(-0.2, 0.2)
+        w1 = -0.1#np.random.uniform(-0.2, 0.2)
+        w2 = 0.1 #np.random.uniform(-0.2, 0.2)
     #     print(self.sim.model.geom_pos[:])
     #     print(self.sim.model.geom_pos[:].shape)
-        self.sim.model.geom_pos[5, 1] = 0.25 + w1
+        self.sim.model.geom_pos[5, 1] = 0.32 + w1
         self.sim.model.geom_pos[7, 1] = -0.25 + w1
-        self.sim.model.geom_pos[6, 1] = 0.25 + w2
+        self.sim.model.geom_pos[6, 1] = 0.32 + w2
         self.sim.model.geom_pos[8, 1] = -0.25 + w2
         self.sim.forward()
         # print("RESET!", self._get_obs())
         constraint = int(self.sim.data.ncon > 3)
-        # if constraint:
-        #     self.reset(difficulty)
+        if constraint and check_constraint:
+            self.reset(difficulty)
         #     # self.render()
         #     im = self.sim.render(64, 64, camera_name= "cam0")
         #     print('aaa',self.sim.data.ncon, self.sim.data.qpos, im.sum())
@@ -234,9 +226,9 @@ class MazeNavigation(Env, utils.EzPickle):
         st = self.sim.data.qpos[:]
         # print(st)
         if st[0] <= -0.151:
-          delt = (np.array([-0.15, -0.17]) - st)
+          delt = (np.array([-0.15, -0.125]) - st)
         elif st[0] <= 0.149:
-          delt = (np.array([0.15, 0.17]) - st)
+          delt = (np.array([0.15, 0.125]) - st)
         # elif st[1] < 0.25:
         #   delt = (np.array([0.25, 0]) - st)
         else:
@@ -268,6 +260,7 @@ class MazeTeacher(object):
 
         obs = self.env.reset(difficulty='h')
         O, A, cost_sum, costs = [obs], [], 0, []
+        constraints_violated = 0
 
         noise_idx = np.random.randint(int(2 * HORIZON / 4))
         for i in range(HORIZON):
@@ -290,6 +283,10 @@ class MazeTeacher(object):
 
             A.append(action)
             obs, cost, done, info = self.env.step(action)
+            print("CON", info['constraint'])
+            print("STATE", obs)
+            print("DONE", done)
+            constraints_violated += info['constraint']
             O.append(obs)
             cost_sum += cost
             costs.append(cost)
@@ -299,14 +296,15 @@ class MazeTeacher(object):
         values = np.cumsum(costs[::-1])[::-1]
 
         print(cost_sum)
-        print(-HORIZON)
+        print(len(O))
+        print("CONSTRAINTS: ", constraints_violated)
 
         if int(cost_sum) == -HORIZON:
             print("FAILED")
             # return self.get_rollout(noise_param_in)
 
-        # cv2.imwrite('maze.jpg', 255*obs)
-        # assert(False)
+        cv2.imwrite('maze.jpg', 255*obs)
+        assert(False)
 
         print("obs", O)
 

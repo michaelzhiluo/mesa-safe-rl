@@ -7,6 +7,7 @@ from torch.optim import Adam
 from model import ValueNetwork, QNetworkConstraint, hard_update, soft_update
 from replay_memory import ReplayMemory
 from utils import soft_update
+import os.path as osp
 
 class ValueFunction:
     def __init__(self, params):
@@ -16,11 +17,12 @@ class ValueFunction:
         self.model = ValueNetwork(params.state_dim, params.hidden_size).to(self.device)
         self.target = ValueNetwork(params.state_dim, params.hidden_size).to(self.device)
         self.tau = params.tau_safe
+        self.logdir = params.logdir
         if not params.use_target:
             self.tau = 1.
         hard_update(self.target, self.model)
 
-    def train(self, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
+    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True):
         optim = Adam(self.model.parameters(), lr=lr)
 
         for j in range(training_iterations):
@@ -41,18 +43,17 @@ class ValueFunction:
 
         if plot:
             pts = []
-            for i in range(100):
-                x = -0.5 + i * 0.01
-                for j in range(100):
-                    y = -0.5 + j * 0.01
+            for i in range(60):
+                x = -0.3 + i * 0.01
+                for j in range(60):
+                    y = -0.3 + j * 0.01
                     pts.append([x, y])
-            grid = self.model(self.torchify(np.array(pts))).detach().cpu().numpy().reshape(-1, 100).T
+            grid = self.model(self.torchify(np.array(pts))).detach().cpu().numpy().reshape(-1, 60).T
 
             # plt.imshow(grid > 0.8)
             # plt.show()
             plt.imshow(grid)
-            plt.show()
-            # assert 0
+            plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
 
     def get_value(self, states):
         return self.model(states)
