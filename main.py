@@ -73,9 +73,9 @@ parser.add_argument('--start_steps', type=int, default=100, metavar='N',
                     help='Steps sampling random actions (default: 10000)')
 parser.add_argument('--target_update_interval', type=int, default=1, metavar='N',
                     help='Value target update per no. of updates per step (default: 1)')
-parser.add_argument('--replay_size', type=int, default=100000, metavar='N',
+parser.add_argument('--replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer (default: 100000)')
-parser.add_argument('--safe_replay_size', type=int, default=100000, metavar='N',
+parser.add_argument('--safe_replay_size', type=int, default=1000000, metavar='N',
                     help='size of replay buffer for V safe (default: 100000)')
 parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
@@ -216,38 +216,19 @@ for i_episode in itertools.count(1):
     ep_states = [state]
     ep_actions = []
     while not done:
-        # print("EP STEP", episode_steps)
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
+
             if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 if not args.disable_learned_recovery:
-                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
-                print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                if not args.filter or i_episode < args.Q_safe_start_ep:
-                    real_action = action
-                else:
-                    state_batch = np.tile(state, [args.num_filter_samples, 1])
-                    found_safe_action = False
-                    for _ in range(args.max_filter_iters):
-                        action_batch = np.array([env.action_space.sample() for _ in range(args.num_filter_samples)])
-                        Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
-                        thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                        if len(thresh_idxs): # If there is something safe we done
-                            found_safe_action = True
-                            break
-                    if found_safe_action:
-                        filtered_state_batch = state_batch[thresh_idxs]
-                        filtered_action_batch = action_batch[thresh_idxs]
-                        Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                        real_action = filtered_action_batch[np.argmax(Q_values)]
-                    else: # Backup action
-                        real_action = action_batch[np.argmin(Q_safe_values)]
+                # print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                real_action = action
         else:
-            # TODO; cleanup for now this is hard-coded for maze
             if args.cnn and args.env_name == 'maze':
                 action = agent.select_action(im_state) 
             else:
@@ -255,37 +236,13 @@ for i_episode in itertools.count(1):
 
             if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                 if not args.disable_learned_recovery:
-                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
+                    # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
-                print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                if not args.filter or i_episode < args.Q_safe_start_ep:
-                    real_action = action
-                else:
-                    state_batch = np.tile(state, [args.num_filter_samples, 1])
-                    found_safe_action = False
-                    for _ in range(args.max_filter_iters):
-                         # TODO; cleanup for now this is hard-coded for maze
-                        if args.cnn and args.env_name == 'maze':
-                            action_batch = np.array([agent.select_action(im_state) for _ in range(args.num_filter_samples)])
-                        else:
-                            action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
-
-                        Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
-                        thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-
-                        if len(thresh_idxs): # If there is something safe we done
-                            found_safe_action = True
-                            break
-                    if found_safe_action:
-                        filtered_state_batch = state_batch[thresh_idxs]
-                        filtered_action_batch = action_batch[thresh_idxs]
-                        Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                        real_action = filtered_action_batch[np.argmax(Q_values)]
-                    else: # Backup action
-                        real_action = action_batch[np.argmin(Q_safe_values)]
+                # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                real_action = action
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
@@ -332,9 +289,7 @@ for i_episode in itertools.count(1):
         else:
             memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
-
         V_safe_memory.push(state, action, info['constraint'], next_state, mask)
-
         state = next_state
 
         # TODO; cleanup for now this is hard-coded for maze
@@ -407,36 +362,13 @@ for i_episode in itertools.count(1):
 
                 if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
                     if not args.disable_learned_recovery:
-                        print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
+                        # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
                         real_action = recovery_policy.act(state, 0)
                     else:
                         real_action = env.safe_action(state)
                 else:
-                    print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                    if not args.filter or i_episode < args.Q_safe_start_ep:
-                        real_action = action
-                    else:
-                        state_batch = np.tile(state, [args.num_filter_samples, 1])
-                        found_safe_action = False
-                        for _ in range(args.max_filter_iters):
-                            # TODO; cleanup for now this is hard-coded for maze
-                            if args.cnn and args.env_name == 'maze':
-                                action_batch = np.array([agent.select_action(im_state) for _ in range(args.num_filter_samples)])
-                            else:
-                                action_batch = np.array([agent.select_action(state) for _ in range(args.num_filter_samples)])
-
-                            Q_safe_values = agent.Q_safe.get_qvalue(torch.FloatTensor(state_batch).to('cuda'), torch.FloatTensor(action_batch).to('cuda')).flatten()
-                            thresh_idxs = np.argwhere(Q_safe_values <= args.eps_safe).flatten() # Get indices where you are sufficiently safe
-                            if len(thresh_idxs): # If there is something safe we done
-                                found_safe_action = True
-                                break
-                        if found_safe_action:
-                            filtered_state_batch = state_batch[thresh_idxs]
-                            filtered_action_batch = action_batch[thresh_idxs]
-                            Q_values = agent.get_critic_value(torch.FloatTensor(filtered_state_batch).to('cuda'), torch.FloatTensor(filtered_action_batch).to('cuda')).flatten() # Get Q values for filtered actions
-                            real_action = filtered_action_batch[np.argmax(Q_values)]
-                        else: # Backup action
-                            real_action = action_batch[np.argmin(Q_safe_values)]
+                    # print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    real_action = action
 
                 next_state, reward, done, info = env.step(real_action) # Step
 
@@ -473,8 +405,6 @@ for i_episode in itertools.count(1):
                 npy_to_gif(im_list, osp.join(logdir, "test_" + str(i_episode) + "_" + str(j)))
 
         avg_reward /= episodes
-
-
         writer.add_scalar('avg_reward/test', avg_reward, i_episode)
 
         print("----------------------------------------")
