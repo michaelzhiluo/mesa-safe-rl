@@ -25,8 +25,8 @@ def get_random_transitions(num_transitions, task_demos=False, images=False):
     task_transitions = []
     num_constraints = 0
     total = 0
-    for i in range(num_transitions//2):
-        if i % 25 == 0:
+    for i in range(1*num_transitions//2):
+        if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
             if sample < 0.2: # maybe make 0.2 to 0.3
                 mode = 'e'
@@ -59,8 +59,8 @@ def get_random_transitions(num_transitions, task_demos=False, images=False):
         if images:
             im_state = im_next_state
 
-    for i in range(num_transitions//2):
-        if i % 25 == 0:
+    for i in range(1*num_transitions//2):
+        if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
             if sample < 0.2: # maybe make 0.2 to 0.3
                 mode = 'e'
@@ -153,6 +153,8 @@ class MazeNavigation(Env, utils.EzPickle):
             reward = - (self.get_distance_score() > GOAL_THRESH).astype(float)
         else:
             reward = -self.get_distance_score()
+            # if self.get_distance_score() < GOAL_THRESH:
+            #     reward += 10
 
         info = {"constraint": constraint,
                 "reward": reward,
@@ -177,11 +179,11 @@ class MazeNavigation(Env, utils.EzPickle):
         if difficulty is None:
           self.sim.data.qpos[0] = np.random.uniform(-0.27, 0.27)
         elif difficulty == 'e':
-          self.sim.data.qpos[0] = np.random.uniform(0.15, 0.27)
+          self.sim.data.qpos[0] = np.random.uniform(0.1, 0.27)
         elif difficulty == 'm':
-          self.sim.data.qpos[0] = np.random.uniform(-0.15, 0.15)
+          self.sim.data.qpos[0] = np.random.uniform(-0.1, 0.1)
         elif difficulty == 'h':
-          self.sim.data.qpos[0] = np.random.uniform(-0.27, -0.15)
+          self.sim.data.qpos[0] = np.random.uniform(-0.27, -0.1)
         self.sim.data.qpos[1] = np.random.uniform(-0.27, 0.27)
         self.steps = 0
 
@@ -192,13 +194,13 @@ class MazeNavigation(Env, utils.EzPickle):
         # assert(False)
 
         # Randomize wal positions
-        w1 = -0.1#np.random.uniform(-0.2, 0.2)
-        w2 = 0.1 #np.random.uniform(-0.2, 0.2)
+        w1 = -0.08#np.random.uniform(-0.2, 0.2)
+        w2 = 0.08 #np.random.uniform(-0.2, 0.2)
     #     print(self.sim.model.geom_pos[:])
     #     print(self.sim.model.geom_pos[:].shape)
-        self.sim.model.geom_pos[5, 1] = 0.32 + w1
+        self.sim.model.geom_pos[5, 1] = 0.4 + w1
         self.sim.model.geom_pos[7, 1] = -0.25 + w1
-        self.sim.model.geom_pos[6, 1] = 0.32 + w2
+        self.sim.model.geom_pos[6, 1] = 0.4 + w2
         self.sim.model.geom_pos[8, 1] = -0.25 + w2
         self.sim.forward()
         # print("RESET!", self._get_obs())
