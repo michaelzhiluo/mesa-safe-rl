@@ -24,7 +24,8 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'cliffcheetah': 'CliffCheetah-v0',
           'maze': 'Maze-v0',
           'shelf_env': 'Shelf-v0',
-          'cliffpusher': 'CliffPusher-v0'
+          'cliffpusher': 'CliffPusher-v0',
+          'reacher': 'Reacher-v0'
           }
 
 def npy_to_gif(im_list, filename, fps=4):

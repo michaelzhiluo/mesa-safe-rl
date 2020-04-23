@@ -4,3 +4,6 @@
 *.p
 *.jpg
 *.zip
+
+runs/
+common/

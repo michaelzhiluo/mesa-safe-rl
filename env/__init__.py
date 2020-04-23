@@ -35,9 +35,9 @@ register(
     entry_point='env.cliffpusher:PusherEnv'
 )
 
-# register(
-#     id='MBRLReacherSparse3D-v0',
-#     entry_point='dmbrl.env.reachersparse:ReacherSparse3DEnv')
+register(
+    id='Reacher-v0',
+    entry_point='env.reacher:ReacherSparse3DEnv')
 
 # register(
 #     id='MBRLPusherSparse-v0',
