@@ -87,7 +87,7 @@ class PtModel(nn.Module):
 
 
 class ReacherConfigModule:
-    ENV_NAME = "MBRLReacher3D-v0"
+    ENV_NAME = "Reacher-v0"
     TASK_HORIZON = 150
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
