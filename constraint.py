@@ -22,7 +22,7 @@ class ValueFunction:
             self.tau = 1.
         hard_update(self.target, self.model)
 
-    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
+    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True):
         optim = Adam(self.model.parameters(), lr=lr)
 
         for j in range(training_iterations):
@@ -63,11 +63,14 @@ class QFunction:
         self.gamma_safe = params.gamma_safe
         self.device = params.device
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
-        self.model = QNetworkConstraint(params.state_dim, params.ac_dim, params.hidden_size).to(self.device)
-        self.model_target = QNetworkConstraint(params.state_dim, params.ac_dim, params.hidden_size).to(self.device)
+        self.ac_dim = params.ac_space.shape[0]
+        self.action_space = params.ac_space
+        self.model = QNetworkConstraint(params.state_dim, self.ac_dim, params.hidden_size).to(self.device)
+        self.model_target = QNetworkConstraint(params.state_dim, self.ac_dim, params.hidden_size).to(self.device)
         self.tau = params.tau
+        self.logdir = params.logdir
 
-    def train(self, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000):
+    def train(self, ep, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True):
         optim = Adam(self.model.parameters(), lr=lr)
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
@@ -99,10 +102,37 @@ class QFunction:
                 with torch.no_grad():
                     print("Q-Value Training Iteration %d    Losses: %f, %f"%(j, qf1_loss, qf2_loss))
 
+        if plot:
+            num_eval_actions = 100
+            # TODO: plotting code
+            states = []
+            actions = []
+            for i in range(60):
+                x = -0.3 + i * 0.01
+                for j in range(60):
+                    y = -0.3 + j * 0.01
+                    for _ in range(num_eval_actions):
+                        states.append([x, y])
+                        actions.append(self.action_space.sample())
+
+            states = self.torchify(np.array(states))
+            actions = self.torchify(np.array(actions))
+            qf1, qf2 = self.model(states, actions)
+            max_qf = torch.max(qf1, qf2)
+            print("SIZE", qf1.size())
+            print("SIZE", max_qf.size())
+            grid = max_qf.detach().cpu().numpy().reshape(60, 60, -1)
+            grid = np.mean(grid, axis=-1).T
+            print("GRID SHAPE", grid.shape)
+            # plt.imshow(grid > 0.8)
+            # plt.show()
+            plt.imshow(grid)
+            plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep)))
+
         soft_update(self.model_target, self.model, self.tau)
 
     def get_qvalue(self, states, actions):
         with torch.no_grad():
             q1, q2 = self.model(states, actions)
-            return torch.max(q1, q2).detach().cpu().numpy()
+            return torch.max(q1, q2)
 

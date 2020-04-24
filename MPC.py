@@ -185,6 +185,7 @@ class MPC(Controller):
 
         self.value_func = None
         self.use_value = params.get("use_value", False)
+        self.use_qvalue = params.get("use_qvalue", False)
 
     def train(self, obs_trajs, acs_trajs, random=False, next_obs=False, epochs=None):
         """Trains the internal model of this controller. Once trained,
@@ -371,7 +372,10 @@ class MPC(Controller):
 
             if self.use_value:
                 assert(self.value_func)
-                cost = self.value_func.get_value(next_obs).squeeze() + self.ac_cost_fn(cur_acs)
+                cost = self.value_func.get_value(next_obs).squeeze()
+            elif self.use_qvalue:
+                assert(self.value_func)
+                cost = self.value_func.get_qvalue(cur_obs, cur_acs).squeeze()
             else:
                 cost = self.obs_cost_fn(next_obs) + self.ac_cost_fn(cur_acs)
 

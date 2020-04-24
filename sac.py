@@ -28,8 +28,13 @@ class SAC(object):
                 tau_safe = args.tau_safe,
                 use_target = args.use_target_safe,
                 logdir=logdir))
-        if args.filter:
-            self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, device=self.device, state_dim=observation_space.shape[0], ac_dim=action_space.shape[0], hidden_size=200, tau=0.0002))
+        self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, 
+                                       device=self.device, 
+                                       state_dim=observation_space.shape[0], 
+                                       ac_space=action_space, 
+                                       hidden_size=200, 
+                                       logdir=logdir,
+                                       tau=args.tau_safe))
 
         # TODO; cleanup for now this is hard-coded for maze
         if im_shape:

@@ -96,6 +96,8 @@ parser.add_argument('--filter', action="store_true")
 parser.add_argument('--num_filter_samples', type=int, default=100)
 parser.add_argument('--max_filter_iters', type=int, default=5)
 parser.add_argument('--Q_safe_start_ep', type=int, default=10)
+parser.add_argument('--use_value', action="store_true")
+parser.add_argument('--use_qvalue', action="store_true")
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
@@ -114,7 +116,13 @@ if args.use_recovery and not args.disable_learned_recovery:
     ctrl_args = DotMap(**{key: val for (key, val) in args.ctrl_arg})
     cfg = create_config(args.env_name, "MPC", ctrl_args, args.override, logdir)
     cfg.pprint()
-    cfg.ctrl_cfg.use_value = True
+    if args.use_value:
+        cfg.ctrl_cfg.use_value = True
+    elif args.use_qvalue:
+        cfg.ctrl_cfg.use_qvalue = True
+    else:
+        assert(False)
+
     recovery_policy = MPC(cfg.ctrl_cfg)
 else:
     recovery_policy = None
@@ -138,7 +146,13 @@ else:
     agent = SAC(env.observation_space, env.action_space, args, logdir)
 
 if args.use_recovery and not args.disable_learned_recovery:
-    recovery_policy.update_value_func(agent.V_safe)
+    # recovery_policy.update_value_func(agent.V_safe)
+    if args.use_value:
+       recovery_policy.update_value_func(agent.V_safe)
+    elif args.use_qvalue: 
+        recovery_policy.update_value_func(agent.Q_safe)
+    else:
+        assert(False)
 
 # Memory
 memory = ReplayMemory(args.replay_size)
@@ -171,16 +185,16 @@ if args.use_recovery and not args.disable_learned_recovery:
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
     recovery_policy.train(demo_data_states, demo_data_actions, random=True, next_obs=demo_data_next_states, epochs=50)
 
-for transition in constraint_demo_data:
-    V_safe_memory.push(*transition)
-agent.V_safe.train(0, V_safe_memory)
-
-# Train Qsafe on demos for filtering
-if args.filter:
-    for i, transition in enumerate(constraint_demo_data):
-        if i < 100:
+    if args.use_value:
+        for transition in constraint_demo_data:
+            V_safe_memory.push(*transition)
+        agent.V_safe.train(0, V_safe_memory)
+    elif args.use_qvalue:
+        for transition in constraint_demo_data:
             Q_safe_memory.push(*transition)
-    agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=10, training_iterations=50, batch_size=50)
+        agent.Q_safe.train(0, Q_safe_memory, agent.policy_sample)
+    else:
+        assert(False)
 
 # TODO: cleanup, for now this is hard-coded for maze
 if args.cnn and args.env_name == 'maze' and task_demos:
@@ -317,10 +331,12 @@ for i_episode in itertools.count(1):
             all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
 
         if i_episode % args.critic_safe_update_freq == 0:
-            agent.V_safe.train(i_episode, V_safe_memory, epochs=50, training_iterations=50, batch_size=100)
-    if i_episode % args.critic_safe_update_freq == 0:
-        if args.filter:
-            agent.Q_safe.train(Q_safe_memory, agent.policy_sample, epochs=50, training_iterations=50, batch_size=100)
+            if args.use_value:
+                agent.V_safe.train(i_episode, V_safe_memory, epochs=50, training_iterations=50, batch_size=100)
+            elif args.use_qvalue:
+                agent.Q_safe.train(i_episode, Q_safe_memory, agent.policy_sample, epochs=50, training_iterations=50, batch_size=100)
+            else:
+                assert(False)
 
     num_violations = 0
     for inf in train_rollouts[-1]:
