@@ -119,11 +119,8 @@ class QFunction:
             actions = self.torchify(np.array(actions))
             qf1, qf2 = self.model(states, actions)
             max_qf = torch.max(qf1, qf2)
-            print("SIZE", qf1.size())
-            print("SIZE", max_qf.size())
             grid = max_qf.detach().cpu().numpy().reshape(60, 60, -1)
             grid = np.mean(grid, axis=-1).T
-            print("GRID SHAPE", grid.shape)
             # plt.imshow(grid > 0.8)
             # plt.show()
             plt.imshow(grid)
