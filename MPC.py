@@ -372,10 +372,10 @@ class MPC(Controller):
 
             if self.use_value:
                 assert(self.value_func)
-                cost = self.value_func.get_value(next_obs).squeeze()
+                cost = self.value_func.get_value(next_obs).squeeze() + self.ac_cost_fn(cur_acs)
             elif self.use_qvalue:
                 assert(self.value_func)
-                cost = self.value_func.get_qvalue(cur_obs, cur_acs).squeeze()
+                cost = self.value_func.get_qvalue(cur_obs, cur_acs).squeeze() + self.ac_cost_fn(cur_acs)
             else:
                 cost = self.obs_cost_fn(next_obs) + self.ac_cost_fn(cur_acs)
 

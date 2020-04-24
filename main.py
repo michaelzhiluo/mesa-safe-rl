@@ -304,7 +304,10 @@ for i_episode in itertools.count(1):
         else:
             memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
-        V_safe_memory.push(state, action, info['constraint'], next_state, mask)
+        if args.use_value:
+            V_safe_memory.push(state, action, info['constraint'], next_state, mask)
+        elif args.use_qvalue:
+            Q_safe_memory.push(state, action, info['constraint'], next_state, mask)
         state = next_state
 
         # TODO; cleanup for now this is hard-coded for maze
