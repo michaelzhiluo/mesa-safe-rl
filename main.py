@@ -49,6 +49,8 @@ parser.add_argument('--gamma_safe', type=float, default=0.5, metavar='G',
                     help='discount factor for constraints (default: 0.9)')
 parser.add_argument('--eps_safe', type=float, default=0.1, metavar='G',
                     help='threshold constraints (default: 0.8)')
+parser.add_argument('--t_safe', type=float, default=80, metavar='G',
+                    help='threshold constraints (default: 0.8)')
 parser.add_argument('--tau', type=float, default=0.005, metavar='G', # TODO: idk if this should be 0.005 or 0.0002...
                     help='target smoothing coefficient(τ) (default: 0.005)')
 parser.add_argument('--tau_safe', type=float, default=0.005, metavar='G',
@@ -98,6 +100,8 @@ parser.add_argument('--max_filter_iters', type=int, default=5)
 parser.add_argument('--Q_safe_start_ep', type=int, default=10)
 parser.add_argument('--use_value', action="store_true")
 parser.add_argument('--use_qvalue', action="store_true")
+parser.add_argument('--pred_time', action="store_true")
+
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
@@ -115,6 +119,7 @@ pickle.dump(args, open(os.path.join(logdir, "args.pkl"), "wb") )
 if args.use_recovery and not args.disable_learned_recovery:
     ctrl_args = DotMap(**{key: val for (key, val) in args.ctrl_arg})
     cfg = create_config(args.env_name, "MPC", ctrl_args, args.override, logdir)
+    cfg.ctrl_cfg.pred_time = args.pred_time
     cfg.pprint()
     if args.use_value:
         cfg.ctrl_cfg.use_value = True
@@ -234,7 +239,7 @@ for i_episode in itertools.count(1):
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
 
-            if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+            if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                 if not args.disable_learned_recovery:
                     # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
@@ -249,7 +254,8 @@ for i_episode in itertools.count(1):
             else:
                 action = agent.select_action(state)  # Sample action from policy
 
-            if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+            # if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+            if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                 if not args.disable_learned_recovery:
                     # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
                     real_action = recovery_policy.act(state, 0)
@@ -380,7 +386,8 @@ for i_episode in itertools.count(1):
                 else:
                     action = agent.select_action(state, eval=True)  # Sample action from policy
 
-                if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+                # if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
+                if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                     if not args.disable_learned_recovery:
                         # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
                         real_action = recovery_policy.act(state, 0)

@@ -27,7 +27,8 @@ class SAC(object):
                 hidden_size=200,
                 tau_safe = args.tau_safe,
                 use_target = args.use_target_safe,
-                logdir=logdir))
+                logdir=logdir,
+                pred_time=args.pred_time))
         self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, 
                                        device=self.device, 
                                        state_dim=observation_space.shape[0], 

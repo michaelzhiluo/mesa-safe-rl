@@ -22,19 +22,23 @@ def hard_update(target, source):
         target_param.data.copy_(param.data)
 
 class ValueNetwork(nn.Module):
-    def __init__(self, num_inputs, hidden_dim):
+    def __init__(self, num_inputs, hidden_dim, pred_time=False):
         super(ValueNetwork, self).__init__()
 
         self.linear1 = nn.Linear(num_inputs, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
         self.linear3 = nn.Linear(hidden_dim, 1)
+        self.pred_time = pred_time
 
         self.apply(weights_init_)
 
     def forward(self, state):
         x = F.relu(self.linear1(state))
         x = F.relu(self.linear2(x))
-        x = F.sigmoid(self.linear3(x))
+        if self.pred_time:
+            x = self.linear3(x)
+        else:
+            x = F.sigmoid(self.linear3(x))
         return x
 
 

@@ -14,22 +14,26 @@ class ValueFunction:
         self.gamma_safe = params.gamma_safe
         self.device = params.device
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
-        self.model = ValueNetwork(params.state_dim, params.hidden_size).to(self.device)
-        self.target = ValueNetwork(params.state_dim, params.hidden_size).to(self.device)
+        self.model = ValueNetwork(params.state_dim, params.hidden_size, params.pred_time).to(self.device)
+        self.target = ValueNetwork(params.state_dim, params.hidden_size, params.pred_time).to(self.device)
         self.tau = params.tau_safe
         self.logdir = params.logdir
+        self.pred_time = params.pred_time
         if not params.use_target:
             self.tau = 1.
         hard_update(self.target, self.model)
 
-    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True):
+    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
         optim = Adam(self.model.parameters(), lr=lr)
 
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
 
             with torch.no_grad():
-                target = self.torchify(constraint_batch) + self.gamma_safe * self.target(self.torchify(next_state_batch))[:,0] * (1 - self.torchify(constraint_batch) )
+                if self.pred_time:
+                    target = (self.gamma_safe * self.target(self.torchify(next_state_batch))[:,0] + 1) * (1 - self.torchify(constraint_batch) )
+                else:
+                    target = self.torchify(constraint_batch) + self.gamma_safe * self.target(self.torchify(next_state_batch))[:,0] * (1 - self.torchify(constraint_batch) )
             preds = self.model(self.torchify(state_batch))[:,0]
             optim.zero_grad()
             loss = F.mse_loss(preds, target)
@@ -43,15 +47,16 @@ class ValueFunction:
 
         if plot:
             pts = []
-            for i in range(60):
-                x = -0.3 + i * 0.01
-                for j in range(60):
-                    y = -0.3 + j * 0.01
+            for i in range(100):
+                x = -50 + i
+                for j in range(100):
+                    y = -50 + j
                     pts.append([x, y])
-            grid = self.model(self.torchify(np.array(pts))).detach().cpu().numpy().reshape(-1, 60).T
+            grid = self.model(self.torchify(np.array(pts))).detach().cpu().numpy().reshape(-1, 100).T
 
-            # plt.imshow(grid > 0.8)
-            # plt.show()
+            plt.imshow(grid)
+            plt.show()
+            assert 0
             plt.imshow(grid)
             plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
 
@@ -70,7 +75,7 @@ class QFunction:
         self.tau = params.tau
         self.logdir = params.logdir
 
-    def train(self, ep, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True):
+    def train(self, ep, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
         optim = Adam(self.model.parameters(), lr=lr)
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
@@ -107,10 +112,10 @@ class QFunction:
             # TODO: plotting code
             states = []
             actions = []
-            for i in range(60):
-                x = -0.3 + i * 0.01
-                for j in range(60):
-                    y = -0.3 + j * 0.01
+            for i in range(100):
+                x = -75 + i
+                for j in range(20):
+                    y = -10 + j
                     for _ in range(num_eval_actions):
                         states.append([x, y])
                         actions.append(self.action_space.sample())
@@ -119,11 +124,12 @@ class QFunction:
             actions = self.torchify(np.array(actions))
             qf1, qf2 = self.model(states, actions)
             max_qf = torch.max(qf1, qf2)
-            grid = max_qf.detach().cpu().numpy().reshape(60, 60, -1)
+            grid = max_qf.detach().cpu().numpy().reshape(100, 20, -1)
             grid = np.mean(grid, axis=-1).T
             # plt.imshow(grid > 0.8)
             # plt.show()
             plt.imshow(grid)
+            plt.show()
             plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep)))
 
         soft_update(self.model_target, self.model, self.tau)
