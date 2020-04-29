@@ -101,7 +101,7 @@ parser.add_argument('--Q_safe_start_ep', type=int, default=10)
 parser.add_argument('--use_value', action="store_true")
 parser.add_argument('--use_qvalue', action="store_true")
 parser.add_argument('--pred_time', action="store_true")
-
+parser.add_argument('--opt_value', action="store_true")
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
@@ -341,9 +341,9 @@ for i_episode in itertools.count(1):
 
         if i_episode % args.critic_safe_update_freq == 0:
             if args.use_value:
-                agent.V_safe.train(i_episode, V_safe_memory, epochs=50, training_iterations=50, batch_size=100)
+                agent.V_safe.train(i_episode, V_safe_memory, training_iterations=50, batch_size=100)
             elif args.use_qvalue:
-                agent.Q_safe.train(i_episode, Q_safe_memory, agent.policy_sample, epochs=50, training_iterations=50, batch_size=100)
+                agent.Q_safe.train(i_episode, Q_safe_memory, agent.policy_sample, training_iterations=50, batch_size=100)
             else:
                 assert(False)
 

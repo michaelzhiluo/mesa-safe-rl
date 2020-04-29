@@ -28,6 +28,8 @@ class SAC(object):
                 tau_safe = args.tau_safe,
                 use_target = args.use_target_safe,
                 logdir=logdir,
+                env_name=args.env_name,
+                opt=args.opt_value,
                 pred_time=args.pred_time))
         self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, 
                                        device=self.device, 
@@ -35,6 +37,8 @@ class SAC(object):
                                        ac_space=action_space, 
                                        hidden_size=200, 
                                        logdir=logdir,
+                                       env_name=args.env_name,
+                                       opt=args.opt_value,
                                        tau=args.tau_safe))
 
         # TODO; cleanup for now this is hard-coded for maze
