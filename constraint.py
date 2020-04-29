@@ -74,9 +74,8 @@ class ValueFunction:
             else:
                 raise(NotImplementedError("Need to implement opt"))
 
-            plt.imshow(grid)
+            plt.imshow(grid.T)
             plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
-            assert(False)
 
     def get_value(self, states):
         return self.model(states)
@@ -110,10 +109,17 @@ class QFunction:
                         next_state_action = pi(next_state_batch)
                     else: # When training on  demo transitions, just learn Q for a random policy
                         next_state_action = self.torchify(np.array([self.action_space.sample() for _ in range(batch_size)]))
+                    qf1_next_target, qf2_next_target = self.model_target(next_state_batch, next_state_action)
                 else:
-                    raise(NotImplementedError("Need to implement opt"))
+                    eval_next_states = next_state_batch.repeat(num_eval_actions, 1)
+                    eval_next_actions = np.tile(np.array([self.action_space.sample() for _ in range(batch_size)]), (num_eval_actions, 1))
+                    eval_next_actions = self.torchify(eval_next_actions)
+                    eval_qf1_next_target, eval_qf2_next_target = self.model_target(eval_next_states, eval_next_actions)
+                    eval_qf1_next_target = torch.reshape(eval_qf1_next_target, (num_eval_actions, batch_size, -1))
+                    eval_qf2_next_target = torch.reshape(eval_qf2_next_target, (num_eval_actions, batch_size, -1))
+                    qf1_next_target, _ = torch.max(eval_qf1_next_target, 0, keepdim=False)
+                    qf2_next_target, _ = torch.max(eval_qf2_next_target, 0, keepdim=False)
 
-                qf1_next_target, qf2_next_target = self.model_target(next_state_batch, next_state_action)
                 max_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
                 next_qf = constraint_batch.unsqueeze(1) + self.gamma_safe * max_qf_next_target * (1 - constraint_batch.unsqueeze(1) )
 
@@ -156,21 +162,17 @@ class QFunction:
 
             num_states = len(states)
             states = self.torchify(np.array(states))
-            if not self.opt:
-                if ep > 0:
-                    actions = pi(states)
-                else:
-                    actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
+            if ep > 0:
+                actions = pi(states)
             else:
-                raise(NotImplementedError("Need to implement opt"))
+                actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
 
             qf1, qf2 = self.model(states, actions)
             max_qf = torch.max(qf1, qf2)
             grid = max_qf.detach().cpu().numpy()
             grid = grid.reshape(y_pts, x_pts)
-            plt.imshow(grid)
+            plt.imshow(grid.T)
             plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep)))
-            assert(False)
 
         soft_update(self.model_target, self.model, self.tau)
 
@@ -178,4 +180,5 @@ class QFunction:
         with torch.no_grad():
             q1, q2 = self.model(states, actions)
             return torch.max(q1, q2)
+
 
