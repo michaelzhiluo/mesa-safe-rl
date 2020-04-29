@@ -101,7 +101,7 @@ parser.add_argument('--Q_safe_start_ep', type=int, default=10)
 parser.add_argument('--use_value', action="store_true")
 parser.add_argument('--use_qvalue', action="store_true")
 parser.add_argument('--pred_time', action="store_true")
-
+parser.add_argument('--opt_value', action="store_true")
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')

@@ -19,11 +19,14 @@ class ValueFunction:
         self.tau = params.tau_safe
         self.logdir = params.logdir
         self.pred_time = params.pred_time
+        self.env_name = params.env_name
+        self.opt = params.opt
+
         if not params.use_target:
             self.tau = 1.
         hard_update(self.target, self.model)
 
-    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
+    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True):
         optim = Adam(self.model.parameters(), lr=lr)
 
         for j in range(training_iterations):
@@ -46,19 +49,34 @@ class ValueFunction:
             soft_update(self.target, self.model, self.tau)
 
         if plot:
-            pts = []
-            for i in range(100):
-                x = -50 + i
-                for j in range(100):
-                    y = -50 + j
-                    pts.append([x, y])
-            grid = self.model(self.torchify(np.array(pts))).detach().cpu().numpy().reshape(-1, 100).T
+            if self.env_name == 'maze':
+                x_bounds = [-0.3, 0.3]
+                y_bounds = [-0.3, 0.3]
+            elif self.env_name == 'simplepointbot0':
+                x_bounds = [-80, 20]
+                y_bounds = [-10, 10]
+            elif self.env_name == 'simplepointbot1':
+                x_bounds = [-75, 25]
+                y_bounds = [-75, 25]
+            else:
+                raise NotImplementedError("Plotting unsupported for this env")
+
+            states = []
+            x_pts = 100
+            y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
+            for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
+                for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
+                    states.append([x, y])
+
+            if not self.opt:
+                grid = self.model(self.torchify(np.array(states))).detach().cpu().numpy()
+                grid = grid.reshape(y_pts, x_pts)
+            else:
+                raise(NotImplementedError("Need to implement opt"))
 
             plt.imshow(grid)
-            plt.show()
-            assert 0
-            plt.imshow(grid)
             plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
+            assert(False)
 
     def get_value(self, states):
         return self.model(states)
@@ -74,8 +92,10 @@ class QFunction:
         self.model_target = QNetworkConstraint(params.state_dim, self.ac_dim, params.hidden_size).to(self.device)
         self.tau = params.tau
         self.logdir = params.logdir
+        self.env_name = params.env_name 
+        self.opt = params.opt
 
-    def train(self, ep, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=False):
+    def train(self, ep, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True, num_eval_actions=100):
         optim = Adam(self.model.parameters(), lr=lr)
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
@@ -85,12 +105,19 @@ class QFunction:
             next_state_batch = self.torchify(next_state_batch)
 
             with torch.no_grad():
-                next_state_action = pi(next_state_batch)
+                if not self.opt:
+                    if ep > 0:
+                        next_state_action = pi(next_state_batch)
+                    else: # When training on  demo transitions, just learn Q for a random policy
+                        next_state_action = self.torchify(np.array([self.action_space.sample() for _ in range(batch_size)]))
+                else:
+                    raise(NotImplementedError("Need to implement opt"))
+
                 qf1_next_target, qf2_next_target = self.model_target(next_state_batch, next_state_action)
                 max_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
                 next_qf = constraint_batch.unsqueeze(1) + self.gamma_safe * max_qf_next_target * (1 - constraint_batch.unsqueeze(1) )
 
-            qf1, qf2 = self.model(state_batch, pi(state_batch))
+            qf1, qf2 = self.model(state_batch, action_batch)
             max_qf = torch.max(qf1, qf2)
             qf1_loss = F.mse_loss(qf1, next_qf)
             qf2_loss = F.mse_loss(qf2, next_qf)
@@ -108,29 +135,42 @@ class QFunction:
                     print("Q-Value Training Iteration %d    Losses: %f, %f"%(j, qf1_loss, qf2_loss))
 
         if plot:
-            num_eval_actions = 100
-            # TODO: plotting code
-            states = []
-            actions = []
-            for i in range(100):
-                x = -75 + i
-                for j in range(20):
-                    y = -10 + j
-                    for _ in range(num_eval_actions):
-                        states.append([x, y])
-                        actions.append(self.action_space.sample())
+            if self.env_name == 'maze':
+                x_bounds = [-0.3, 0.3]
+                y_bounds = [-0.3, 0.3]
+            elif self.env_name == 'simplepointbot0':
+                x_bounds = [-80, 20]
+                y_bounds = [-10, 10]
+            elif self.env_name == 'simplepointbot1':
+                x_bounds = [-75, 25]
+                y_bounds = [-75, 25]
+            else:
+                raise NotImplementedError("Plotting unsupported for this env")
 
+            states = []
+            x_pts = 100
+            y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
+            for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
+                for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
+                    states.append([x, y])
+
+            num_states = len(states)
             states = self.torchify(np.array(states))
-            actions = self.torchify(np.array(actions))
+            if not self.opt:
+                if ep > 0:
+                    actions = pi(states)
+                else:
+                    actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
+            else:
+                raise(NotImplementedError("Need to implement opt"))
+
             qf1, qf2 = self.model(states, actions)
             max_qf = torch.max(qf1, qf2)
-            grid = max_qf.detach().cpu().numpy().reshape(100, 20, -1)
-            grid = np.mean(grid, axis=-1).T
-            # plt.imshow(grid > 0.8)
-            # plt.show()
+            grid = max_qf.detach().cpu().numpy()
+            grid = grid.reshape(y_pts, x_pts)
             plt.imshow(grid)
-            plt.show()
             plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep)))
+            assert(False)
 
         soft_update(self.model_target, self.model, self.tau)
 
