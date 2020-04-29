@@ -341,9 +341,9 @@ for i_episode in itertools.count(1):
 
         if i_episode % args.critic_safe_update_freq == 0:
             if args.use_value:
-                agent.V_safe.train(i_episode, V_safe_memory, epochs=50, training_iterations=50, batch_size=100)
+                agent.V_safe.train(i_episode, V_safe_memory, training_iterations=50, batch_size=100)
             elif args.use_qvalue:
-                agent.Q_safe.train(i_episode, Q_safe_memory, agent.policy_sample, epochs=50, training_iterations=50, batch_size=100)
+                agent.Q_safe.train(i_episode, Q_safe_memory, agent.policy_sample, training_iterations=50, batch_size=100)
             else:
                 assert(False)
 

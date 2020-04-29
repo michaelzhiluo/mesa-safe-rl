@@ -26,7 +26,7 @@ class ValueFunction:
             self.tau = 1.
         hard_update(self.target, self.model)
 
-    def train(self, ep, memory, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True):
+    def train(self, ep, memory, lr=0.0003, batch_size=1000, training_iterations=3000, plot=True):
         optim = Adam(self.model.parameters(), lr=lr)
 
         for j in range(training_iterations):
@@ -94,7 +94,7 @@ class QFunction:
         self.env_name = params.env_name 
         self.opt = params.opt
 
-    def train(self, ep, memory, pi, epochs=50, lr=1e-3, batch_size=1000, training_iterations=3000, plot=True, num_eval_actions=100):
+    def train(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=True, num_eval_actions=100):
         optim = Adam(self.model.parameters(), lr=lr)
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
@@ -105,10 +105,11 @@ class QFunction:
 
             with torch.no_grad():
                 if not self.opt:
-                    if ep > 0:
-                        next_state_action = pi(next_state_batch)
-                    else: # When training on  demo transitions, just learn Q for a random policy
-                        next_state_action = self.torchify(np.array([self.action_space.sample() for _ in range(batch_size)]))
+                    next_state_action = pi(next_state_batch)
+                    # if ep > 0:
+                    #     next_state_action = pi(next_state_batch)
+                    # else: # When training on  demo transitions, just learn Q for a random policy
+                    #     next_state_action = self.torchify(np.array([self.action_space.sample() for _ in range(batch_size)]))
                     qf1_next_target, qf2_next_target = self.model_target(next_state_batch, next_state_action)
                 else:
                     eval_next_states = next_state_batch.repeat(num_eval_actions, 1)
@@ -123,7 +124,8 @@ class QFunction:
                 max_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
                 next_qf = constraint_batch.unsqueeze(1) + self.gamma_safe * max_qf_next_target * (1 - constraint_batch.unsqueeze(1) )
 
-            qf1, qf2 = self.model(state_batch, action_batch)
+            # qf1, qf2 = self.model(state_batch, action_batch)
+            qf1, qf2 = self.model(state_batch, pi(state_batch))
             max_qf = torch.max(qf1, qf2)
             qf1_loss = F.mse_loss(qf1, next_qf)
             qf2_loss = F.mse_loss(qf2, next_qf)
@@ -162,10 +164,11 @@ class QFunction:
 
             num_states = len(states)
             states = self.torchify(np.array(states))
-            if ep > 0:
-                actions = pi(states)
-            else:
-                actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
+            actions = pi(states)
+            # if ep > 0:
+            #     actions = pi(states)
+            # else:
+            #     actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
 
             qf1, qf2 = self.model(states, actions)
             max_qf = torch.max(qf1, qf2)
