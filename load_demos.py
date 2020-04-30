@@ -26,10 +26,8 @@ def load_demos(demo_dir):
 			else:
 				safe_transitions.append((state, action, constraint, next_state, done))
 			all_transitions.append((state, action, constraint, next_state, done))
-	print("Total transitions", t, "Violating Transitions" s) # to modify proportions later
+	print("Total transitions", t, "Violating Transitions", s) # to modify proportions later
 	return all_transitions
 
-demo_dir = "reacher"
-
 if __name__ == '__main__':
-	load_demos(demo_dir)
+	load_demos("reacher")
