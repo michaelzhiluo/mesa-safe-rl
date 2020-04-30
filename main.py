@@ -175,7 +175,10 @@ task_demos = args.task_demos
 
 # Get demonstrations
 if not task_demos:
-    constraint_demo_data = env.transition_function(args.num_demo_transitions)
+    if args.env_name == 'reacher':
+        constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
+    else:
+        constraint_demo_data = env.transition_function(args.num_demo_transitions)
 else:
     # TODO: cleanup, for now this is hard-coded for maze
     if args.cnn and args.env_name == 'maze':
