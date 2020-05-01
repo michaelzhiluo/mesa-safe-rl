@@ -15,6 +15,7 @@ from config import create_config
 import os
 from env.simplepointbot0 import SimplePointBot
 import moviepy.editor as mpy
+from video_recorder import VideoRecorder
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
@@ -227,6 +228,8 @@ for i_episode in itertools.count(1):
     episode_steps = 0
     done = False
     state = env.reset()
+    if args.env_name == 'reacher':
+        recorder = VideoRecorder(env, osp.join(logdir, 'video_{}.mp4'.format(i_episode)))
     # TODO; cleanup for now this is hard-coded for maze
     if args.cnn:
         if args.env_name == 'maze':
@@ -239,6 +242,8 @@ for i_episode in itertools.count(1):
     ep_states = [state]
     ep_actions = []
     while not done:
+        if args.env_name == 'reacher':
+            recorder.capture_frame()
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
 
@@ -282,6 +287,8 @@ for i_episode in itertools.count(1):
                 updates += 1
 
         next_state, reward, done, info = env.step(real_action) # Step
+        # print("CONSTRAINT", info['constraint'])
+
         # TODO; cleanup for now this is hard-coded for maze
         if args.cnn:
             if args.env_name == 'maze':
@@ -328,6 +335,10 @@ for i_episode in itertools.count(1):
 
     ep_states = np.array(ep_states)
     ep_actions = np.array(ep_actions)
+
+    if args.env_name == 'reacher':
+        recorder.capture_frame()
+        recorder.close()
 
     if args.env_name == 'cliffwalker' or args.env_name == 'cliffcheetah':
         print("FINAL X POSITION", ep_states[-1][0])
