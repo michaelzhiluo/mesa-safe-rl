@@ -10,6 +10,7 @@ import os
 FIXED_ENV = False
 DENSE_REWARD = True
 GT_STATE = True
+EARLY_TERMINATION = True
 
 def no_rot_dynamics(prev_target_qpos, action):
     target_qpos = np.zeros_like(prev_target_qpos)
@@ -20,30 +21,6 @@ def no_rot_dynamics(prev_target_qpos, action):
 def clip_target_qpos(target, lb, ub):
     target[:len(lb)] = np.clip(target[:len(lb)], lb, ub)
     return target
-
-def get_random_transitions(num_transitions, task_demos=False):
-    env = ShelfEnv()
-    transitions = []
-    task_transitions = []
-    for i in range(num_transitions):
-        if i %(num_transitions//100) == 0:
-            state = env.reset()
-            print("Transition: ", i)
-        action = env.expert_action(noise_std=0.03)
-        next_state, reward, done, info = env.step(action)
-        constraint = info['constraint']
-        # if constraint:
-        #     print("CONSTRAINT!")
-        transitions.append((state, action, constraint, next_state, done))
-        if task_demos:
-            task_transitions.append((state, action, reward, next_state, done))
-
-        state = next_state
-
-    if not task_demos:
-        return transitions
-    else:
-        return transitions, task_transitions
 
 class ShelfEnv(BaseMujocoEnv):
 
@@ -69,7 +46,6 @@ class ShelfEnv(BaseMujocoEnv):
         self.dense_reward = DENSE_REWARD
         self.gt_state = GT_STATE
         self._max_episode_steps = 25
-        self.transition_function = get_random_transitions
 
         if self.gt_state:
             self.observation_space = Box(low=-np.inf, high=np.inf, shape=(27,))
@@ -120,17 +96,24 @@ class ShelfEnv(BaseMujocoEnv):
             self.sim.step()
 
         self._previous_target_qpos = target_qpos
+        constraint = self.topple_check()
+        reward = self.reward_fn()
 
-        info = {"constraint": self.topple_check(),
-                "reward": self.reward_fn(),
+        if EARLY_TERMINATION:
+            done = (constraint > 0) or (reward > 0)
+        else:
+            done = False
+
+        info = {"constraint": constraint,
+                "reward": reward,
                 "state": position,
                 "next_state": self.position,
                 "action": action}
 
         if self.gt_state:
-            return self.position, self.reward_fn(), self.topple_check(), info
+            return self.position, reward, done, info
         else:
-            return self.render(), self.reward_fn(), self.topple_check(), info
+            return self.render(), reward, done, info
 
     def topple_check(self, debug=False):
         quat = self.object_poses[:,3:]

@@ -33,7 +33,10 @@ def npy_to_gif(im_list, filename, fps=4):
     clip = mpy.ImageSequenceClip(im_list, fps=fps)
     clip.write_gif(filename + '.gif')
 
-def process_obs(obs):
+# TODO: fix this for shelf env...
+def process_obs(obs, env_name):
+    if env_name == 'shelf_env':
+        obs = cv2.resize(obs, (64, 48), interpolation=cv2.INTER_AREA)
     im = np.transpose(obs, (2, 0, 1))
     return im
 
@@ -85,7 +88,7 @@ parser.add_argument('--cuda', action="store_true",
                     help='run on CUDA (default: False)')
 parser.add_argument('--cnn', action="store_true", 
                     help='visual observations (default: False)')
-parser.add_argument('--critic_pretraining_steps', type=int, default=200)
+parser.add_argument('--critic_pretraining_steps', type=int, default=3000)
 
 parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 # For recovery policy
@@ -178,12 +181,17 @@ task_demos = args.task_demos
 if not task_demos:
     if args.env_name == 'reacher':
         constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
+    elif args.env_name == 'shelf_env':
+        constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
     else:
         constraint_demo_data = env.transition_function(args.num_demo_transitions)
 else:
     # TODO: cleanup, for now this is hard-coded for maze
     if args.cnn and args.env_name == 'maze':
         constraint_demo_data, task_demo_data_images = env.transition_function(args.num_demo_transitions, task_demos=task_demos, images=True)
+    elif args.env_name == 'shelf_env':
+        task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos.pkl"), "rb"))
+        constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
     else:
         constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=task_demos)
 
@@ -213,7 +221,9 @@ if args.cnn and args.env_name == 'maze' and task_demos:
 if task_demos:
     for transition in task_demo_data:
         memory.push(*transition)
-    for _ in range(args.critic_pretraining_steps):
+    for i in range(args.critic_pretraining_steps):
+        if i % 100 == 0:
+            print("Update: ", i)
         agent.update_parameters(memory, args.batch_size, updates)
         updates += 1
 
@@ -234,13 +244,14 @@ for i_episode in itertools.count(1):
     if args.cnn:
         if args.env_name == 'maze':
             im_state = env.sim.render(64, 64, camera_name= "cam0")
-            im_state = process_obs(im_state)
+            im_state = process_obs(im_state, args.env_name)
         else:
-            state = process_obs(state)
+            state = process_obs(state, args.env_name)
 
     train_rollouts.append([])
     ep_states = [state]
     ep_actions = []
+    print(logdir)
     while not done:
         if args.env_name == 'reacher':
             recorder.capture_frame()
@@ -249,12 +260,12 @@ for i_episode in itertools.count(1):
 
             if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                 if not args.disable_learned_recovery:
-                    # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
         else:
             if args.cnn and args.env_name == 'maze':
@@ -265,12 +276,12 @@ for i_episode in itertools.count(1):
             # if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
             if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                 if not args.disable_learned_recovery:
-                    # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
+                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
                     real_action = recovery_policy.act(state, 0)
                 else:
                     real_action = env.safe_action(state)
             else:
-                # print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
+                print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                 real_action = action
 
         if len(memory) > args.batch_size:
@@ -288,14 +299,25 @@ for i_episode in itertools.count(1):
 
         next_state, reward, done, info = env.step(real_action) # Step
         # print("CONSTRAINT", info['constraint'])
+        # Ignore the "done" signal if it comes from hitting the time horizon.
+        # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
+        # mask = 1 if episode_steps == env._max_episode_steps else float(not done)
+        if episode_steps == env._max_episode_steps:
+            done = True
+
+        # TODO: cleanup hardcoded for shelf:
+        if args.env_name == 'shelf_env':
+            if done and reward > 0:
+                reward = 5
+                info['reward'] = 5
 
         # TODO; cleanup for now this is hard-coded for maze
         if args.cnn:
             if args.env_name == 'maze':
                 im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-                im_next_state = process_obs(im_next_state)
+                im_next_state = process_obs(im_next_state, args.env_name)
             else:
-                next_state = process_obs(next_state)
+                next_state = process_obs(next_state, args.env_name)
 
         train_rollouts[-1].append(info)
         episode_steps += 1
@@ -304,12 +326,6 @@ for i_episode in itertools.count(1):
 
         if args.constraint_reward_penalty > 0 and info['constraint']:
             reward -= args.constraint_reward_penalty
-
-        # Ignore the "done" signal if it comes from hitting the time horizon.
-        # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
-        # mask = 1 if episode_steps == env._max_episode_steps else float(not done)
-        if episode_steps == env._max_episode_steps:
-            done = True
 
         mask = float(not done)
         # done = done or episode_steps == env._max_episode_steps
@@ -383,12 +399,15 @@ for i_episode in itertools.count(1):
             # TODO; cleanup for now this is hard-coded for maze
             if args.env_name == 'maze':
                 im_list = [env.sim.render(64, 64, camera_name= "cam0")]
+            elif args.env_name == 'shelf_env':
+                im_list = [env.render().squeeze()]
+
             if args.cnn:
                 if args.env_name == 'maze':
                     im_state = env.sim.render(64, 64, camera_name= "cam0")
-                    im_state = process_obs(im_state)
+                    im_state = process_obs(im_state, args.env_name)
                 else:
-                    state = process_obs(state)
+                    state = process_obs(state, args.env_name)
 
             episode_reward = 0
             episode_steps = 0
@@ -413,22 +432,31 @@ for i_episode in itertools.count(1):
 
                 next_state, reward, done, info = env.step(real_action) # Step
 
+                if episode_steps == env._max_episode_steps:
+                    done = True
+
+                # TODO: cleanup hardcoded for shelf:
+                if args.env_name == 'shelf_env':
+                    if done and reward > 0:
+                        reward = 5
+                        info['reward'] = 5
+
                 if args.env_name == 'maze':
                     im_list.append(env.sim.render(64, 64, camera_name= "cam0"))
+                elif args.env_name == 'shelf_env':
+                    im_list.append(env.render().squeeze())
+
                 # TODO; cleanup for now this is hard-coded for maze
                 if args.cnn:
                     if args.env_name == 'maze':
                         im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-                        im_next_state = process_obs(im_next_state)
+                        im_next_state = process_obs(im_next_state, args.env_name)
                     else:
-                        next_state = process_obs(next_state)
+                        next_state = process_obs(next_state, args.env_name)
 
                 test_rollouts[-1].append(info)
                 episode_reward += reward
                 episode_steps += 1
-
-                if episode_steps == env._max_episode_steps:
-                    done = True
 
                 state = next_state
                 # TODO; cleanup for now this is hard-coded for maze
@@ -442,7 +470,7 @@ for i_episode in itertools.count(1):
             print("num violations: %d"%num_violations)
             avg_reward += episode_reward
 
-            if args.env_name == 'maze':
+            if args.env_name == 'maze' or args.env_name == 'shelf_env':
                 npy_to_gif(im_list, osp.join(logdir, "test_" + str(i_episode) + "_" + str(j)))
 
         avg_reward /= episodes

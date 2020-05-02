@@ -9,9 +9,9 @@ from gym import utils
 from gym.envs.mujoco import mujoco_env
 
 
-TARGET = np.array([0.53345871, 0.21923056, -0.10861196])
-# TARGET = np.array([0., 0., -0.])
-THRESH = 0.05
+# TARGET = np.array([0.13345871, 0.21923056, -0.10861196])
+TARGET = np.array([0., 0., -0.])
+THRESH = 0.07
 HORIZON = 150
 
 class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
@@ -26,7 +26,7 @@ class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.transition_function = get_random_transitions
         mujoco_env.MujocoEnv.__init__(self, os.path.join(dir_path, 'assets/reacher3d.xml'), 2)
 
-    def _step(self, a):
+    def step(self, a):
         # a = self.process_action(a)
         old_state = self._get_obs().copy()
         # if not self.obstacle(self.get_EE_pos(old_state[None])):
@@ -37,10 +37,10 @@ class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         ctrl_cost = 0.001*np.square(a).sum()
         cost = obs_cost + ctrl_cost
 
-        if obs_cost < 0.05:
-            cost = -10000 + np.square(a).sum()
+        if obs_cost < THRESH:
+            cost = -10000 + (1e-5)*np.square(a).sum()
 
-        if obs_cost < 0.05:
+        if obs_cost < THRESH:
             print("goal", ctrl_cost, obs_cost, self.time)
         done = HORIZON <= self.time
         return ob, -cost, done, {
@@ -71,8 +71,8 @@ class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
 
     def _get_obs(self):
         return np.concatenate([
-            self.model.data.qpos.flat,
-            self.model.data.qvel.flat[:-3],
+            self.sim.data.qpos.flat,
+            self.sim.data.qvel.flat[:-3],
         ])
 
     def get_EE_pos(self, states):
