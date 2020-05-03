@@ -26,7 +26,7 @@ class ValueFunction:
             self.tau = 1.
         hard_update(self.target, self.model)
 
-    def train(self, ep, memory, lr=0.0003, batch_size=1000, training_iterations=3000, plot=True):
+    def train(self, ep, memory, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False):
         optim = Adam(self.model.parameters(), lr=lr)
 
         for j in range(training_iterations):
@@ -95,7 +95,7 @@ class QFunction:
         self.env_name = params.env_name 
         self.opt = params.opt
 
-    def train(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=True, num_eval_actions=100):
+    def train(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False, num_eval_actions=100):
         optim = Adam(self.model.parameters(), lr=lr)
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
