@@ -258,7 +258,7 @@ for i_episode in itertools.count(1):
         if args.start_steps > total_numsteps:
             action = env.action_space.sample()  # Sample random action
 
-            if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
+            if args.use_recovery and ((agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                 if not args.disable_learned_recovery:
                     print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
                     real_action = recovery_policy.act(state, 0)
@@ -274,7 +274,7 @@ for i_episode in itertools.count(1):
                 action = agent.select_action(state)  # Sample action from policy
 
             # if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-            if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
+            if args.use_recovery and ((agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                 if not args.disable_learned_recovery:
                     print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
                     real_action = recovery_policy.act(state, 0)
@@ -420,7 +420,7 @@ for i_episode in itertools.count(1):
                     action = agent.select_action(state, eval=True)  # Sample action from policy
 
                 # if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                if args.use_recovery and ((agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
+                if args.use_recovery and ((agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
                     if not args.disable_learned_recovery:
                         # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
                         real_action = recovery_policy.act(state, 0)
