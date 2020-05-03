@@ -40,6 +40,10 @@ class SAC(object):
                                        env_name=args.env_name,
                                        opt=args.opt_value,
                                        tau=args.tau_safe))
+        if args.use_value:
+            self.safety_critic = self.V_safe
+        else:
+            self.safety_critic = self.Q_safe
 
         # TODO; cleanup for now this is hard-coded for maze
         if im_shape:

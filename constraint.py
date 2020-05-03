@@ -77,8 +77,9 @@ class ValueFunction:
             plt.imshow(grid.T)
             plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
 
-    def get_value(self, states):
+    def get_value(self, states, actions=None):
         return self.model(states)
+
 
 class QFunction:
     def __init__(self, params):
@@ -141,6 +142,8 @@ class QFunction:
             if j % 100 == 0:
                 with torch.no_grad():
                     print("Q-Value Training Iteration %d    Losses: %f, %f"%(j, qf1_loss, qf2_loss))
+            soft_update(self.model_target, self.model, self.tau)
+
 
         if plot:
             if self.env_name == 'maze':
@@ -177,9 +180,8 @@ class QFunction:
             plt.imshow(grid.T)
             plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep)))
 
-        soft_update(self.model_target, self.model, self.tau)
 
-    def get_qvalue(self, states, actions):
+    def get_value(self, states, actions):
         with torch.no_grad():
             q1, q2 = self.model(states, actions)
             return torch.max(q1, q2)
