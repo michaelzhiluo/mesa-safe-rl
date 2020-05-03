@@ -35,12 +35,14 @@ experiment_map = {
     },
     "shelf": {
         "algs": {
-            "sac_norecovery": ["2020-05-02_10-02-27_SAC_shelf_env_Gaussian_"],
-            "recovery_0.1": ["2020-05-02_10-25-48_SAC_shelf_env_Gaussian_"],
-            "recovery_0.2": ["2020-05-02_10-34-18_SAC_shelf_env_Gaussian_"],
-            "recovery_0.4": ["2020-05-02_10-35-04_SAC_shelf_env_Gaussian_"],
-            "recovery_0.8": ["2020-05-02_10-37-10_SAC_shelf_env_Gaussian_"],
-            "recovery_0.9": ["2020-05-02_10-49-34_SAC_shelf_env_Gaussian_"]
+            "sac_norecovery": ["2020-05-02_10-02-27_SAC_shelf_env_Gaussian_", "2020-05-02_23-46-58_SAC_shelf_env_Gaussian_", "2020-05-02_23-47-31_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.1": ["2020-05-02_10-25-48_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.2": ["2020-05-02_10-34-18_SAC_shelf_env_Gaussian_"],
+            "recovery_0.3": ["2020-05-02_23-50-24_SAC_shelf_env_Gaussian_", "2020-05-02_23-51-35_SAC_shelf_env_Gaussian_", "2020-05-02_23-52-27_SAC_shelf_env_Gaussian_"],
+            "recovery_0.4": ["2020-05-02_10-35-04_SAC_shelf_env_Gaussian_", "2020-05-02_23-48-11_SAC_shelf_env_Gaussian_", "2020-05-02_23-49-08_SAC_shelf_env_Gaussian_"],
+            "recovery_0.6": ["2020-05-02_23-53-33_SAC_shelf_env_Gaussian_", "2020-05-02_23-54-31_SAC_shelf_env_Gaussian_", "2020-05-02_23-55-08_SAC_shelf_env_Gaussian_"],
+            "recovery_0.8": ["2020-05-02_10-37-10_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-07_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-33_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.9": ["2020-05-02_10-49-34_SAC_shelf_env_Gaussian_"]
         },
         "outfile": "shelf.png"
     } 
@@ -57,7 +59,9 @@ names = {
     "sac_lagrangian" : "SAC + Lagrangian",
     "recovery_0.1": "SAC + Recovery (eps=0.1)",
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
+    "recovery_0.3": "SAC + Recovery (eps=0.3)",
     "recovery_0.4": "SAC + Recovery (eps=0.4)",
+    "recovery_0.6": "SAC + Recovery (eps=0.6)",
     "recovery_0.8": "SAC + Recovery (eps=0.8)",
     "recovery_0.9": "SAC + Recovery (eps=0.9)",
 }
@@ -71,11 +75,10 @@ colors = {
     "sac_penalty100": "purple",
     "recovery": "red",
     "sac_lagrangian": "pink",
-    "recovery_0.1": "orange",
-    "recovery_0.2": "black",
+    "recovery_0.3": "black",
     "recovery_0.4": "blue",
+    "recovery_0.6": "pink",
     "recovery_0.8": "purple",
-    "recovery_0.9": "pink",
 }
 
 def get_stats(data):
@@ -85,7 +88,7 @@ def get_stats(data):
     return mu, lb, ub
 
 
-def plot_experiment(experiment, max_eps=3000):
+def plot_experiment(experiment, max_eps=2800):
 
     if experiment == 'maze' or experiment == 'shelf':
         fig, axs = plt.subplots(3, figsize=(16, 19))
