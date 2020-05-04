@@ -43,6 +43,10 @@ experiment_map = {
             "recovery_0.6": ["2020-05-02_23-53-33_SAC_shelf_env_Gaussian_", "2020-05-02_23-54-31_SAC_shelf_env_Gaussian_", "2020-05-02_23-55-08_SAC_shelf_env_Gaussian_"],
             "recovery_0.8": ["2020-05-02_10-37-10_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-07_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-33_SAC_shelf_env_Gaussian_"],
             # "recovery_0.9": ["2020-05-02_10-49-34_SAC_shelf_env_Gaussian_"]
+            "sac_penalty1": ["2020-05-03_22-17-28_SAC_shelf_env_Gaussian_", "2020-05-03_22-17-50_SAC_shelf_env_Gaussian_", "2020-05-03_22-18-43_SAC_shelf_env_Gaussian_"],
+            "sac_penalty3": ["2020-05-03_22-20-30_SAC_shelf_env_Gaussian_", "2020-05-03_22-21-35_SAC_shelf_env_Gaussian_", "2020-05-03_22-22-46_SAC_shelf_env_Gaussian_"],
+            "sac_penalty5": ["2020-05-03_22-31-48_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-17_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-44_SAC_shelf_env_Gaussian_"],
+            "sac_penalty10": ["2020-05-03_22-34-18_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-38_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-54_SAC_shelf_env_Gaussian_"],
         },
         "outfile": "shelf.png"
     } 
@@ -64,6 +68,10 @@ names = {
     "recovery_0.6": "SAC + Recovery (eps=0.6)",
     "recovery_0.8": "SAC + Recovery (eps=0.8)",
     "recovery_0.9": "SAC + Recovery (eps=0.9)",
+    "sac_penalty1": "SAC (penalty 1)",
+    "sac_penalty3": "SAC (penalty 3)",
+    "sac_penalty5": "SAC (penalty 5)",
+    "sac_penalty10": "SAC (penalty 10)",
 }
 
 
@@ -79,6 +87,10 @@ colors = {
     "recovery_0.4": "blue",
     "recovery_0.6": "pink",
     "recovery_0.8": "purple",
+    "sac_penalty1": "red",
+    "sac_penalty3": "orange",
+    "sac_penalty5": "yellow",
+    "sac_penalty10": "magenta"
 }
 
 def get_stats(data):
@@ -225,10 +237,10 @@ def plot_experiment(experiment, max_eps=2800):
                          color=colors[alg], alpha=.5)
             axs[2].plot(ts_mean, colors[alg], label=names[alg])
 
-    axs[0].legend(loc="lower right")
-    axs[1].legend(loc="lower right")
+    axs[0].legend(loc="upper left")
+    axs[1].legend(loc="upper left")
     if experiment == 'maze' or experiment == 'shelf':
-        axs[2].legend(loc="lower right")
+        axs[2].legend(loc="upper left")
     plt.savefig(experiment_map[experiment]["outfile"])
     plt.show()
 
