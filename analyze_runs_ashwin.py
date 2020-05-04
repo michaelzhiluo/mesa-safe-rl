@@ -106,7 +106,10 @@ def plot_experiment(experiment, max_eps=2800):
         fig, axs = plt.subplots(3, figsize=(16, 19))
 
         axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-        axs[0].set_ylim(-0.1, max_eps+1)
+        if experiment == 'shelf':
+            axs[0].set_ylim(-0.1, max_eps//4 + 1)
+        else:
+            axs[0].set_ylim(-0.1, max_eps+1)
         axs[0].set_xlabel("Episode", fontsize=16)
         axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
         axs[0].tick_params(axis='both', which='major', labelsize=14)
