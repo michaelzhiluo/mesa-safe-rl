@@ -19,6 +19,92 @@ from video_recorder import VideoRecorder
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
+def set_seed(seed):
+    torch.manual_seed(args.seed)
+    np.random.seed(args.seed)
+    env.seed(args.seed)
+
+def dump_logs(test_rollouts, train_rollouts, logdir):
+    data = {
+        "test_stats": test_rollouts,
+        "train_stats": train_rollouts
+    }
+    with open(osp.join(logdir, "run_stats.pkl"), "wb") as f:
+        pickle.dump(data, f)
+
+def print_episode_info(rollout):
+    num_violations = 0
+    for inf in rollout:
+        num_violations += int(inf['constraint'])
+    print("final reward: %f"%rollout[-1]["reward"])
+    print(rollout[-1]["state"])
+    print("num violations: %d"%num_violations)
+
+
+def recovery_config_setup(args):
+    ctrl_args = DotMap(**{key: val for (key, val) in args.ctrl_arg})
+    cfg = create_config(args.env_name, "MPC", ctrl_args, args.override, logdir)
+    cfg.ctrl_cfg.pred_time = args.pred_time
+    if args.use_value:
+        cfg.ctrl_cfg.use_value = True
+    elif args.use_qvalue:
+        cfg.ctrl_cfg.use_qvalue = True
+    else:
+        assert(False)
+    cfg.pprint()
+    return cfg
+
+def experiment_setup(logdir, args):
+    if args.use_recovery and not args.disable_learned_recovery:
+        cfg = recovery_config_setup(args)
+        recovery_policy = MPC(cfg.ctrl_cfg)
+        
+        env = cfg.ctrl_cfg.env
+    else:
+        recovery_policy = None
+        env = gym.make(ENV_ID[args.env_name])
+    agent = agent_setup(env, logdir, args)
+    if args.use_recovery and not args.disable_learned_recovery:
+        if args.use_value:
+            recovery_policy.update_value_func(agent.V_safe)
+        elif args.use_qvalue: 
+            recovery_policy.update_value_func(agent.Q_safe)
+    return agent, recovery_policy, env
+
+def agent_setup(env, logdir, args):
+    if args.cnn and args.env_name == 'maze':
+        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
+    else:
+        agent = SAC(env.observation_space, env.action_space, args, logdir)
+    return agent
+
+
+def get_action(state, env, agent, recovery_policy, args, train=True):
+    def recovery_thresh(state, action, agent, args):
+        if not args.use_recovery:
+            return False
+        critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0))
+        if critic_val > args.eps_safe and not args.pred_time:
+            return True
+        elif critic_val < args.t_safe and args.pred_time:
+            return True
+        return False
+    if args.start_steps > total_numsteps and train:
+        action = env.action_space.sample()  # Sample random action
+    elif train:
+        action = agent.select_action(state)  # Sample action from policy
+    else:
+        action = agent.select_action(state, eval=True)  # Sample action from policy
+    if recovery_thresh(state, action, agent, args):
+        if not args.disable_learned_recovery:
+            real_action = recovery_policy.act(state, 0)
+        else:
+            real_action = env.safe_action(state)
+    else:
+        real_action = np.copy(action)
+    return action, real_action
+
+
 ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 
           'simplepointbot1': 'SimplePointBot-v1',
           'cliffwalker': 'CliffWalker-v0',
@@ -32,6 +118,36 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
 def npy_to_gif(im_list, filename, fps=4):
     clip = mpy.ImageSequenceClip(im_list, fps=fps)
     clip.write_gif(filename + '.gif')
+
+
+def get_constraint_demos(env, args):
+    # Get demonstrations
+    task_demo_data = None
+    if not args.task_demos:
+        if args.env_name == 'reacher':
+            constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
+        elif args.env_name == 'shelf_env':
+            constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
+        else:
+            constraint_demo_data = env.transition_function(args.num_demo_transitions)
+    else:
+        # TODO: cleanup, for now this is hard-coded for maze
+        if args.cnn and args.env_name == 'maze':
+            constraint_demo_data, task_demo_data_images = env.transition_function(args.num_demo_transitions, task_demos=args.task_demos, images=True)
+        elif args.env_name == 'shelf_env':
+            task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos.pkl"), "rb"))
+            constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
+        else:
+            constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=args.task_demos)
+    return constraint_demo_data, task_demo_data
+
+
+def train_recovery(states, actions, next_states=None, epochs=50):
+    if next_states is not None:
+        recovery_policy.train(states, actions, random=True, next_obs=next_states, epochs=epochs)
+    else:
+        recovery_policy.train(states, actions)
+
 
 # TODO: fix this for shelf env...
 def process_obs(obs, env_name):
@@ -115,103 +231,34 @@ parser.add_argument('--num_demo_transitions', type=int, default=10000)
 args = parser.parse_args()
 
 #TesnorboardX
-logdir='runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
+logdir = 'runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
 writer = SummaryWriter(logdir=logdir)
 pickle.dump(args, open(os.path.join(logdir, "args.pkl"), "wb") )
 
-if args.use_recovery and not args.disable_learned_recovery:
-    ctrl_args = DotMap(**{key: val for (key, val) in args.ctrl_arg})
-    cfg = create_config(args.env_name, "MPC", ctrl_args, args.override, logdir)
-    cfg.ctrl_cfg.pred_time = args.pred_time
-    cfg.pprint()
-    if args.use_value:
-        cfg.ctrl_cfg.use_value = True
-    elif args.use_qvalue:
-        cfg.ctrl_cfg.use_qvalue = True
-    else:
-        assert(False)
-
-    recovery_policy = MPC(cfg.ctrl_cfg)
-else:
-    recovery_policy = None
-# Environment
-# env = NormalizedActions(gym.make(args.env_name))
-
-if args.use_recovery and not args.disable_learned_recovery:
-    env = cfg.ctrl_cfg.env
-else:
-    env = gym.make(ENV_ID[args.env_name])
-
-torch.manual_seed(args.seed)
-np.random.seed(args.seed)
-env.seed(args.seed)
-
-# Agent
-# TODO; cleanup for now this is hard-coded for maze
-if args.cnn and args.env_name == 'maze':
-    agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
-else:
-    agent = SAC(env.observation_space, env.action_space, args, logdir)
-
-if args.use_recovery and not args.disable_learned_recovery:
-    # recovery_policy.update_value_func(agent.V_safe)
-    if args.use_value:
-       recovery_policy.update_value_func(agent.V_safe)
-    elif args.use_qvalue: 
-        recovery_policy.update_value_func(agent.Q_safe)
-    else:
-        assert(False)
+agent, recovery_policy, env = experiment_setup(logdir, args)
 
 # Memory
 memory = ReplayMemory(args.replay_size)
-V_safe_memory = ReplayMemory(args.safe_replay_size)
-Q_safe_memory = ReplayMemory(args.safe_replay_size)
+recovery_memory = ReplayMemory(args.safe_replay_size)
 
 # Training Loop
 total_numsteps = 0
 updates = 0
 
-# task_demos = args.task_demos or (not args.filter) or (args.eps_safe == 1)
-# removing above for now
 task_demos = args.task_demos
 
-
-# Get demonstrations
-if not task_demos:
-    if args.env_name == 'reacher':
-        constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
-    elif args.env_name == 'shelf_env':
-        constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
-    else:
-        constraint_demo_data = env.transition_function(args.num_demo_transitions)
-else:
-    # TODO: cleanup, for now this is hard-coded for maze
-    if args.cnn and args.env_name == 'maze':
-        constraint_demo_data, task_demo_data_images = env.transition_function(args.num_demo_transitions, task_demos=task_demos, images=True)
-    elif args.env_name == 'shelf_env':
-        task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos.pkl"), "rb"))
-        constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
-    else:
-        constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=task_demos)
+constraint_demo_data, task_demo_data = get_constraint_demos(env, args)
 
 # Train recovery policy and associated value function on demos
 if args.use_recovery and not args.disable_learned_recovery:
     demo_data_states = np.array([d[0] for d in constraint_demo_data])
     demo_data_actions = np.array([d[1] for d in constraint_demo_data])
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
-    recovery_policy.train(demo_data_states, demo_data_actions, random=True, next_obs=demo_data_next_states, epochs=50)
-
-    if args.use_value:
-        for transition in constraint_demo_data:
-            V_safe_memory.push(*transition)
-        agent.V_safe.train(0, V_safe_memory)
-    elif args.use_qvalue:
-        for transition in constraint_demo_data:
-            Q_safe_memory.push(*transition)
-        agent.Q_safe.train(0, Q_safe_memory, agent.policy_sample)
-    else:
-        assert(False)
+    train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
+    for transition in constraint_demo_data:
+        recovery_memory.push(*transition)
+    agent.train_safety_critic(0, recovery_memory, agent.policy_sample)
 
 # TODO: cleanup, for now this is hard-coded for maze
 if args.cnn and args.env_name == 'maze' and task_demos:
@@ -230,7 +277,6 @@ if task_demos:
 
 test_rollouts = []
 train_rollouts = []
-
 all_ep_data = []
 
 for i_episode in itertools.count(1):
@@ -241,55 +287,22 @@ for i_episode in itertools.count(1):
     if args.env_name == 'reacher':
         recorder = VideoRecorder(env, osp.join(logdir, 'video_{}.mp4'.format(i_episode)))
     # TODO; cleanup for now this is hard-coded for maze
-    if args.cnn:
-        if args.env_name == 'maze':
-            im_state = env.sim.render(64, 64, camera_name= "cam0")
-            im_state = process_obs(im_state, args.env_name)
-        else:
-            state = process_obs(state, args.env_name)
+    if args.cnn and args.env_name == 'maze':
+        state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
 
     train_rollouts.append([])
     ep_states = [state]
     ep_actions = []
-    print(logdir)
+
     while not done:
         if args.env_name == 'reacher':
             recorder.capture_frame()
-        if args.start_steps > total_numsteps:
-            action = env.action_space.sample()  # Sample random action
-
-            if args.use_recovery and ((agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
-                if not args.disable_learned_recovery:
-                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                    real_action = recovery_policy.act(state, 0)
-                else:
-                    real_action = env.safe_action(state)
-            else:
-                print("NOT RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                real_action = action
-        else:
-            if args.cnn and args.env_name == 'maze':
-                action = agent.select_action(im_state) 
-            else:
-                action = agent.select_action(state)  # Sample action from policy
-
-            # if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-            if args.use_recovery and ((agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
-                if not args.disable_learned_recovery:
-                    print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
-                    real_action = recovery_policy.act(state, 0)
-                else:
-                    real_action = env.safe_action(state)
-            else:
-                print("NOT RECOVERY HERE", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                real_action = action
 
         if len(memory) > args.batch_size:
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
-
                 writer.add_scalar('loss/critic_1', critic_1_loss, updates)
                 writer.add_scalar('loss/critic_2', critic_2_loss, updates)
                 writer.add_scalar('loss/policy', policy_loss, updates)
@@ -297,27 +310,14 @@ for i_episode in itertools.count(1):
                 writer.add_scalar('entropy_temprature/alpha', alpha, updates)
                 updates += 1
 
-        next_state, reward, done, info = env.step(real_action) # Step
-        # print("CONSTRAINT", info['constraint'])
-        # Ignore the "done" signal if it comes from hitting the time horizon.
-        # (https://github.com/openai/spinningup/blob/master/spinup/algos/sac/sac.py)
-        # mask = 1 if episode_steps == env._max_episode_steps else float(not done)
-        if episode_steps == env._max_episode_steps:
-            done = True
+        action, real_action = get_action(state, env, agent, recovery_policy, args)
 
-        # TODO: cleanup hardcoded for shelf:
-        if args.env_name == 'shelf_env':
-            if done and reward > 0:
-                reward = 5
-                info['reward'] = 5
+        next_state, reward, done, info = env.step(real_action) # Step
+        done = done or episode_steps == env._max_episode_steps
 
         # TODO; cleanup for now this is hard-coded for maze
-        if args.cnn:
-            if args.env_name == 'maze':
-                im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-                im_next_state = process_obs(im_next_state, args.env_name)
-            else:
-                next_state = process_obs(next_state, args.env_name)
+        if args.cnn and args.env_name == 'maze':
+            next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
 
         train_rollouts[-1].append(info)
         episode_steps += 1
@@ -328,67 +328,34 @@ for i_episode in itertools.count(1):
             reward -= args.constraint_reward_penalty
 
         mask = float(not done)
-        # done = done or episode_steps == env._max_episode_steps
-
         # TODO; cleanup for now this is hard-coded for maze
-        if args.cnn and args.env_name == 'maze':
-            memory.push(im_state, action, reward, im_next_state, mask) # Append transition to memory
-        else:
-            memory.push(state, action, reward, next_state, mask) # Append transition to memory
+        memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
-        if args.use_value:
-            V_safe_memory.push(state, action, info['constraint'], next_state, mask)
-        elif args.use_qvalue:
-            Q_safe_memory.push(state, action, info['constraint'], next_state, mask)
+        if args.use_recovery:
+            recovery_memory.push(state, action, info['constraint'], next_state, mask)
         state = next_state
-
-        # TODO; cleanup for now this is hard-coded for maze
-        if args.cnn and args.env_name == 'maze':
-            im_state = im_next_state
 
         ep_states.append(state)
         ep_actions.append(real_action)
-
-    ep_states = np.array(ep_states)
-    ep_actions = np.array(ep_actions)
 
     if args.env_name == 'reacher':
         recorder.capture_frame()
         recorder.close()
 
-    if args.env_name == 'cliffwalker' or args.env_name == 'cliffcheetah':
-        print("FINAL X POSITION", ep_states[-1][0])
-
     if args.use_recovery and not args.disable_learned_recovery:
+        all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
         if i_episode % args.recovery_policy_update_freq == 0:
-            recovery_policy.train(
-                [ep_data['obs'] for ep_data in all_ep_data],
-                [ep_data['ac'] for ep_data in all_ep_data]
-            )
+            train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
             all_ep_data = []
-        else:
-            all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
-
-        if i_episode % args.critic_safe_update_freq == 0:
-            if args.use_value:
-                agent.V_safe.train(i_episode, V_safe_memory, training_iterations=50, batch_size=100)
-            elif args.use_qvalue:
-                agent.Q_safe.train(i_episode, Q_safe_memory, agent.policy_sample, training_iterations=50, batch_size=100)
-            else:
-                assert(False)
-
-    num_violations = 0
-    for inf in train_rollouts[-1]:
-        num_violations += int(inf['constraint'])
-    print("final reward: %f"%reward)
-    print(ep_states[-1])
-    print("num violations: %d"%num_violations)
-
-    if total_numsteps > args.num_steps:
-        break
+        if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
+            agent.train_safety_critic(i_episode, recovery_memory, agent.policy_sample, training_iterations=50, batch_size=100)
 
     writer.add_scalar('reward/train', episode_reward, i_episode)
     print("Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
+    print_episode_info(train_rollouts[-1])
+
+    if total_numsteps > args.num_steps:
+        break
 
     if i_episode % 10 == 0 and args.eval is True:
         avg_reward = 0.
@@ -396,78 +363,37 @@ for i_episode in itertools.count(1):
         for j in range(episodes):
             test_rollouts.append([])
             state = env.reset()
-            # TODO; cleanup for now this is hard-coded for maze
+
+            # TODO; clean up the following code
             if args.env_name == 'maze':
                 im_list = [env.sim.render(64, 64, camera_name= "cam0")]
             elif args.env_name == 'shelf_env':
                 im_list = [env.render().squeeze()]
-
-            if args.cnn:
-                if args.env_name == 'maze':
-                    im_state = env.sim.render(64, 64, camera_name= "cam0")
-                    im_state = process_obs(im_state, args.env_name)
-                else:
-                    state = process_obs(state, args.env_name)
+            if args.cnn and args.env_name == 'maze':
+                state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
 
             episode_reward = 0
             episode_steps = 0
             done = False
             while not done:
-                # TODO; cleanup for now this is hard-coded for maze
-                if args.cnn and args.env_name == 'maze':
-                    action = agent.select_action(im_state, eval=True) 
-                else:
-                    action = agent.select_action(state, eval=True)  # Sample action from policy
-
-                # if args.use_recovery and agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)) > args.eps_safe:
-                if args.use_recovery and ((agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) > args.eps_safe and not args.pred_time) or (agent.safety_critic.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0), torch.FloatTensor(action).to('cuda').unsqueeze(0)) < args.t_safe and args.pred_time)):
-                    if not args.disable_learned_recovery:
-                        # print("RECOVERY", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda')))
-                        real_action = recovery_policy.act(state, 0)
-                    else:
-                        real_action = env.safe_action(state)
-                else:
-                    # print("NOT RECOVERY TEST", agent.V_safe.get_value(torch.FloatTensor(state).to('cuda').unsqueeze(0)))
-                    real_action = action
-
+                action, real_action = get_action(state, env, agent, recovery_policy, args, train=False)
                 next_state, reward, done, info = env.step(real_action) # Step
+                done = done or episode_steps == env._max_episode_steps
 
-                if episode_steps == env._max_episode_steps:
-                    done = True
-
-                # TODO: cleanup hardcoded for shelf:
-                if args.env_name == 'shelf_env':
-                    if done and reward > 0:
-                        reward = 5
-                        info['reward'] = 5
-
+                # TODO: clean up the following code
                 if args.env_name == 'maze':
                     im_list.append(env.sim.render(64, 64, camera_name= "cam0"))
                 elif args.env_name == 'shelf_env':
                     im_list.append(env.render().squeeze())
-
-                # TODO; cleanup for now this is hard-coded for maze
-                if args.cnn:
-                    if args.env_name == 'maze':
-                        im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-                        im_next_state = process_obs(im_next_state, args.env_name)
-                    else:
-                        next_state = process_obs(next_state, args.env_name)
+                if args.cnn and args.env_name == 'maze':
+                    next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
 
                 test_rollouts[-1].append(info)
                 episode_reward += reward
                 episode_steps += 1
-
                 state = next_state
-                # TODO; cleanup for now this is hard-coded for maze
-                if args.cnn and args.env_name == 'maze':
-                    im_state = im_next_state
 
-            num_violations = 0
-            for inf in test_rollouts[-1]:
-                num_violations += int(inf['constraint'])
-            print("final reward: %f"%reward)
-            print("num violations: %d"%num_violations)
+            print_episode_info(test_rollouts[-1])
             avg_reward += episode_reward
 
             if args.env_name == 'maze' or args.env_name == 'shelf_env':
@@ -480,12 +406,6 @@ for i_episode in itertools.count(1):
         print("Test Episodes: {}, Avg. Reward: {}".format(episodes, round(avg_reward, 2)))
         print("----------------------------------------")
 
-        data = {
-            "test_stats": test_rollouts,
-            "train_stats": train_rollouts
-        }
-        with open(osp.join(logdir, "run_stats.pkl"), "wb") as f:
-            pickle.dump(data, f)
-
+        dump_logs(test_rollouts, train_rollouts, logdir)
+        
 env.close()
-

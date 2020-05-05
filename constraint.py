@@ -26,7 +26,7 @@ class ValueFunction:
             self.tau = 1.
         hard_update(self.target, self.model)
 
-    def train(self, ep, memory, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False):
+    def train(self, ep, memory, pi=None, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False):
         optim = Adam(self.model.parameters(), lr=lr)
 
         for j in range(training_iterations):
@@ -146,39 +146,50 @@ class QFunction:
 
 
         if plot:
-            if self.env_name == 'maze':
-                x_bounds = [-0.3, 0.3]
-                y_bounds = [-0.3, 0.3]
-            elif self.env_name == 'simplepointbot0':
-                x_bounds = [-80, 20]
-                y_bounds = [-10, 10]
-            elif self.env_name == 'simplepointbot1':
-                x_bounds = [-75, 25]
-                y_bounds = [-75, 25]
-            else:
-                raise NotImplementedError("Plotting unsupported for this env")
+            self.plot(pi, ep, [1, 0], "right")
+            self.plot(pi, ep, [-1, 0], "left")
+            self.plot(pi, ep, [0, 1], "up")
+            self.plot(pi, ep, [0, -1], "down")
 
-            states = []
-            x_pts = 100
-            y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
-            for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
-                for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
-                    states.append([x, y])
 
-            num_states = len(states)
-            states = self.torchify(np.array(states))
+    def plot(self, pi, ep, action=None, suffix=""):
+        if self.env_name == 'maze':
+            x_bounds = [-0.3, 0.3]
+            y_bounds = [-0.3, 0.3]
+        elif self.env_name == 'simplepointbot0':
+            x_bounds = [-80, 20]
+            y_bounds = [-10, 10]
+        elif self.env_name == 'simplepointbot1':
+            x_bounds = [-75, 25]
+            y_bounds = [-75, 25]
+        else:
+            raise NotImplementedError("Plotting unsupported for this env")
+
+        states = []
+        x_pts = 100
+        y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
+        for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
+            for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
+                states.append([x, y])
+
+        num_states = len(states)
+        states = self.torchify(np.array(states))
+        if action is None:
             actions = pi(states)
-            # if ep > 0:
-            #     actions = pi(states)
-            # else:
-            #     actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
+        else:
+            actions = self.torchify(np.tile(action, (len(states), 1)))
+        # if ep > 0:
+        #     actions = pi(states)
+        # else:
+        #     actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
 
-            qf1, qf2 = self.model(states, actions)
-            max_qf = torch.max(qf1, qf2)
-            grid = max_qf.detach().cpu().numpy()
-            grid = grid.reshape(y_pts, x_pts)
-            plt.imshow(grid.T)
-            plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep)))
+        qf1, qf2 = self.model(states, actions)
+        max_qf = torch.max(qf1, qf2)
+        grid = max_qf.detach().cpu().numpy()
+        grid = grid.reshape(y_pts, x_pts)
+        plt.imshow(grid.T)
+        plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix))
+
 
 
     def get_value(self, states, actions):

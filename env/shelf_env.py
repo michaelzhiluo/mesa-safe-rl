@@ -104,6 +104,9 @@ class ShelfEnv(BaseMujocoEnv):
         else:
             done = False
 
+        if done and reward > 0:
+            reward = 5
+
         info = {"constraint": constraint,
                 "reward": reward,
                 "state": position,
