@@ -35,12 +35,18 @@ experiment_map = {
     },
     "shelf": {
         "algs": {
-            "sac_norecovery": ["2020-05-02_10-02-27_SAC_shelf_env_Gaussian_"],
-            "recovery_0.1": ["2020-05-02_10-25-48_SAC_shelf_env_Gaussian_"],
-            "recovery_0.2": ["2020-05-02_10-34-18_SAC_shelf_env_Gaussian_"],
-            "recovery_0.4": ["2020-05-02_10-35-04_SAC_shelf_env_Gaussian_"],
-            "recovery_0.8": ["2020-05-02_10-37-10_SAC_shelf_env_Gaussian_"],
-            "recovery_0.9": ["2020-05-02_10-49-34_SAC_shelf_env_Gaussian_"]
+            "sac_norecovery": ["2020-05-02_10-02-27_SAC_shelf_env_Gaussian_", "2020-05-02_23-46-58_SAC_shelf_env_Gaussian_", "2020-05-02_23-47-31_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.1": ["2020-05-02_10-25-48_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.2": ["2020-05-02_10-34-18_SAC_shelf_env_Gaussian_"],
+            "recovery_0.3": ["2020-05-02_23-50-24_SAC_shelf_env_Gaussian_", "2020-05-02_23-51-35_SAC_shelf_env_Gaussian_", "2020-05-02_23-52-27_SAC_shelf_env_Gaussian_"],
+            "recovery_0.4": ["2020-05-02_10-35-04_SAC_shelf_env_Gaussian_", "2020-05-02_23-48-11_SAC_shelf_env_Gaussian_", "2020-05-02_23-49-08_SAC_shelf_env_Gaussian_"],
+            "recovery_0.6": ["2020-05-02_23-53-33_SAC_shelf_env_Gaussian_", "2020-05-02_23-54-31_SAC_shelf_env_Gaussian_", "2020-05-02_23-55-08_SAC_shelf_env_Gaussian_"],
+            "recovery_0.8": ["2020-05-02_10-37-10_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-07_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-33_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.9": ["2020-05-02_10-49-34_SAC_shelf_env_Gaussian_"]
+            "sac_penalty1": ["2020-05-03_22-17-28_SAC_shelf_env_Gaussian_", "2020-05-03_22-17-50_SAC_shelf_env_Gaussian_", "2020-05-03_22-18-43_SAC_shelf_env_Gaussian_"],
+            "sac_penalty3": ["2020-05-03_22-20-30_SAC_shelf_env_Gaussian_", "2020-05-03_22-21-35_SAC_shelf_env_Gaussian_", "2020-05-03_22-22-46_SAC_shelf_env_Gaussian_"],
+            "sac_penalty5": ["2020-05-03_22-31-48_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-17_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-44_SAC_shelf_env_Gaussian_"],
+            "sac_penalty10": ["2020-05-03_22-34-18_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-38_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-54_SAC_shelf_env_Gaussian_"],
         },
         "outfile": "shelf.png"
     } 
@@ -57,9 +63,15 @@ names = {
     "sac_lagrangian" : "SAC + Lagrangian",
     "recovery_0.1": "SAC + Recovery (eps=0.1)",
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
+    "recovery_0.3": "SAC + Recovery (eps=0.3)",
     "recovery_0.4": "SAC + Recovery (eps=0.4)",
+    "recovery_0.6": "SAC + Recovery (eps=0.6)",
     "recovery_0.8": "SAC + Recovery (eps=0.8)",
     "recovery_0.9": "SAC + Recovery (eps=0.9)",
+    "sac_penalty1": "SAC (penalty 1)",
+    "sac_penalty3": "SAC (penalty 3)",
+    "sac_penalty5": "SAC (penalty 5)",
+    "sac_penalty10": "SAC (penalty 10)",
 }
 
 
@@ -71,11 +83,14 @@ colors = {
     "sac_penalty100": "purple",
     "recovery": "red",
     "sac_lagrangian": "pink",
-    "recovery_0.1": "orange",
-    "recovery_0.2": "black",
+    "recovery_0.3": "black",
     "recovery_0.4": "blue",
+    "recovery_0.6": "pink",
     "recovery_0.8": "purple",
-    "recovery_0.9": "pink",
+    "sac_penalty1": "red",
+    "sac_penalty3": "orange",
+    "sac_penalty5": "yellow",
+    "sac_penalty10": "magenta"
 }
 
 def get_stats(data):
@@ -85,13 +100,16 @@ def get_stats(data):
     return mu, lb, ub
 
 
-def plot_experiment(experiment, max_eps=3000):
+def plot_experiment(experiment, max_eps=2800):
 
     if experiment == 'maze' or experiment == 'shelf':
         fig, axs = plt.subplots(3, figsize=(16, 19))
 
         axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-        axs[0].set_ylim(-0.1, max_eps+1)
+        if experiment == 'shelf':
+            axs[0].set_ylim(-0.1, max_eps//4 + 1)
+        else:
+            axs[0].set_ylim(-0.1, max_eps+1)
         axs[0].set_xlabel("Episode", fontsize=16)
         axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
         axs[0].tick_params(axis='both', which='major', labelsize=14)
@@ -222,10 +240,10 @@ def plot_experiment(experiment, max_eps=3000):
                          color=colors[alg], alpha=.5)
             axs[2].plot(ts_mean, colors[alg], label=names[alg])
 
-    axs[0].legend(loc="lower right")
-    axs[1].legend(loc="lower right")
+    axs[0].legend(loc="upper left")
+    axs[1].legend(loc="upper left")
     if experiment == 'maze' or experiment == 'shelf':
-        axs[2].legend(loc="lower right")
+        axs[2].legend(loc="upper left")
     plt.savefig(experiment_map[experiment]["outfile"])
     plt.show()
 
