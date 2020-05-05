@@ -106,7 +106,7 @@ parser.add_argument('--use_value', action="store_true")
 parser.add_argument('--use_qvalue', action="store_true")
 parser.add_argument('--pred_time', action="store_true")
 parser.add_argument('--opt_value', action="store_true")
-parser.add_argument('--num_task_demos', type=int, default=100) # 100 transitions for task demos
+parser.add_argument('--num_task_demos', type=int, default=100) # 100 transitions for task demos (if this is infinity it works for shelf)
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
