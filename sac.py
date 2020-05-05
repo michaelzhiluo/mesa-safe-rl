@@ -93,6 +93,9 @@ class SAC(object):
             _, _, action = self.policy.sample(state)
         return action.detach().cpu().numpy()[0]
 
+    def train_safety_critic(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False):
+        self.safety_critic.train(ep, memory, pi, lr, batch_size, training_iterations, plot)
+
     def policy_sample(self, states):
         actions, _, _ = self.policy.sample(states)
         return actions
