@@ -46,7 +46,9 @@ experiment_map = {
             "sac_penalty1": ["2020-05-03_22-17-28_SAC_shelf_env_Gaussian_", "2020-05-03_22-17-50_SAC_shelf_env_Gaussian_", "2020-05-03_22-18-43_SAC_shelf_env_Gaussian_"],
             "sac_penalty3": ["2020-05-03_22-20-30_SAC_shelf_env_Gaussian_", "2020-05-03_22-21-35_SAC_shelf_env_Gaussian_", "2020-05-03_22-22-46_SAC_shelf_env_Gaussian_"],
             "sac_penalty5": ["2020-05-03_22-31-48_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-17_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-44_SAC_shelf_env_Gaussian_"],
-            "sac_penalty10": ["2020-05-03_22-34-18_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-38_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-54_SAC_shelf_env_Gaussian_"],
+            # "sac_penalty10": ["2020-05-03_22-34-18_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-38_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-54_SAC_shelf_env_Gaussian_"],
+            "sac_penalty25": ["2020-05-04_02-24-15_SAC_shelf_env_Gaussian_", "2020-05-04_02-24-21_SAC_shelf_env_Gaussian_", "2020-05-04_02-24-26_SAC_shelf_env_Gaussian_"],
+            "sac_lagrangian": ["2020-05-04_04-34-38_SAC_shelf_env_Gaussian_", "2020-05-04_04-34-54_SAC_shelf_env_Gaussian_", "2020-05-04_04-35-08_SAC_shelf_env_Gaussian_"]
         },
         "outfile": "shelf.png"
     } 
@@ -72,6 +74,7 @@ names = {
     "sac_penalty3": "SAC (penalty 3)",
     "sac_penalty5": "SAC (penalty 5)",
     "sac_penalty10": "SAC (penalty 10)",
+    "sac_penalty25": "SAC (penalty 25)"
 }
 
 
@@ -85,12 +88,13 @@ colors = {
     "sac_lagrangian": "pink",
     "recovery_0.3": "black",
     "recovery_0.4": "blue",
-    "recovery_0.6": "pink",
+    "recovery_0.6": "cyan",
     "recovery_0.8": "purple",
     "sac_penalty1": "red",
     "sac_penalty3": "orange",
     "sac_penalty5": "yellow",
-    "sac_penalty10": "magenta"
+    # "sac_penalty10": "magenta"
+    "sac_penalty25": "magenta"
 }
 
 def get_stats(data):
@@ -251,3 +255,6 @@ def plot_experiment(experiment, max_eps=2800):
 if __name__ == '__main__':
     experiment = "shelf"
     plot_experiment(experiment)
+
+# "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
+# "recovery_0.4": ["2020-05-04_03-00-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-01-05_SAC_shelf_env_Gaussian_", "2020-05-04_03-01-17_SAC_shelf_env_Gaussian_"], # Bad results: include constraint penalty
