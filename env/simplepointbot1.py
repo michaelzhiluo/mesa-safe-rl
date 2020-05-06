@@ -144,7 +144,6 @@ class SimplePointBot(Env, utils.EzPickle):
 def get_random_transitions(num_transitions, task_demos=False):
     env = SimplePointBot()
     transitions = []
-    task_transitions = []
     done = False
     for i in range(num_transitions):
         state = np.random.uniform(-50, 10), np.random.uniform(-40, 40)
@@ -153,15 +152,8 @@ def get_random_transitions(num_transitions, task_demos=False):
         constraint = env.obstacle(next_state)
         reward = env.step_cost(state, action)
         transitions.append((state, action, constraint, next_state, done))
-
-        if task_demos:
-            task_transitions.append((state, action, reward, next_state, done))
             
-    if not task_demos:
-        return transitions
-    else:
-        return transitions, task_transitions
-
+    return transitions
 
 def safe_action(state, goal=GOAL_STATE):
     dx = dy = 0

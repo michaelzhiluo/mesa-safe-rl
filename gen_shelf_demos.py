@@ -57,6 +57,7 @@ parser.add_argument('--use_constraint_penalty', action="store_true",
 parser.add_argument('--constraint_penalty', type=int, default=1, metavar='N',
                     help='constraint penalty (default: 10)')
 parser.add_argument('--constraint_demos', action="store_true")
+parser.add_argument('--save_rollouts', action="store_true")
 
 args = parser.parse_args()
 
@@ -78,12 +79,13 @@ updates = 0
 
 
 demo_transitions = []
-# Optionally prepopulate replay buffer with demos:
+demo_rollouts = []
 i_demos = 0
 while i_demos < args.num_demos:
     if i_demos % 100 == 0:
         print("Demo #: ", i_demos)
     state = env.reset()
+    demo_rollouts.append([])
     if args.cnn:
         state = process_obs(state)
     episode_steps = 0
@@ -122,11 +124,14 @@ while i_demos < args.num_demos:
         if args.constraint_demos:
             if constraint:
                 demo_transitions.append( (state, action, constraint, next_state, mask) )
+                demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
             else:
                 if np.random.random() < 0.1:
                     demo_transitions.append( (state, action, constraint, next_state, mask) )
+                    demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
         else:
             demo_transitions.append( (state, action, reward, next_state, mask) )
+            demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
 
         state = next_state
 
@@ -136,6 +141,13 @@ while i_demos < args.num_demos:
     i_demos += 1
 
 if args.constraint_demos:
-    pickle.dump(demo_transitions, open(os.path.join("demos/shelf", "constraint_demos.pkl"), "wb") )
+    if not args.save_rollouts:
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", "constraint_demos.pkl"), "wb") )
+    else:
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", "constraint_demo_rollouts.pkl"), "wb") )
 else:
-    pickle.dump(demo_transitions, open(os.path.join("demos/shelf", "task_demos.pkl"), "wb") )
+    if not args.save_rollouts:
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", "task_demos.pkl"), "wb") )
+    else:
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", "task_demo_rollouts.pkl"), "wb") )
+
