@@ -222,6 +222,7 @@ parser.add_argument('--use_value', action="store_true")
 parser.add_argument('--use_qvalue', action="store_true")
 parser.add_argument('--pred_time', action="store_true")
 parser.add_argument('--opt_value', action="store_true")
+parser.add_argument('--num_task_transitions', type=int, default=500) # 100 transitions for task demos (if this is infinity it works for shelf)
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
@@ -267,12 +268,17 @@ if args.cnn and args.env_name == 'maze' and task_demos:
 
 # If use task demos, add them to memory and train agent
 if task_demos:
+    num_task_transitions = 0
     for transition in task_demo_data:
         memory.push(*transition)
+        num_task_transitions += 1
+        if num_task_transitions == args.num_task_transitions:
+            break
+    print("Number of Task Transitions: ", num_task_transitions)
     for i in range(args.critic_pretraining_steps):
         if i % 100 == 0:
             print("Update: ", i)
-        agent.update_parameters(memory, args.batch_size, updates)
+        agent.update_parameters(memory, min(args.batch_size, num_task_transitions), updates)
         updates += 1
 
 
