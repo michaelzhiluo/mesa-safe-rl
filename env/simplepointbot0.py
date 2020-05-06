@@ -155,19 +155,21 @@ def get_random_transitions(num_transitions, task_demos=False):
     transitions = []
     task_transitions = []
     done = False
-    for i in range(num_transitions):
+    for i in range(num_transitions//10):
         if np.random.uniform(0, 1) < 0.5:
             state = np.array([np.random.uniform(-80, 50), np.random.uniform(-5, -2)])
         else:
             state = np.array([np.random.uniform(-80, 50), np.random.uniform(2, 5)])
-        action = np.clip(np.random.randn(2), -1, 1)
-        next_state = env._next_state(state, action, override=True)
-        constraint = env.obstacle(next_state)
-        reward = env.step_cost(state, action)
-        transitions.append((state, action, constraint, next_state, done))
+        for j in range(10):
+            action = np.clip(np.random.randn(2), -1, 1)
+            next_state = env._next_state(state, action, override=True)
+            constraint = env.obstacle(next_state)
+            reward = env.step_cost(state, action)
+            transitions.append((state, action, constraint, next_state, done))
+            state = next_state
 
-        if task_demos:
-            task_transitions.append((state, action, reward, next_state, done))
+            if task_demos:
+                task_transitions.append((state, action, reward, next_state, done))
 
     if not task_demos:
         return transitions

@@ -49,33 +49,36 @@ class ValueFunction:
             soft_update(self.target, self.model, self.tau)
 
         if plot:
-            if self.env_name == 'maze':
-                x_bounds = [-0.3, 0.3]
-                y_bounds = [-0.3, 0.3]
-            elif self.env_name == 'simplepointbot0':
-                x_bounds = [-80, 20]
-                y_bounds = [-10, 10]
-            elif self.env_name == 'simplepointbot1':
-                x_bounds = [-75, 25]
-                y_bounds = [-75, 25]
-            else:
-                raise NotImplementedError("Plotting unsupported for this env")
+            self.plot(ep)
 
-            states = []
-            x_pts = 100
-            y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
-            for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
-                for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
-                    states.append([x, y])
+    def plot(self, ep):
+        if self.env_name == 'maze':
+            x_bounds = [-0.3, 0.3]
+            y_bounds = [-0.3, 0.3]
+        elif self.env_name == 'simplepointbot0':
+            x_bounds = [-80, 20]
+            y_bounds = [-10, 10]
+        elif self.env_name == 'simplepointbot1':
+            x_bounds = [-75, 25]
+            y_bounds = [-75, 25]
+        else:
+            raise NotImplementedError("Plotting unsupported for this env")
 
-            if not self.opt:
-                grid = self.model(self.torchify(np.array(states))).detach().cpu().numpy()
-                grid = grid.reshape(y_pts, x_pts)
-            else:
-                raise(NotImplementedError("Need to implement opt"))
+        states = []
+        x_pts = 100
+        y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
+        for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
+            for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
+                states.append([x, y])
 
-            plt.imshow(grid.T)
-            plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
+        if not self.opt:
+            grid = self.model(self.torchify(np.array(states))).detach().cpu().numpy()
+            grid = grid.reshape(y_pts, x_pts)
+        else:
+            raise(NotImplementedError("Need to implement opt"))
+
+        plt.imshow(grid.T)
+        plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
 
     def get_value(self, states, actions=None):
         return self.model(states)

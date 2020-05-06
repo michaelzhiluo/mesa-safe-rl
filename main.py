@@ -19,7 +19,7 @@ from video_recorder import VideoRecorder
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
-def set_seed(seed):
+def set_seed(seed, env):
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
     env.seed(args.seed)
@@ -58,11 +58,11 @@ def experiment_setup(logdir, args):
     if args.use_recovery and not args.disable_learned_recovery:
         cfg = recovery_config_setup(args)
         recovery_policy = MPC(cfg.ctrl_cfg)
-        
         env = cfg.ctrl_cfg.env
     else:
         recovery_policy = None
         env = gym.make(ENV_ID[args.env_name])
+    set_seed(args.seed, env)
     agent = agent_setup(env, logdir, args)
     if args.use_recovery and not args.disable_learned_recovery:
         if args.use_value:
@@ -230,7 +230,8 @@ parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
 parser.add_argument('--num_demo_transitions', type=int, default=10000)
 args = parser.parse_args()
 
-#TesnorboardX
+
+
 logdir = 'runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
 writer = SummaryWriter(logdir=logdir)
