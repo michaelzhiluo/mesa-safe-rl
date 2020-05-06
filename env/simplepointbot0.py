@@ -153,7 +153,6 @@ class SimplePointBot(Env, utils.EzPickle):
 def get_random_transitions(num_transitions, task_demos=False):
     env = SimplePointBot()
     transitions = []
-    task_transitions = []
     done = False
     for i in range(num_transitions//10):
         if np.random.uniform(0, 1) < 0.5:
