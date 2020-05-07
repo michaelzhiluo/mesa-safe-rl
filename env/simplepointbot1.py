@@ -141,22 +141,26 @@ class SimplePointBot(Env, utils.EzPickle):
         return self.teacher._expert_control(s, 0)
 
 
-def get_random_transitions(num_transitions, task_demos=False):
+def get_random_transitions(num_transitions, task_demos=False, save_rollouts=False):
     env = SimplePointBot()
     transitions = []
+    rollouts = []
     done = False
     for i in range(num_transitions//10):
-        state = np.random.uniform(-50, 10), np.random.uniform(-40, 40)
+        rollouts.append([])
+        state = np.array([np.random.uniform(-50, 10), np.random.uniform(-40, 40)])
         for j in range(10):
             action = np.clip(np.random.randn(2), -1, 1)
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
             transitions.append((state, action, constraint, next_state, done))
+            rollouts[-1].append((state, action, constraint, next_state, done))
 
-            if task_demos:
-                task_transitions.append((state, action, reward, next_state, done))
-    return transitions
+    if save_rollouts:
+        return rollouts
+    else:
+        return transitions
 
 def safe_action(state, goal=GOAL_STATE):
     dx = dy = 0
