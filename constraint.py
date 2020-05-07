@@ -150,7 +150,7 @@ class QFunction:
             soft_update(self.model_target, self.model, self.tau)
 
 
-        if plot or 1:
+        if plot:
             self.plot(pi, ep, [1, 0], "right", critic)
             self.plot(pi, ep, [-1, 0], "left", critic)
             self.plot(pi, ep, [0, 1], "up", critic)
