@@ -212,7 +212,7 @@ parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
 parser.add_argument('--use_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
-parser.add_argument('--critic_safe_update_freq', type=int, default=1e10) # TODO: by default, not updating on-policy, but will need to for non-pointbot envs
+parser.add_argument('--critic_safe_update_freq', type=int, default=1)
 parser.add_argument('--task_demos', action="store_true")
 parser.add_argument('--filter', action="store_true")
 parser.add_argument('--num_filter_samples', type=int, default=100)
