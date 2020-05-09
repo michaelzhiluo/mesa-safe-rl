@@ -103,7 +103,7 @@ class QNetworkConstraint(nn.Module):
 
 
 class QNetworkCNN(nn.Module):
-    def __init__(self, observation_space, num_actions, hidden_dim):
+    def __init__(self, observation_space, num_actions, hidden_dim, env_name):
         super(QNetworkCNN, self).__init__()
         # Process the state
         self.conv1 = nn.Conv2d(observation_space[-1], 128, kernel_size=3, stride=2, padding=1, bias=True)
@@ -115,8 +115,12 @@ class QNetworkCNN(nn.Module):
         self.demo_bn1 = nn.BatchNorm2d(128)
         self.demo_bn2 = nn.BatchNorm2d(64)
         self.demo_bn3 = nn.BatchNorm2d(16)
-        self.final_linear_size = 1024 # TODO: don't hardcode
-       
+        if env_name == 'shelf_env':
+            self.final_linear_size = 768
+        elif env_name == 'maze':
+            self.final_linear_size = 1024
+        else:
+            assert(False)
 
         self.final_linear = nn.Linear(self.final_linear_size, hidden_dim)
 
@@ -174,7 +178,7 @@ class QNetworkCNN(nn.Module):
 
 
 class GaussianPolicyCNN(nn.Module):
-    def __init__(self, observation_space, num_actions, hidden_dim, action_space=None):
+    def __init__(self, observation_space, num_actions, hidden_dim, env_name, action_space=None):
         super(GaussianPolicyCNN, self).__init__()
         # Process via a CNN and then collapse to linear
         self.conv1 = nn.Conv2d(observation_space[-1], 128, kernel_size=3, stride=2, padding=1, bias=True)
@@ -186,7 +190,12 @@ class GaussianPolicyCNN(nn.Module):
         self.demo_bn1 = nn.BatchNorm2d(128)
         self.demo_bn2 = nn.BatchNorm2d(64)
         self.demo_bn3 = nn.BatchNorm2d(16)
-        self.linear_dim = 1024 # TODO: dont hardcode
+        if env_name == 'shelf_env':
+            self.final_linear_size = 768
+        elif env_name == 'maze':
+            self.final_linear_size = 1024
+        else:
+            assert(False)
 
         self.linear1 = nn.Linear(self.linear_dim, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)

@@ -8,7 +8,7 @@ from gym.spaces import Box
 import os
 
 FIXED_ENV = False
-DENSE_REWARD = True
+DENSE_REWARD = False
 GT_STATE = True
 EARLY_TERMINATION = True
 

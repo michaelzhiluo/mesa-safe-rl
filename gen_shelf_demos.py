@@ -86,7 +86,7 @@ while i_demos < args.num_demos:
         print("Demo #: ", i_demos)
     state = env.reset()
     demo_rollouts.append([])
-    if args.cnn:
+    if not args.gt_state:
         state = process_obs(state)
     episode_steps = 0
     episode_reward = 0
@@ -112,14 +112,15 @@ while i_demos < args.num_demos:
         if args.use_constraint_penalty and constraint:
             reward += args.constraint_penalty*(-int(constraint))
 
-        if args.cnn:
-            next_state = process_obs(next_state)
         episode_steps += 1
         total_numsteps += 1
         episode_reward += reward
         episode_constraints += constraint
 
         mask = float(not done)
+
+        if not args.gt_state:
+            next_state = process_obs(next_state)
 
         if args.constraint_demos:
             if constraint:
@@ -141,13 +142,27 @@ while i_demos < args.num_demos:
     i_demos += 1
 
 if args.constraint_demos:
+    f_name = "constraint_demos"
+    if args.save_rollouts:
+        f_name += "_rollouts"
+    if not args.gt_state:
+        f_name += "_images"
+    f_name += ".pkl"
+
     if not args.save_rollouts:
-        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", "constraint_demos.pkl"), "wb") )
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", f_name), "wb") )
     else:
-        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", "constraint_demo_rollouts.pkl"), "wb") )
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", f_name), "wb") )
 else:
+    f_name = "task_demos"
+    if args.save_rollouts:
+        f_name += "_rollouts"
+    if not args.gt_state:
+        f_name += "_images"
+    f_name += ".pkl"
+
     if not args.save_rollouts:
-        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", "task_demos.pkl"), "wb") )
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", f_name), "wb") )
     else:
-        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", "task_demo_rollouts.pkl"), "wb") )
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", f_name), "wb") )
 
