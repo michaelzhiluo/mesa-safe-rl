@@ -3,6 +3,8 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from torch.optim import Adam
+from matplotlib.patches import Rectangle
+from PIL import Image
 
 from model import ValueNetwork, QNetworkConstraint, hard_update, soft_update
 from replay_memory import ReplayMemory
@@ -98,7 +100,7 @@ class QFunction:
         self.env_name = params.env_name 
         self.opt = params.opt
 
-    def train(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False, num_eval_actions=100):
+    def train(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False, num_eval_actions=100, critic=None):
         optim = Adam(self.model.parameters(), lr=lr)
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
@@ -149,13 +151,13 @@ class QFunction:
 
 
         if plot:
-            self.plot(pi, ep, [1, 0], "right")
-            self.plot(pi, ep, [-1, 0], "left")
-            self.plot(pi, ep, [0, 1], "up")
-            self.plot(pi, ep, [0, -1], "down")
+            self.plot(pi, ep, [1, 0], "right", critic)
+            self.plot(pi, ep, [-1, 0], "left", critic)
+            self.plot(pi, ep, [0, 1], "up", critic)
+            self.plot(pi, ep, [0, -1], "down", critic)
 
 
-    def plot(self, pi, ep, action=None, suffix=""):
+    def plot(self, pi, ep, action=None, suffix="", critic=None):
         if self.env_name == 'maze':
             x_bounds = [-0.3, 0.3]
             y_bounds = [-0.3, 0.3]
@@ -186,10 +188,19 @@ class QFunction:
         # else:
         #     actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
 
-        qf1, qf2 = self.model(states, actions)
-        max_qf = torch.max(qf1, qf2)
+        if critic is None:
+            qf1, qf2 = self.model(states, actions)
+            max_qf = torch.max(qf1, qf2)
+        else:
+            qf1, qf2 = critic(states, actions)
+            max_qf = torch.min(qf1, qf2)
+
         grid = max_qf.detach().cpu().numpy()
         grid = grid.reshape(y_pts, x_pts)
+        if self.env_name == 'simplepointbot0':
+            plt.gca().add_patch(Rectangle((0,25),500,50,linewidth=1,edgecolor='r',facecolor='none'))
+        elif self.env_name == 'simplepointbot1':
+            plt.gca().add_patch(Rectangle((45,65),10,20,linewidth=1,edgecolor='r',facecolor='none'))
         plt.imshow(grid.T)
         plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix))
 
