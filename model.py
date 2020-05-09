@@ -191,9 +191,9 @@ class GaussianPolicyCNN(nn.Module):
         self.demo_bn2 = nn.BatchNorm2d(64)
         self.demo_bn3 = nn.BatchNorm2d(16)
         if env_name == 'shelf_env':
-            self.final_linear_size = 768
+            self.linear_dim = 768
         elif env_name == 'maze':
-            self.final_linear_size = 1024
+            self.linear_dim = 1024
         else:
             assert(False)
 
