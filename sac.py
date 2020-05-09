@@ -50,14 +50,14 @@ class SAC(object):
             observation_space = im_shape
 
         if args.cnn:
-            self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size, env_name=args.env_name).to(device=self.device)
+            self.critic = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size, args.env_name).to(device=self.device)
         else:
             self.critic = QNetwork(observation_space.shape[0], action_space.shape[0], args.hidden_size).to(device=self.device)
 
         self.critic_optim = Adam(self.critic.parameters(), lr=args.lr)
 
         if args.cnn:
-            self.critic_target = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size, env_name=args.env_name).to(device=self.device)
+            self.critic_target = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size, args.env_name).to(device=self.device)
         else:
             self.critic_target = QNetwork(observation_space.shape[0], action_space.shape[0], args.hidden_size).to(device=self.device)
 
@@ -72,7 +72,7 @@ class SAC(object):
                 self.alpha_optim = Adam([self.log_alpha], lr=args.lr)
 
             if args.cnn:
-                self.policy = GaussianPolicyCNN(observation_space, action_space.shape[0], args.hidden_size, env_name=args.env_name, action_space).to(self.device)
+                self.policy = GaussianPolicyCNN(observation_space, action_space.shape[0], args.hidden_size, args.env_name, action_space).to(self.device)
             else:
                 self.policy = GaussianPolicy(observation_space.shape[0], action_space.shape[0], args.hidden_size, action_space).to(self.device)
 
