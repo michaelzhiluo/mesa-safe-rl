@@ -63,6 +63,9 @@ experiment_map = {
             # "sac_norecovery_images": ["2020-05-11_04-28-17_SAC_shelf_env_Gaussian_", "2020-05-11_04-28-33_SAC_shelf_env_Gaussian_", "2020-05-11_04-28-49_SAC_shelf_env_Gaussian_"]
             # "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
             # "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
+            "recovery_0.6_dense_gamma0.3": ["2020-05-15_23-16-25_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-30_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-34_SAC_shelf_env_Gaussian_"],
+            "recovery_0.6_dense_gamma0.4": ["2020-05-15_23-15-53_SAC_shelf_env_Gaussian_", "2020-05-15_23-15-57_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-02_SAC_shelf_env_Gaussian_"],
+            "recovery_0.6_dense_gamma0.5": ["2020-05-15_23-16-07_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-12_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-20_SAC_shelf_env_Gaussian_"],
             "recovery_0.6_dense_gamma0.65": ["2020-05-14_00-00-17_SAC_shelf_env_Gaussian_", "2020-05-14_00-00-26_SAC_shelf_env_Gaussian_", "2020-05-14_00-00-36_SAC_shelf_env_Gaussian_"],
             "recovery_0.6_dense_gamma0.75": ["2020-05-13_23-59-02_SAC_shelf_env_Gaussian_", "2020-05-13_23-59-25_SAC_shelf_env_Gaussian_", "2020-05-13_23-59-43_SAC_shelf_env_Gaussian_"],
             "recovery_0.6_dense_gamma0.85": ["2020-05-13_23-56-30_SAC_shelf_env_Gaussian_", "2020-05-13_21-30-48_SAC_shelf_env_Gaussian_", "2020-05-13_21-30-54_SAC_shelf_env_Gaussian_"]
@@ -99,6 +102,9 @@ names = {
     "sac_penalty10_images": "SAC (penalty 10, images)",
     "sac_norecovery_images": "SAC (images)",
 
+    "recovery_0.6_dense_gamma0.3": "SAC (Eps 0.6, Gamma 0.3)",
+    "recovery_0.6_dense_gamma0.4": "SAC (Eps 0.6, Gamma 0.4)",
+    "recovery_0.6_dense_gamma0.5": "SAC (Eps 0.6, Gamma 0.5)",
     "recovery_0.6_dense_gamma0.65": "SAC (Eps 0.6, Gamma 0.65)",
     "recovery_0.6_dense_gamma0.75": "SAC (Eps 0.6, Gamma 0.75)",
     "recovery_0.6_dense_gamma0.85": "SAC (Eps 0.6, Gamma 0.85)"
@@ -130,6 +136,9 @@ colors = {
     "sac_penalty10_images": "magenta",
     "sac_norecovery_images": "g",
 
+    "recovery_0.6_dense_gamma0.3": "purple",
+    "recovery_0.6_dense_gamma0.4": "orange",
+    "recovery_0.6_dense_gamma0.5": "black",
     "recovery_0.6_dense_gamma0.65": "g",
     "recovery_0.6_dense_gamma0.75": "blue",
     "recovery_0.6_dense_gamma0.85": "red"
