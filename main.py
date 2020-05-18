@@ -101,13 +101,15 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
     else:
         action = agent.select_action(policy_state, eval=True)  # Sample action from policy
     if recovery_thresh(state, action, agent, args):
+        recovery = True
         if not args.disable_learned_recovery:
             real_action = recovery_policy.act(state, 0)
         else:
             real_action = env.safe_action(state)
     else:
+        recovery = False
         real_action = np.copy(action)
-    return action, real_action
+    return action, real_action, recovery
 
 
 ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 
@@ -338,8 +340,10 @@ for i_episode in itertools.count(1):
                 writer.add_scalar('entropy_temprature/alpha', alpha, updates)
                 updates += 1
 
-        action, real_action = get_action(state, env, agent, recovery_policy, args, im_state=im_state)
+        action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args, im_state=im_state)
         next_state, reward, done, info = env.step(real_action) # Step
+        info['recovery'] = recovery_used
+
         done = done or episode_steps == env._max_episode_steps
 
         # TODO; cleanup for now this is hard-coded for maze
@@ -416,8 +420,9 @@ for i_episode in itertools.count(1):
             episode_steps = 0
             done = False
             while not done:
-                action, real_action = get_action(state, env, agent, recovery_policy, args, train=False, im_state=im_state)
+                action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args, train=False, im_state=im_state)
                 next_state, reward, done, info = env.step(real_action) # Step
+                info['recovery'] = recovery_used
                 done = done or episode_steps == env._max_episode_steps
 
                 # TODO: clean up the following code
