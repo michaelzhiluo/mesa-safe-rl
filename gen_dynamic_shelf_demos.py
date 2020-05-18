@@ -142,7 +142,10 @@ while i_demos < args.num_demos:
     print("DEMO EPISODE CONSTRAINTS", episode_constraints)
     print("DEMO EPISODE STEPS", episode_steps)
 
-    if (not args.constraint_demos) and (episode_reward > 3 and episode_constraints == 0):
+    if not args.constraint_demos: 
+        if episode_reward > 3 and episode_constraints == 0:
+            i_demos += 1
+    else:
         i_demos += 1
 
 if args.constraint_demos:
