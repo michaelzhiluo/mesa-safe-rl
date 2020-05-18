@@ -120,6 +120,8 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'cliffcheetah': 'CliffCheetah-v0',
           'maze': 'Maze-v0',
           'shelf_env': 'Shelf-v0',
+          'shelf_dynamic_env': 'ShelfDynamic-v0',
+          'shelf_reach_env': 'ShelfReach-v0'
           'cliffpusher': 'CliffPusher-v0',
           'reacher': 'Reacher-v0'
           }
