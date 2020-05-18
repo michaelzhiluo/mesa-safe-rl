@@ -56,11 +56,13 @@ experiment_map = {
         "algs": {
             "sac_norecovery": ["2020-05-07_20-54-58_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-14_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-33_SAC_shelf_env_Gaussian_"],
             "recovery_0.4_20k": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.4_20k_gamma0.9": ["2020-05-18_01-27-18_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-28_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-38_SAC_shelf_env_Gaussian_"],
             "recovery_0.4_5k": ["2020-05-09_04-36-14_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-20_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-27_SAC_shelf_env_Gaussian_"],
             # "recovery_0.8_images": ["2020-05-10_05-37-07_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-50_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-34_SAC_shelf_env_Gaussian_"],
             # "sac_penalty3_images": ["2020-05-11_04-30-15_SAC_shelf_env_Gaussian_", "2020-05-11_04-30-28_SAC_shelf_env_Gaussian_", "2020-05-11_04-30-36_SAC_shelf_env_Gaussian_"],
             # "sac_penalty10_images": ["2020-05-11_04-31-11_SAC_shelf_env_Gaussian_", "2020-05-11_04-31-22_SAC_shelf_env_Gaussian_", "2020-05-11_04-31-32_SAC_shelf_env_Gaussian_"],
-            # "sac_norecovery_images": ["2020-05-11_04-28-17_SAC_shelf_env_Gaussian_", "2020-05-11_04-28-33_SAC_shelf_env_Gaussian_", "2020-05-11_04-28-49_SAC_shelf_env_Gaussian_"]
+            # "sac_norecovery_images": ["2020-05-17_05-25-13_SAC_shelf_env_Gaussian_", "2020-05-17_05-25-29_SAC_shelf_env_Gaussian_", "2020-05-17_05-25-43_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.6_gamma0.5_penalty3": ["2020-05-17_05-57-36_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-43_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-54_SAC_shelf_env_Gaussian_"]
             "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
             "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
             # "recovery_0.4_20k_gamma0.5": ["2020-05-17_05-48-29_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-23_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-14_SAC_shelf_env_Gaussian_"]
@@ -90,7 +92,7 @@ names = {
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
     "recovery_0.3": "SAC + Recovery (eps=0.3)",
     "recovery_0.4_20k": "SAC + Recovery (eps=0.4), 20k transitions",
-    "recovery_0.4_20k_gamma0.5": "SAC + Recovery (eps=0.4), 20k transitions, gamma=0.5",
+    # "recovery_0.4_20k_gamma0.9": "SAC + Recovery (eps=0.4), 20k transitions, gamma=0.9",
     "recovery_0.4_5k": "SAC + Recovery (eps=0.4), 5k transitions",
     "recovery_0.5": "SAC + Recovery (eps=0.5)",
     "recovery_0.6": "SAC + Recovery (eps=0.6)",
@@ -106,12 +108,13 @@ names = {
     # "sac_penalty10_images": "SAC (penalty 10, images)",
     # "sac_norecovery_images": "SAC (images)",
 
-    "recovery_0.6_dense_gamma0.3": "SAC (Eps 0.6, Gamma 0.3)",
-    "recovery_0.6_dense_gamma0.4": "SAC (Eps 0.6, Gamma 0.4)",
-    "recovery_0.6_dense_gamma0.5": "SAC (Eps 0.6, Gamma 0.5)",
-    "recovery_0.6_dense_gamma0.65": "SAC (Eps 0.6, Gamma 0.65)",
-    "recovery_0.6_dense_gamma0.75": "SAC (Eps 0.6, Gamma 0.75)",
-    "recovery_0.6_dense_gamma0.85": "SAC (Eps 0.6, Gamma 0.85)"
+    # "recovery_0.6_dense_gamma0.3": "SAC (Eps 0.6, Gamma 0.3)",
+    # "recovery_0.6_dense_gamma0.4": "SAC (Eps 0.6, Gamma 0.4)",
+    # "recovery_0.6_dense_gamma0.5": "SAC (Eps 0.6, Gamma 0.5)",
+    # "recovery_0.6_dense_gamma0.65": "SAC (Eps 0.6, Gamma 0.65)",
+    # "recovery_0.6_dense_gamma0.75": "SAC (Eps 0.6, Gamma 0.75)",
+    # "recovery_0.6_dense_gamma0.85": "SAC (Eps 0.6, Gamma 0.85)",
+    # "recovery_0.6_gamma0.5_penalty3": "SAC (Eps 0.6, Gamma 0,5, Constraint Penalty 3"
 }
 
 
@@ -125,7 +128,7 @@ colors = {
     "sac_lagrangian": "pink",
     "recovery_0.3": "black",
     "recovery_0.4_20k": "blue",
-    "recovery_0.4_20k_gamma0.5": "black",
+    # "recovery_0.4_20k_gamma0.9": "black",
     "recovery_0.4_5k": "red",
     # "recovery_0.4": "blue",
     "recovery_0.6": "cyan",
@@ -141,12 +144,13 @@ colors = {
     # "sac_penalty10_images": "magenta",
     # "sac_norecovery_images": "g",
 
-    "recovery_0.6_dense_gamma0.3": "purple",
-    "recovery_0.6_dense_gamma0.4": "orange",
-    "recovery_0.6_dense_gamma0.5": "black",
-    "recovery_0.6_dense_gamma0.65": "g",
-    "recovery_0.6_dense_gamma0.75": "blue",
-    "recovery_0.6_dense_gamma0.85": "red"
+    # "recovery_0.6_dense_gamma0.3": "purple",
+    # "recovery_0.6_dense_gamma0.4": "orange",
+    # "recovery_0.6_dense_gamma0.5": "black",
+    # "recovery_0.6_dense_gamma0.65": "g",
+    # "recovery_0.6_dense_gamma0.75": "blue",
+    # "recovery_0.6_dense_gamma0.85": "red",
+    # "recovery_0.6_gamma0.5_penalty3": "purple"
 }
 
 def get_stats(data):
@@ -156,7 +160,7 @@ def get_stats(data):
     return mu, lb, ub
 
 # 10000
-def plot_experiment(experiment, max_eps=3000):
+def plot_experiment(experiment, max_eps=10000):
 
     if experiment == 'maze' or experiment == 'shelf':
         fig, axs = plt.subplots(3, figsize=(16, 19))
