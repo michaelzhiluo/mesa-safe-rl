@@ -75,8 +75,10 @@ class SAC(object):
                 self.policy = GaussianPolicyCNN(observation_space, action_space.shape[0], args.hidden_size, action_space).to(self.device)
             else:
                 self.policy = GaussianPolicy(observation_space.shape[0], action_space.shape[0], args.hidden_size, action_space).to(self.device)
+                self.recovery_policy = DeterministicPolicy(observation_space.shape[0], action_space.shape[0], args.hidden_size, action_space).to(self.device)
 
             self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
+            self.recovery_policy_optim = Adam(self.recovery_policy.parameters(), lr=args.lr)
 
         else:
             self.alpha = 0
@@ -91,6 +93,14 @@ class SAC(object):
             action, _, _ = self.policy.sample(state)
         else:
             _, _, action = self.policy.sample(state)
+        return action.detach().cpu().numpy()[0]
+
+    def select_recovery_action(self, state, eval=False):
+        state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
+        if eval is False:
+            action, _, _ = self.recovery_policy.sample(state)
+        else:
+            _, _, action = self.recovery_policy.sample(state)
         return action.detach().cpu().numpy()[0]
 
     def train_safety_critic(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False):
@@ -125,15 +135,26 @@ class SAC(object):
         qf2_loss = F.mse_loss(qf2, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
 
         pi, log_pi, _ = self.policy.sample(state_batch)
+        recovery_pi, log_recovery_pi, _ = self.policy.sample(state_batch)
 
         qf1_pi, qf2_pi = self.critic(state_batch, pi)
         min_qf_pi = torch.min(qf1_pi, qf2_pi)
 
+        safety_qf1_pi, safety_qf2_pi = self.safety_critic.get_value(state_batch, recovery_pi, eval=True)
+        max_safety_qf_pi = torch.max(safety_qf1_pi, safety_qf2_pi)
+
         policy_loss = ((self.alpha * log_pi) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
+
+        recovery_policy_loss = max_safety_qf_pi.mean()
 
         self.critic_optim.zero_grad()
         (qf1_loss + qf2_loss).backward()
         self.critic_optim.step()
+
+        print(recovery_policy_loss)
+        self.recovery_policy_optim.zero_grad()
+        recovery_policy_loss.backward()
+        self.recovery_policy_optim.step()
 
         self.policy_optim.zero_grad()
         policy_loss.backward()

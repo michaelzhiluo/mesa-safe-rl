@@ -206,7 +206,9 @@ class QFunction:
 
 
 
-    def get_value(self, states, actions):
+    def get_value(self, states, actions, eval=False):
+        if eval:
+            return self.model(states, actions)
         with torch.no_grad():
             q1, q2 = self.model(states, actions)
             return torch.max(q1, q2)

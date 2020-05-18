@@ -98,6 +98,8 @@ def get_action(state, env, agent, recovery_policy, args, train=True):
     if recovery_thresh(state, action, agent, args):
         if not args.disable_learned_recovery:
             real_action = recovery_policy.act(state, 0)
+            # real_action = agent.select_recovery_action(state, eval= not train)
+            # print("recovery", state, real_action)
         else:
             real_action = env.safe_action(state)
     else:

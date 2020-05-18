@@ -4,6 +4,7 @@
 *.p
 *.jpg
 *.zip
+*.gif
 
 runs/
 common/
