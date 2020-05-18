@@ -50,7 +50,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         self._max_episode_steps = 25
         self.timestep = 0
 
-        print('------------------------------------------------------------------')
+        # print('------------------------------------------------------------------')
 
         if self.gt_state:
             self.observation_space = Box(low=-np.inf, high=np.inf, shape=(33,))
@@ -72,7 +72,6 @@ class ShelfDynamicEnv(BaseMujocoEnv):
 
         state = self.sim.get_state()
         pos = np.copy(state.qpos[:])
-        print(pos.shape)
         pos[12:] = self.object_reset_poses().ravel()
         state.qpos[:] = pos
         self.sim.set_state(state)
@@ -113,7 +112,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
             self.step_dynamic_obs([0.5, 0, 0, 0.6])
 
         self.timestep += 1
-        print("COLLISION: ", self.get_contact_info())
+        # print("COLLISION: ", self.get_contact_info())
 
         constraint = self.topple_check() or self.get_contact_info()
         reward = self.reward_fn()
@@ -194,9 +193,9 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         dynamic_obs = self.position[6:9]
 
         # Note we want to check whether the dynamic obs is anywhere close to blocking the target obs...
-        print("DYNAMIC OBS: ", dynamic_obs)
-        print("CUR POS: ", cur_pos)
-        print("DIST: ", np.linalg.norm(cur_pos[:2] - dynamic_obs[:2]))
+        # print("DYNAMIC OBS: ", dynamic_obs)
+        # print("CUR POS: ", cur_pos)
+        # print("DIST: ", np.linalg.norm(cur_pos[:2] - dynamic_obs[:2]))
 
         if t < 10:
             return [0, 0, 0, 0] + np.random.randn(self._adim) * noise_std
@@ -204,7 +203,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         target_obj_pos = self.object_poses[1][:3]
         action = np.zeros(self._adim)
         delta = target_obj_pos - cur_pos
-        print("DELTA: ", delta)
+        # print("DELTA: ", delta)
         # print(self.jaw_width)
         if np.abs(delta[0]) > 0.03:
             if demo_quality =='high':
@@ -213,7 +212,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
                 action[0] = 0.5 * delta[0]
             action[3] = 0.02
         elif np.abs(delta[1]) > 0.05:
-            print("HERE")
+            # print("HERE")
             if demo_quality == 'high':
                 action[1] = delta[1]
             else:
@@ -231,7 +230,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
 
     def reward_fn(self):
         if not self.dense_reward:
-            print("HEIGHT: ", self.target_object_height)
+            # print("HEIGHT: ", self.target_object_height)
             return (self.target_object_height > self.target_height_thresh).astype(float)
         else:
             lift_reward = (self.target_object_height > self.target_height_thresh).astype(float)
