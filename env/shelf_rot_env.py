@@ -136,34 +136,35 @@ class ShelfRotEnv(BaseMujocoEnv):
         self.obj_y_dist_range[0] = bounds[0]
         self.obj_y_dist_range[1] = bounds[1]
 
-    def expert_action(self, noise_std=0.0, demo_quality='high'):
-        cur_pos = self.position[:3]
-        cur_pos[1] += 0.05 # compensate for length of jaws
-        target_obj_pos = self.object_poses[1][:3]
-        action = np.zeros(self._adim)
-        delta = target_obj_pos - cur_pos
-        # print(self.jaw_width)
-        if np.abs(delta[0]) > 0.03:
-            if demo_quality =='high':
-                action[0] = delta[0]
-            else:
-                action[0] = 0.5 * delta[0]
-            action[3] = 0.02
-        elif np.abs(delta[1]) > 0.05:
-            if demo_quality == 'high':
-                action[1] = delta[1]
-            else:
-                action[1] = 0.5 * delta[1]
-            action[3] = 0.02
-        elif self.jaw_width > 0.06:
-            action[3] = 0.06
-        else:
-            action[3] = 0.06
-            if demo_quality == 'high':
-                action[2] = 0.05
-            else:
-                action[2] = 0.02
-        return action + np.random.randn(self._adim) * noise_std
+
+    def get_demonstration(self):
+        self.reset()
+        for i in range(20):
+            cur_pos = self.position[:3]
+            cur_pos[1] += 0.05 # compensate for length of jaws
+            target_obj_pos = self.object_poses[1][:3]
+            ac = np.zeros(5)
+
+            if i < 3 and np.abs(cur_pos[0] - target_obj_pos[0] - 0.2) > 0.01:
+                ac[0] = -(cur_pos[0] - target_obj_pos[0] - 0.2)
+                # print(cur_pos[0] - target_obj_pos[0])
+                ac[1] = -(cur_pos[1] - target_obj_pos[1] - 0.2)
+            if i < 3:
+                ac[3] = -0.1
+            elif i < 5:
+                ac[1] = -0.1
+                ac[0] = -0.02
+            elif i < 8:
+                ac[3] = -0.1
+            elif i < 14:
+                ac[0] = -0.02
+                ac[1] = -0.02
+            elif i < 17:
+                ac[4] = 0.06
+            elif i < 20:
+                ac[2] = 0.05
+
+            ns, r, done, info = self.step(ac)
 
     def reward_fn(self):
         if not self.dense_reward:
@@ -231,6 +232,7 @@ def npy_to_gif(im_list, filename, fps=4):
 
 if __name__ == '__main__':
     env = ShelfRotEnv()
+    env.get_demonstration()
     im_list = []
     for i in range(20):
         cur_pos = env.position[:3]
