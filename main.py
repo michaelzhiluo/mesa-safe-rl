@@ -16,6 +16,7 @@ import os
 from env.simplepointbot0 import SimplePointBot
 import moviepy.editor as mpy
 from video_recorder import VideoRecorder
+import cv2
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
@@ -74,28 +75,33 @@ def experiment_setup(logdir, args):
 def agent_setup(env, logdir, args):
     if args.cnn and args.env_name == 'maze':
         agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
+    elif args.cnn and args.env_name == 'shelf_env':
+        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(48, 64, 3))
     else:
         agent = SAC(env.observation_space, env.action_space, args, logdir)
     return agent
 
 
-def get_action(state, env, agent, recovery_policy, args, train=True):
+def get_action(state, env, agent, recovery_policy, args, train=True, im_state=None):
     def recovery_thresh(state, action, agent, args):
         if not args.use_recovery:
             return False
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0))
+        print("CRITIC VAL: ", critic_val)
         if critic_val > args.eps_safe and not args.pred_time:
             return True
         elif critic_val < args.t_safe and args.pred_time:
             return True
         return False
+    policy_state = im_state if im_state is not None else state
     if args.start_steps > total_numsteps and train:
         action = env.action_space.sample()  # Sample random action
     elif train:
-        action = agent.select_action(state)  # Sample action from policy
+        action = agent.select_action(policy_state)  # Sample action from policy
     else:
-        action = agent.select_action(state, eval=True)  # Sample action from policy
+        action = agent.select_action(policy_state, eval=True)  # Sample action from policy
     if recovery_thresh(state, action, agent, args):
+        recovery = True
         if not args.disable_learned_recovery:
             real_action = recovery_policy.act(state, 0)
             # real_action = agent.select_recovery_action(state, eval= not train)
@@ -103,8 +109,9 @@ def get_action(state, env, agent, recovery_policy, args, train=True):
         else:
             real_action = env.safe_action(state)
     else:
+        recovery = False
         real_action = np.copy(action)
-    return action, real_action
+    return action, real_action, recovery
 
 
 ENV_ID = {'simplepointbot0': 'SimplePointBot-v0', 
@@ -131,16 +138,19 @@ def get_constraint_demos(env, args):
         elif args.env_name == 'shelf_env':
             constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
         else:
-            constraint_demo_data = env.transition_function(args.num_demo_transitions)
+            constraint_demo_data = env.transition_function(args.num_constraint_transitions)
     else:
         # TODO: cleanup, for now this is hard-coded for maze
         if args.cnn and args.env_name == 'maze':
-            constraint_demo_data, task_demo_data_images = env.transition_function(args.num_demo_transitions, task_demos=args.task_demos, images=True)
+            constraint_demo_data, task_demo_data_images = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos, images=True)
         elif args.env_name == 'shelf_env':
-            task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos.pkl"), "rb"))
+            if args.cnn:
+                task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos_images.pkl"), "rb"))
+            else:
+                task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos.pkl"), "rb"))
             constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
         else:
-            constraint_demo_data, task_demo_data = env.transition_function(args.num_demo_transitions, task_demos=args.task_demos)
+            constraint_demo_data, task_demo_data = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos)
     return constraint_demo_data, task_demo_data
 
 
@@ -224,13 +234,13 @@ parser.add_argument('--use_value', action="store_true")
 parser.add_argument('--use_qvalue', action="store_true")
 parser.add_argument('--pred_time', action="store_true")
 parser.add_argument('--opt_value', action="store_true")
-parser.add_argument('--num_task_transitions', type=int, default=500) # 100 transitions for task demos (if this is infinity it works for shelf)
+parser.add_argument('--num_task_transitions', type=int, default=10000000)
+parser.add_argument('--num_constraint_transitions', type=int, default=10000) # Make this 20K+ for original shelf env stuff, trying with fewer rn
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
 parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
                     help='Override default parameters, see https://github.com/kchua/handful-of-trials#overrides')
-parser.add_argument('--num_demo_transitions', type=int, default=10000)
 args = parser.parse_args()
 
 
@@ -260,14 +270,23 @@ if args.use_recovery and not args.disable_learned_recovery:
     demo_data_actions = np.array([d[1] for d in constraint_demo_data])
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
     train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
+    num_constraint_transitions = 0
+    num_viols = 0
     for transition in constraint_demo_data:
         recovery_memory.push(*transition)
-    agent.train_safety_critic(0, recovery_memory, agent.policy_sample)
+        num_viols += int(transition[2])
+        num_constraint_transitions += 1
+        if num_constraint_transitions == args.num_constraint_transitions:
+            break
+    print("Number of Constraint Transitions: ", num_constraint_transitions)
+    print("Number of Constraint Violations: ", num_viols)
+    if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+        plot = True
+    else:
+        plot = False
+    agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
 
-# TODO: cleanup, for now this is hard-coded for maze
-if args.cnn and args.env_name == 'maze' and task_demos:
-    task_demo_data = task_demo_data_images
-
+print("LOGDIR: ", logdir)
 # If use task demos, add them to memory and train agent
 if task_demos:
     num_task_transitions = 0
@@ -297,7 +316,11 @@ for i_episode in itertools.count(1):
         recorder = VideoRecorder(env, osp.join(logdir, 'video_{}.mp4'.format(i_episode)))
     # TODO; cleanup for now this is hard-coded for maze
     if args.cnn and args.env_name == 'maze':
-        state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+        im_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+    elif args.cnn and args.env_name == 'shelf_env':
+        im_state = process_obs(env.render(), args.env_name)
+    else:
+        im_state = None
 
     train_rollouts.append([])
     ep_states = [state]
@@ -319,14 +342,17 @@ for i_episode in itertools.count(1):
                 writer.add_scalar('entropy_temprature/alpha', alpha, updates)
                 updates += 1
 
-        action, real_action = get_action(state, env, agent, recovery_policy, args)
-
+        action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args, im_state=im_state)
         next_state, reward, done, info = env.step(real_action) # Step
+        info['recovery'] = recovery_used
+
         done = done or episode_steps == env._max_episode_steps
 
         # TODO; cleanup for now this is hard-coded for maze
         if args.cnn and args.env_name == 'maze':
-            next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+            im_next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+        elif args.cnn and args.env_name == 'shelf_env':
+            im_next_state = process_obs(env.render(), args.env_name)
 
         train_rollouts[-1].append(info)
         episode_steps += 1
@@ -338,11 +364,16 @@ for i_episode in itertools.count(1):
 
         mask = float(not done)
         # TODO; cleanup for now this is hard-coded for maze
-        memory.push(state, action, reward, next_state, mask) # Append transition to memory
+        if args.cnn and (args.env_name == 'maze' or args.env_name == 'shelf_env'):
+            memory.push(im_state, action, reward, im_next_state, mask)
+        else:
+            memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
         if args.use_recovery:
             recovery_memory.push(state, action, info['constraint'], next_state, mask)
         state = next_state
+        if args.cnn and (args.env_name == 'maze' or args.env_name == 'shelf_env'):
+            im_state = im_next_state
 
         ep_states.append(state)
         ep_actions.append(real_action)
@@ -357,7 +388,11 @@ for i_episode in itertools.count(1):
             train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
             all_ep_data = []
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
-            agent.train_safety_critic(i_episode, recovery_memory, agent.policy_sample, training_iterations=50, batch_size=100)
+            if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+                plot = True
+            else:
+                plot = False
+            agent.train_safety_critic(i_episode, recovery_memory, agent.policy_sample, training_iterations=50, batch_size=100, plot=plot)
 
     writer.add_scalar('reward/train', episode_reward, i_episode)
     print("Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
@@ -379,14 +414,17 @@ for i_episode in itertools.count(1):
             elif args.env_name == 'shelf_env':
                 im_list = [env.render().squeeze()]
             if args.cnn and args.env_name == 'maze':
-                state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+                im_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+            elif args.cnn and args.env_name == 'shelf_env':
+                im_state = process_obs(env.render(), args.env_name)
 
             episode_reward = 0
             episode_steps = 0
             done = False
             while not done:
-                action, real_action = get_action(state, env, agent, recovery_policy, args, train=False)
+                action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args, train=False, im_state=im_state)
                 next_state, reward, done, info = env.step(real_action) # Step
+                info['recovery'] = recovery_used
                 done = done or episode_steps == env._max_episode_steps
 
                 # TODO: clean up the following code
@@ -395,12 +433,17 @@ for i_episode in itertools.count(1):
                 elif args.env_name == 'shelf_env':
                     im_list.append(env.render().squeeze())
                 if args.cnn and args.env_name == 'maze':
-                    next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+                    im_next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+                elif args.cnn and args.env_name == 'shelf_env':
+                    im_next_state = process_obs(env.render(), args.env_name)
 
                 test_rollouts[-1].append(info)
                 episode_reward += reward
                 episode_steps += 1
                 state = next_state
+
+                if args.cnn and (args.env_name == 'maze' or args.env_name == 'shelf_env'):
+                    im_state = im_next_state
 
             print_episode_info(test_rollouts[-1])
             avg_reward += episode_reward

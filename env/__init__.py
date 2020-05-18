@@ -31,6 +31,11 @@ register(
 )
 
 register(
+    id='ShelfDynamic-v0',
+    entry_point='env.shelf_dynamic_env:ShelfDynamicEnv'
+)
+
+register(
     id='CliffPusher-v0',
     entry_point='env.cliffpusher:PusherEnv'
 )

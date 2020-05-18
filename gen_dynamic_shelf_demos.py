@@ -8,7 +8,7 @@ from tensorboardX import SummaryWriter
 import cv2
 import os
 import moviepy.editor as mpy
-from env.shelf_env import ShelfEnv
+from env.shelf_dynamic_env import ShelfDynamicEnv
 import pickle
 
 HYPERPARAMS = {
@@ -62,7 +62,7 @@ parser.add_argument('--save_rollouts', action="store_true")
 args = parser.parse_args()
 
 # Environment
-env = gym.make('Shelf-v0')
+env = gym.make('ShelfDynamic-v0')
 
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
@@ -82,7 +82,7 @@ demo_transitions = []
 demo_rollouts = []
 i_demos = 0
 while i_demos < args.num_demos:
-    if i_demos % 100 == 0:
+    if i_demos % 50 == 0:
         print("Demo #: ", i_demos)
     state = env.reset()
     demo_rollouts.append([])
@@ -93,11 +93,12 @@ while i_demos < args.num_demos:
     episode_constraints = 0
     done = False
 
+    t = 0
     while not done: 
         if args.constraint_demos:
-            action = env.expert_action(noise_std=0.1, demo_quality=args.demo_quality)
+            action = env.expert_action(t, noise_std=0.05)
         else:
-            action = env.expert_action(noise_std=0.01, demo_quality=args.demo_quality)
+            action = env.expert_action(t, noise_std=0.01)
 
         next_state, reward, done, info = env.step(action) # Step
 
@@ -135,11 +136,21 @@ while i_demos < args.num_demos:
             demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
 
         state = next_state
+        t += 1
 
     print("DEMO EPISODE REWARD", episode_reward)
     print("DEMO EPISODE CONSTRAINTS", episode_constraints)
     print("DEMO EPISODE STEPS", episode_steps)
-    i_demos += 1
+
+    if not args.constraint_demos: 
+        if episode_reward > 0 and episode_constraints == 0:
+            i_demos += 1
+        else:
+             # Remove last rollout if it doesn't do the task...
+            demo_transitions = demo_transitions[:-t]
+            demo_rollouts.pop()
+    else:
+        i_demos += 1
 
 if args.constraint_demos:
     f_name = "constraint_demos"
@@ -150,9 +161,9 @@ if args.constraint_demos:
     f_name += ".pkl"
 
     if not args.save_rollouts:
-        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", f_name), "wb") )
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
     else:
-        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", f_name), "wb") )
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
 else:
     f_name = "task_demos"
     if args.save_rollouts:
@@ -162,7 +173,7 @@ else:
     f_name += ".pkl"
 
     if not args.save_rollouts:
-        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", f_name), "wb") )
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
     else:
-        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", f_name), "wb") )
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
 
