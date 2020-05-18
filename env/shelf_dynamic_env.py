@@ -9,7 +9,7 @@ import os
 import mujoco_py
 
 FIXED_ENV = False
-DENSE_REWARD = False
+DENSE_REWARD = True
 GT_STATE = True
 EARLY_TERMINATION = True
 
@@ -105,7 +105,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         self._previous_target_qpos = target_qpos
 
 
-        if (self.timestep // 7) % 2 == 0:
+        if (self.timestep // 10) % 2 == 0:
             # Step dynamic obs:
             self.step_dynamic_obs([-0.5, 0, 0, 0.6])
         else:
@@ -197,7 +197,8 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         # print("CUR POS: ", cur_pos)
         # print("DIST: ", np.linalg.norm(cur_pos[:2] - dynamic_obs[:2]))
 
-        if t < 10:
+        start_time = np.random.choice(range(10, 14))
+        if t < start_time:
             return [0, 0, 0, 0] + np.random.randn(self._adim) * noise_std
 
         target_obj_pos = self.object_poses[1][:3]
@@ -211,7 +212,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
             else:
                 action[0] = 0.5 * delta[0]
             action[3] = 0.02
-        elif np.abs(delta[1]) > 0.05:
+        elif np.abs(delta[1]) > 0.03:
             # print("HERE")
             if demo_quality == 'high':
                 action[1] = delta[1]
@@ -306,7 +307,7 @@ if __name__ == '__main__':
     for t in range(25):
         ac = env.expert_action(t, noise_std=0.0)
         ns, r, done, info = env.step(ac)
-        print(env.topple_check())
+        print(info['constraint'])
         print("reward: ", r)
         a = env.render().squeeze()
         im_list.append(a)

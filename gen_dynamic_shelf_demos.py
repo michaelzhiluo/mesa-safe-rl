@@ -96,9 +96,9 @@ while i_demos < args.num_demos:
     t = 0
     while not done: 
         if args.constraint_demos:
-            action = env.expert_action(t, noise_std=0.05, demo_quality=args.demo_quality)
+            action = env.expert_action(t, noise_std=0.05)
         else:
-            action = env.expert_action(t, noise_std=0, demo_quality=args.demo_quality)
+            action = env.expert_action(t, noise_std=0.01)
 
         next_state, reward, done, info = env.step(action) # Step
 
@@ -143,8 +143,12 @@ while i_demos < args.num_demos:
     print("DEMO EPISODE STEPS", episode_steps)
 
     if not args.constraint_demos: 
-        if episode_reward > 3 and episode_constraints == 0:
+        if episode_reward > 0 and episode_constraints == 0:
             i_demos += 1
+        else:
+             # Remove last rollout if it doesn't do the task...
+            demo_transitions = demo_transitions[:-t]
+            demo_rollouts.pop()
     else:
         i_demos += 1
 
