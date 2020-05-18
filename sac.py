@@ -15,7 +15,7 @@ class SAC(object):
         self.alpha = args.alpha
         self.env_name = args.env_name
         self.gamma_safe = args.gamma_safe
-
+        self.ddpg_recovery = args.ddpg_recovery
         self.policy_type = args.policy
         self.target_update_interval = args.target_update_interval
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
@@ -154,10 +154,11 @@ class SAC(object):
         (qf1_loss + qf2_loss).backward()
         self.critic_optim.step()
 
-        print(recovery_policy_loss)
-        self.recovery_policy_optim.zero_grad()
-        recovery_policy_loss.backward()
-        self.recovery_policy_optim.step()
+        if args.ddpg_recovery:
+            print(recovery_policy_loss)
+            self.recovery_policy_optim.zero_grad()
+            recovery_policy_loss.backward()
+            self.recovery_policy_optim.step()
 
         self.policy_optim.zero_grad()
         policy_loss.backward()
