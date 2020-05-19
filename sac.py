@@ -143,18 +143,20 @@ class SAC(object):
         qf1_pi, qf2_pi = self.critic(state_batch, pi)
         min_qf_pi = torch.min(qf1_pi, qf2_pi)
 
-        safety_qf1_pi, safety_qf2_pi = self.safety_critic.get_value(state_batch, recovery_pi, eval=True)
-        max_safety_qf_pi = torch.max(safety_qf1_pi, safety_qf2_pi)
+        if self.ddpg_recovery:
+            safety_qf1_pi, safety_qf2_pi = self.safety_critic.get_value(state_batch, recovery_pi, eval=True)
+            max_safety_qf_pi = torch.max(safety_qf1_pi, safety_qf2_pi)
 
         policy_loss = ((self.alpha * log_pi) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
 
-        recovery_policy_loss = max_safety_qf_pi.mean()
+        if self.ddpg_recovery:
+            recovery_policy_loss = max_safety_qf_pi.mean()
 
         self.critic_optim.zero_grad()
         (qf1_loss + qf2_loss).backward()
         self.critic_optim.step()
 
-        if args.ddpg_recovery:
+        if self.ddpg_recovery:
             print(recovery_policy_loss)
             self.recovery_policy_optim.zero_grad()
             recovery_policy_loss.backward()

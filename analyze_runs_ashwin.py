@@ -108,13 +108,13 @@ names = {
     # "sac_penalty10_images": "SAC (penalty 10, images)",
     # "sac_norecovery_images": "SAC (images)",
 
-    # "recovery_0.6_dense_gamma0.3": "SAC (Eps 0.6, Gamma 0.3)",
-    # "recovery_0.6_dense_gamma0.4": "SAC (Eps 0.6, Gamma 0.4)",
-    # "recovery_0.6_dense_gamma0.5": "SAC (Eps 0.6, Gamma 0.5)",
-    # "recovery_0.6_dense_gamma0.65": "SAC (Eps 0.6, Gamma 0.65)",
-    # "recovery_0.6_dense_gamma0.75": "SAC (Eps 0.6, Gamma 0.75)",
-    # "recovery_0.6_dense_gamma0.85": "SAC (Eps 0.6, Gamma 0.85)",
-    # "recovery_0.6_gamma0.5_penalty3": "SAC (Eps 0.6, Gamma 0,5, Constraint Penalty 3"
+    # "recovery_0.6_dense_gamma0.3": "SAC + Recovery (Eps 0.6, Gamma 0.3)",
+    # "recovery_0.6_dense_gamma0.4": "SAC + Recovery (Eps 0.6, Gamma 0.4)",
+    # "recovery_0.6_dense_gamma0.5": "SAC + Recovery (Eps 0.6, Gamma 0.5)",
+    # "recovery_0.6_dense_gamma0.65": "SAC + Recovery (Eps 0.6, Gamma 0.65)",
+    # "recovery_0.6_dense_gamma0.75": "SAC + Recovery (Eps 0.6, Gamma 0.75)",
+    # "recovery_0.6_dense_gamma0.85": "SAC + Recovery (Eps 0.6, Gamma 0.85)",
+    # "recovery_0.6_gamma0.5_penalty3": "SAC + Recovery (Eps 0.6, Gamma 0,5, Constraint Penalty 3"
 }
 
 

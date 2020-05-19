@@ -75,7 +75,7 @@ def experiment_setup(logdir, args):
 def agent_setup(env, logdir, args):
     if args.cnn and args.env_name == 'maze':
         agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
-    elif args.cnn and args.env_name == 'shelf_env':
+    elif args.cnn and 'shelf' in args.env_name:
         agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(48, 64, 3))
     else:
         agent = SAC(env.observation_space, env.action_space, args, logdir)
@@ -124,7 +124,7 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'maze': 'Maze-v0',
           'shelf_env': 'Shelf-v0',
           'shelf_dynamic_env': 'ShelfDynamic-v0',
-          'shelf_reach_env': 'ShelfReach-v0'
+          'shelf_reach_env': 'ShelfReach-v0',
           'cliffpusher': 'CliffPusher-v0',
           'reacher': 'Reacher-v0'
           }
@@ -140,20 +140,23 @@ def get_constraint_demos(env, args):
     if not args.task_demos:
         if args.env_name == 'reacher':
             constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
-        elif args.env_name == 'shelf_env':
-            constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
+        elif 'shelf' in args.env_name:
+            folder_name = args.env_name.split('_env')[0]
+            constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
         else:
             constraint_demo_data = env.transition_function(args.num_constraint_transitions)
     else:
         # TODO: cleanup, for now this is hard-coded for maze
         if args.cnn and args.env_name == 'maze':
             constraint_demo_data, task_demo_data_images = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos, images=True)
-        elif args.env_name == 'shelf_env':
+        elif 'shelf' in args.env_name:
+            folder_name = args.env_name.split('_env')[0]
             if args.cnn:
-                task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos_images.pkl"), "rb"))
+                task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos_images.pkl"), "rb"))
             else:
-                task_demo_data = pickle.load(open(osp.join("demos", "shelf", "task_demos.pkl"), "rb"))
-            constraint_demo_data = pickle.load(open(osp.join("demos", "shelf", "constraint_demos.pkl"), "rb"))
+                task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos.pkl"), "rb"))
+            constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
+            # constraint_demo_data = None # TODO: temp fix later
         else:
             constraint_demo_data, task_demo_data = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos)
     return constraint_demo_data, task_demo_data
@@ -168,7 +171,7 @@ def train_recovery(states, actions, next_states=None, epochs=50):
 
 # TODO: fix this for shelf env...
 def process_obs(obs, env_name):
-    if env_name == 'shelf_env':
+    if 'shelf' in args.env_name:
         obs = cv2.resize(obs, (64, 48), interpolation=cv2.INTER_AREA)
     im = np.transpose(obs, (2, 0, 1))
     return im
@@ -323,7 +326,7 @@ for i_episode in itertools.count(1):
     # TODO; cleanup for now this is hard-coded for maze
     if args.cnn and args.env_name == 'maze':
         im_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
-    elif args.cnn and args.env_name == 'shelf_env':
+    elif args.cnn and 'shelf' in args.env_name:
         im_state = process_obs(env.render(), args.env_name)
     else:
         im_state = None
@@ -357,7 +360,7 @@ for i_episode in itertools.count(1):
         # TODO; cleanup for now this is hard-coded for maze
         if args.cnn and args.env_name == 'maze':
             im_next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
-        elif args.cnn and args.env_name == 'shelf_env':
+        elif args.cnn and 'shelf' in args.env_name:
             im_next_state = process_obs(env.render(), args.env_name)
 
         train_rollouts[-1].append(info)
@@ -370,7 +373,7 @@ for i_episode in itertools.count(1):
 
         mask = float(not done)
         # TODO; cleanup for now this is hard-coded for maze
-        if args.cnn and (args.env_name == 'maze' or args.env_name == 'shelf_env'):
+        if args.cnn and (args.env_name == 'maze' or 'shelf' in args.env_name):
             memory.push(im_state, action, reward, im_next_state, mask)
         else:
             memory.push(state, action, reward, next_state, mask) # Append transition to memory
@@ -378,7 +381,7 @@ for i_episode in itertools.count(1):
         if args.use_recovery:
             recovery_memory.push(state, action, info['constraint'], next_state, mask)
         state = next_state
-        if args.cnn and (args.env_name == 'maze' or args.env_name == 'shelf_env'):
+        if args.cnn and (args.env_name == 'maze' or 'shelf' in args.env_name):
             im_state = im_next_state
 
         ep_states.append(state)
@@ -417,11 +420,11 @@ for i_episode in itertools.count(1):
             # TODO; clean up the following code
             if args.env_name == 'maze':
                 im_list = [env.sim.render(64, 64, camera_name= "cam0")]
-            elif args.env_name == 'shelf_env':
+            elif 'shelf' in args.env_name:
                 im_list = [env.render().squeeze()]
             if args.cnn and args.env_name == 'maze':
                 im_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
-            elif args.cnn and args.env_name == 'shelf_env':
+            elif args.cnn and 'shelf' in args.env_name:
                 im_state = process_obs(env.render(), args.env_name)
 
             episode_reward = 0
@@ -436,11 +439,11 @@ for i_episode in itertools.count(1):
                 # TODO: clean up the following code
                 if args.env_name == 'maze':
                     im_list.append(env.sim.render(64, 64, camera_name= "cam0"))
-                elif args.env_name == 'shelf_env':
+                elif 'shelf' in args.env_name:
                     im_list.append(env.render().squeeze())
                 if args.cnn and args.env_name == 'maze':
                     im_next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
-                elif args.cnn and args.env_name == 'shelf_env':
+                elif args.cnn and 'shelf' in args.env_name:
                     im_next_state = process_obs(env.render(), args.env_name)
 
                 test_rollouts[-1].append(info)
@@ -448,13 +451,13 @@ for i_episode in itertools.count(1):
                 episode_steps += 1
                 state = next_state
 
-                if args.cnn and (args.env_name == 'maze' or args.env_name == 'shelf_env'):
+                if args.cnn and (args.env_name == 'maze' or 'shelf' in args.env_name):
                     im_state = im_next_state
 
             print_episode_info(test_rollouts[-1])
             avg_reward += episode_reward
 
-            if args.env_name == 'maze' or args.env_name == 'shelf_env':
+            if args.env_name == 'maze' or 'shelf' in args.env_name:
                 npy_to_gif(im_list, osp.join(logdir, "test_" + str(i_episode) + "_" + str(j)))
 
         avg_reward /= episodes

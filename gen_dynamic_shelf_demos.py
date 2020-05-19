@@ -96,7 +96,12 @@ while i_demos < args.num_demos:
     t = 0
     while not done: 
         if args.constraint_demos:
-            action = env.expert_action(t, noise_std=0.05)
+            time_seed = np.random.random()
+            if time_seed < 0.3:
+                idx = 15
+            else:
+                idx = t
+            action = env.expert_action(idx, noise_std=0.05)
         else:
             action = env.expert_action(t, noise_std=0.01)
 

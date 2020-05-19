@@ -48,7 +48,6 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         self.dense_reward = DENSE_REWARD
         self.gt_state = GT_STATE
         self._max_episode_steps = 25
-        self.timestep = 0
 
         # print('------------------------------------------------------------------')
 
@@ -69,7 +68,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
 
         #clear our observations from last rollout
         self._last_obs = None
-
+        self.timestep = 0
         state = self.sim.get_state()
         pos = np.copy(state.qpos[:])
         pos[12:] = self.object_reset_poses().ravel()
@@ -88,7 +87,6 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         else:
             return self.render()
 
-
     def step(self, action):
         position = self.position
         action = np.clip(action, self.ac_low, self.ac_high)
@@ -97,23 +95,25 @@ class ShelfDynamicEnv(BaseMujocoEnv):
             self._previous_target_qpos = target_qpos
         finger_force = np.zeros(2)
 
+        if self.timestep < 10:
+            dynamic_obs_action = [0.035, 0, 0, 0.6]
+        else:
+            dynamic_obs_action = [0, 0, 0, 0.6]
+
+        dynamic_obs_action = np.clip(dynamic_obs_action, self.ac_low, self.ac_high)
+        target_qpos_dynamic_obs = self._next_qpos_dynamic_obs(dynamic_obs_action)
+        if self._previous_target_qpos_dynamic_obs is None:
+            self._previous_target_qpos_dynamic_obs = target_qpos_dynamic_obs
+
         for st in range(self.substeps):
             alpha = st / (float(self.substeps) - 1)
             self.sim.data.ctrl[:5] = alpha * target_qpos + (1. - alpha) * self._previous_target_qpos
+            self.sim.data.ctrl[5:] = alpha * target_qpos_dynamic_obs + (1. - alpha) * self._previous_target_qpos_dynamic_obs
             self.sim.step()
 
-        self._previous_target_qpos = target_qpos
-
-
-        if (self.timestep // 10) % 2 == 0:
-            # Step dynamic obs:
-            self.step_dynamic_obs([-0.5, 0, 0, 0.6])
-        else:
-            self.step_dynamic_obs([0.5, 0, 0, 0.6])
-
         self.timestep += 1
-        # print("COLLISION: ", self.get_contact_info())
-
+        self._previous_target_qpos = target_qpos
+        self._previous_target_qpos_dynamic_obs = target_qpos_dynamic_obs
         constraint = self.topple_check() or self.get_contact_info()
         reward = self.reward_fn()
 
@@ -149,21 +149,6 @@ class ShelfDynamicEnv(BaseMujocoEnv):
             collision = True
         return collision
 
-    def step_dynamic_obs(self, action):
-        position = self.position
-        action = np.clip(action, self.ac_low, self.ac_high)
-        target_qpos = self._next_qpos_dynamic_obs(action)
-        if self._previous_target_qpos_dynamic_obs is None:
-            self._previous_target_qpos_dynamic_obs = target_qpos
-        finger_force = np.zeros(2)
-
-        for st in range(self.substeps):
-            alpha = st / (float(self.substeps) - 1)
-            self.sim.data.ctrl[5:] = alpha * target_qpos + (1. - alpha) * self._previous_target_qpos_dynamic_obs
-            self.sim.step()
-
-        self._previous_target_qpos_dynamic_obs = target_qpos
-
 
     def topple_check(self, debug=False):
         quat = self.object_poses[:,3:]
@@ -185,19 +170,11 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         self.obj_y_dist_range[1] = bounds[1]
 
 
-    # TODO: take into account where the other end effector is
     def expert_action(self, t, noise_std=0.0, demo_quality='high'):
         cur_pos = self.position[:3]
         cur_pos[1] += 0.25 # compensate for length of jaws
 
-        dynamic_obs = self.position[6:9]
-
-        # Note we want to check whether the dynamic obs is anywhere close to blocking the target obs...
-        # print("DYNAMIC OBS: ", dynamic_obs)
-        # print("CUR POS: ", cur_pos)
-        # print("DIST: ", np.linalg.norm(cur_pos[:2] - dynamic_obs[:2]))
-
-        start_time = np.random.choice(range(10, 14))
+        start_time = np.random.choice(range(9, 14))
         if t < start_time:
             return [0, 0, 0, 0] + np.random.randn(self._adim) * noise_std
 
@@ -212,7 +189,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
             else:
                 action[0] = 0.5 * delta[0]
             action[3] = 0.02
-        elif np.abs(delta[1]) > 0.03:
+        elif np.abs(delta[1]) > 0.05:
             # print("HERE")
             if demo_quality == 'high':
                 action[1] = delta[1]
@@ -306,11 +283,10 @@ if __name__ == '__main__':
     im_list = []
     for t in range(25):
         ac = env.expert_action(t, noise_std=0.0)
+        # ac = [0, 0, 0, 0.6]
         ns, r, done, info = env.step(ac)
         print(info['constraint'])
         print("reward: ", r)
         a = env.render().squeeze()
         im_list.append(a)
-    # plt.imshow(a.squeeze())
-    # plt.show()
     npy_to_gif(im_list, "out")
