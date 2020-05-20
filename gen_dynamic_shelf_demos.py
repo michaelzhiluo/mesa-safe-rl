@@ -94,6 +94,7 @@ while i_demos < args.num_demos:
     done = False
 
     t = 0
+    im_list = [env.render().squeeze()]
     while not done: 
         if args.constraint_demos:
             time_seed = np.random.random()
@@ -103,9 +104,10 @@ while i_demos < args.num_demos:
                 idx = t
             action = env.expert_action(idx, noise_std=0.05)
         else:
-            action = env.expert_action(t, noise_std=0.01)
+            action = env.expert_action(t, noise_std=0.0)
 
         next_state, reward, done, info = env.step(action) # Step
+        im_list.append(env.render().squeeze())
 
         if episode_steps == env._max_episode_steps:
             done = True
@@ -142,13 +144,13 @@ while i_demos < args.num_demos:
 
         state = next_state
         t += 1
-
     print("DEMO EPISODE REWARD", episode_reward)
     print("DEMO EPISODE CONSTRAINTS", episode_constraints)
     print("DEMO EPISODE STEPS", episode_steps)
 
     if not args.constraint_demos: 
         if episode_reward > 0 and episode_constraints == 0:
+            # npy_to_gif(im_list, "out_{}".format(i_demos))
             i_demos += 1
         else:
              # Remove last rollout if it doesn't do the task...
