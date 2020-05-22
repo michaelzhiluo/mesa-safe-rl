@@ -78,7 +78,8 @@ class SAC(object):
                 self.recovery_policy = DeterministicPolicy(observation_space.shape[0], action_space.shape[0], args.hidden_size, action_space).to(self.device)
 
             self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
-            self.recovery_policy_optim = Adam(self.recovery_policy.parameters(), lr=args.lr)
+            if self.ddpg_recovery:
+                self.recovery_policy_optim = Adam(self.recovery_policy.parameters(), lr=args.lr)
 
         else:
             self.alpha = 0

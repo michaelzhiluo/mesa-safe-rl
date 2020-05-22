@@ -76,6 +76,17 @@ experiment_map = {
             # "recovery_0.6_dense_gamma0.5_constraint_penalty0.3": []
         },
         "outfile": "shelf.png"
+    },
+    "shelf_dynamic": {
+        "algs": {
+            "sac_norecovery": ["2020-05-20_01-46-08_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_04-43-54_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_06-33-55_SAC_shelf_dynamic_env_Gaussian_"],
+            "sac_penalty3": ["2020-05-20_03-14-53_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_06-34-42_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_06-37-31_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.3": ["2020-05-20_21-04-39_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.4": ["2020-05-20_09-56-03_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_09-56-25_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_09-56-39_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.6": ["2020-05-20_21-35-04_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.8": ["2020-05-20_21-35-14_SAC_shelf_dynamic_env_Gaussian_"]
+        },
+        "outfile": "shelf_dynamic.png"
     } 
 }
 
@@ -91,6 +102,7 @@ names = {
     "recovery_0.1": "SAC + Recovery (eps=0.1)",
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
     "recovery_0.3": "SAC + Recovery (eps=0.3)",
+    "recovery_0.4": "SAC + Recovery (eps=0.4)",
     "recovery_0.4_20k": "SAC + Recovery (eps=0.4), 20k transitions",
     # "recovery_0.4_20k_gamma0.9": "SAC + Recovery (eps=0.4), 20k transitions, gamma=0.9",
     "recovery_0.4_5k": "SAC + Recovery (eps=0.4), 5k transitions",
@@ -130,7 +142,7 @@ colors = {
     "recovery_0.4_20k": "blue",
     # "recovery_0.4_20k_gamma0.9": "black",
     "recovery_0.4_5k": "red",
-    # "recovery_0.4": "blue",
+    "recovery_0.4": "blue",
     "recovery_0.6": "cyan",
     "recovery_0.8": "purple",
     "sac_penalty1": "red",
@@ -160,57 +172,33 @@ def get_stats(data):
     return mu, lb, ub
 
 # 10000
-def plot_experiment(experiment, max_eps=10000):
+def plot_experiment(experiment, max_eps=5500): # 3000 for normal shelf...
 
-    if experiment == 'maze' or experiment == 'shelf':
-        fig, axs = plt.subplots(3, figsize=(16, 19))
+    fig, axs = plt.subplots(4, figsize=(16, 27))
 
-        axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-        if experiment == 'shelf':
-            axs[0].set_ylim(-0.1, max_eps//2 + 1)
-        else:
-            axs[0].set_ylim(-0.1, max_eps+1)
-        axs[0].set_xlabel("Episode", fontsize=16)
-        axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
-        axs[0].tick_params(axis='both', which='major', labelsize=14)
+    axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
+    axs[0].set_ylim(-0.1, max_eps + 1)
+    axs[0].set_xlabel("Episode", fontsize=16)
+    axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
+    axs[0].tick_params(axis='both', which='major', labelsize=14)
 
-        axs[1].set_title("Reward vs. Episode", fontsize=20)
-        if experiment == 'maze':
-            axs[1].set_ylim(-0.45, 0)
-        elif experiment == 'shelf':
-            axs[1].set_ylim(-2, 5)
-        else:
-            assert(False)
-        axs[1].set_xlabel("Episode", fontsize=16)
-        axs[1].set_ylabel("Final Reward", fontsize=16)
-        axs[1].tick_params(axis='both', which='major', labelsize=14)
+    axs[1].set_title("Cumulative Recovery Calls vs. Episode", fontsize=20)
+    axs[1].set_ylim(-0.1, max_eps + 1)
+    axs[1].set_xlabel("Episode", fontsize=16)
+    axs[1].set_ylabel("Cumulative Recovery Calls", fontsize=16)
+    axs[1].tick_params(axis='both', which='major', labelsize=14)
 
-        axs[2].set_title("Cumulative Task Successes vs. Episode", fontsize=20)
-        axs[2].set_ylim(0, max_eps+1)
-        axs[2].set_xlabel("Episode", fontsize=16)
-        axs[2].set_ylabel("Cumulative Task Successes", fontsize=16)
-        axs[2].tick_params(axis='both', which='major', labelsize=14)
+    axs[2].set_title("Cumulative Task Successes vs. Episode", fontsize=20)
+    axs[2].set_ylim(0, max_eps+1)
+    axs[2].set_xlabel("Episode", fontsize=16)
+    axs[2].set_ylabel("Cumulative Task Successes", fontsize=16)
+    axs[2].tick_params(axis='both', which='major', labelsize=14)
 
-    elif experiment.startswith('pointbot'):
-        fig, axs = plt.subplots(2, figsize=(16, 19))
-
-        axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-        axs[0].set_ylim(-0.1, max_eps+1)
-        axs[0].set_xlabel("Episode", fontsize=16)
-        axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
-        axs[0].tick_params(axis='both', which='major', labelsize=14)
-
-        axs[1].set_title("Reward vs. Episode", fontsize=20)
-        if experiment == 'pointbot0':
-            axs[1].set_ylim(-10000, 0)
-        else:
-            axs[1].set_ylim(-4000, -1000)
-        axs[1].set_xlabel("Episode", fontsize=16)
-        axs[1].set_ylabel("Reward", fontsize=16)
-        axs[1].tick_params(axis='both', which='major', labelsize=14)
-
-    else:
-        assert False
+    axs[3].set_title("Cumulative Recovery Calls + Constraint Violated vs. Episode", fontsize=20)
+    axs[3].set_ylim(-0.1, max_eps + 1)
+    axs[3].set_xlabel("Episode", fontsize=16)
+    axs[3].set_ylabel("Cumulative Recovery Calls + Constraint Violated", fontsize=16)
+    axs[3].tick_params(axis='both', which='major', labelsize=14)
 
 
     for alg in experiment_map[experiment]["algs"]:
@@ -220,6 +208,8 @@ def plot_experiment(experiment, max_eps=10000):
         task_successes_list = []
         train_rewards_list = []
         train_violations_list = []
+        recovery_called_list = []
+        recovery_called_constraint_list = []
 
         for fname in fnames:
             with open(fname, "rb") as f:
@@ -229,20 +219,28 @@ def plot_experiment(experiment, max_eps=10000):
             train_violations = []
             train_rewards = []
             last_rewards = []
+            recovery_called = []
             for traj_stats in train_stats:
                 train_violations.append([])
+                recovery_called.append([])
                 train_rewards.append(0)
                 last_reward = 0
                 for step_stats in traj_stats:
                     train_violations[-1].append(step_stats['constraint'])
+                    recovery_called[-1].append(step_stats['recovery'])
                     train_rewards[-1] += step_stats['reward']
                     last_reward = step_stats['reward']
                 last_rewards.append(last_reward)
 
-            # print("TRAIN VIOLATIONS", train_violations)
+            recovery_called = np.array([np.sum(t) > 0 for t in recovery_called])[:max_eps].astype(int) # For now just look at whether a recovery was called at any point
             ep_lengths = np.array([len(t) for t in train_violations])[:max_eps]
             train_violations = np.array([np.sum(t) > 0 for t in train_violations])[:max_eps]
+            recovery_called_constraint = np.bitwise_and(recovery_called, train_violations)
+
+            recovery_called = np.cumsum(recovery_called)
             train_violations = np.cumsum(train_violations)
+            recovery_called_constraint = np.cumsum(recovery_called_constraint)
+
             train_rewards = np.array(train_rewards)[:max_eps]
             last_rewards = np.array(last_rewards)[:max_eps]
 
@@ -253,63 +251,79 @@ def plot_experiment(experiment, max_eps=10000):
 
             if experiment == 'maze':
                 task_successes = (-last_rewards < 0.03).astype(int)
-            elif experiment == 'shelf':
+            elif 'shelf' in experiment:
                 task_successes = (last_rewards > 4.5).astype(int)
             else:
                 assert False
 
             task_successes = np.cumsum(task_successes)
-            x = np.arange(len(last_rewards))
-            xnew = np.linspace(x.min(), x.max(), 100)
-            spl = make_interp_spline(x,last_rewards, k=3)
-            last_rewards_smooth = spl(xnew)
-
-            x = np.arange(len(train_rewards))
-            xnew = np.linspace(x.min(), x.max(), 100)
-            spl = make_interp_spline(x,train_rewards, k=3)
-            train_rewards_smooth = spl(xnew)
-
             task_successes_list.append(task_successes)
-            if experiment == 'maze' or experiment == 'shelf':
-                train_rewards_list.append(last_rewards_smooth)
-            else:
-                train_rewards_list.append(train_rewards_smooth)
+
+            # x = np.arange(len(last_rewards))
+            # xnew = np.linspace(x.min(), x.max(), 100)
+            # spl = make_interp_spline(x,last_rewards, k=3)
+            # last_rewards_smooth = spl(xnew)
+
+            # x = np.arange(len(train_rewards))
+            # xnew = np.linspace(x.min(), x.max(), 100)
+            # spl = make_interp_spline(x,train_rewards, k=3)
+            # train_rewards_smooth = spl(xnew)
+
+            # if experiment == 'maze' or 'shelf' in experiment:
+            #     train_rewards_list.append(last_rewards_smooth)
+            # else:
+            #     train_rewards_list.append(train_rewards_smooth)
 
             train_violations_list.append(train_violations)
+            recovery_called_list.append(recovery_called)
+            recovery_called_constraint_list.append(recovery_called_constraint)
 
         task_successes_list = np.array(task_successes_list)
-        train_rewards_list = np.array(train_rewards_list)
+        # train_rewards_list = np.array(train_rewards_list)
         train_violations_list = np.array(train_violations_list)
+        recovery_called_list = np.array(recovery_called_list)
+        recovery_called_constraint_list = np.array(recovery_called_constraint_list)
 
         print("TASK SUCCESSES", task_successes_list.shape)
-        print("TRAIN REWARDS", train_rewards_list.shape)
+        # print("TRAIN REWARDS", train_rewards_list.shape)
         print("TRAIN VIOLS", train_violations_list.shape)
+        print("TRAIN RECOVERY", recovery_called_list.shape)
+        print("TRAIN RECOVERY CONSTRAINT", recovery_called_constraint_list.shape)
 
         ts_mean, ts_lb, ts_ub = get_stats(task_successes_list)
-        tr_mean, tr_lb, tr_ub = get_stats(train_rewards_list)
+        # tr_mean, tr_lb, tr_ub = get_stats(train_rewards_list)
         tv_mean, tv_lb, tv_ub = get_stats(train_violations_list)
+        trec_mean, trec_lb, trec_ub = get_stats(recovery_called_list)
+        trec_constraint_mean, trec_constraint_lb, trec_constraint_ub = get_stats(recovery_called_constraint_list)
 
         axs[0].fill_between(range(tv_mean.shape[0]), tv_ub, tv_lb,
                      color=colors[alg], alpha=.5, label=names[alg])
         axs[0].plot(tv_mean, colors[alg])
-        axs[1].fill_between(xnew, tr_ub, tr_lb,
+        # axs[1].fill_between(xnew, tr_ub, tr_lb,
+        #              color=colors[alg], alpha=.5, label=names[alg])
+        # axs[1].plot(xnew, tr_mean, colors[alg])
+        axs[1].fill_between(range(trec_mean.shape[0]), trec_ub, trec_lb,
                      color=colors[alg], alpha=.5, label=names[alg])
-        axs[1].plot(xnew, tr_mean, colors[alg])
-        if experiment == 'maze' or experiment == 'shelf':
-            axs[2].fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
-                         color=colors[alg], alpha=.5)
-            axs[2].plot(ts_mean, colors[alg], label=names[alg])
+        axs[1].plot(range(trec_mean.shape[0]), trec_mean, colors[alg])
+
+        axs[2].fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
+                     color=colors[alg], alpha=.5)
+        axs[2].plot(ts_mean, colors[alg], label=names[alg])
+
+        axs[3].fill_between(range(trec_constraint_mean.shape[0]), trec_constraint_ub, trec_constraint_lb,
+                     color=colors[alg], alpha=.5)
+        axs[3].plot(trec_constraint_mean, colors[alg], label=names[alg])
 
     axs[0].legend(loc="upper left")
     axs[1].legend(loc="upper left")
-    if experiment == 'maze' or experiment == 'shelf':
-        axs[2].legend(loc="upper left")
+    axs[2].legend(loc="upper left")
+    axs[3].legend(loc="upper left")
     plt.savefig(experiment_map[experiment]["outfile"])
     plt.show()
 
 
 if __name__ == '__main__':
-    experiment = "shelf"
+    experiment = "shelf_dynamic"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
