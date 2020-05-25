@@ -44,6 +44,11 @@ register(
     id='Reacher-v0',
     entry_point='env.reacher:ReacherSparse3DEnv')
 
+register(
+    id='Car-v0',
+    entry_point='env.car:DubinsCar'
+)
+
 # register(
 #     id='MBRLPusherSparse-v0',
 #     entry_point='dmbrl.env.pushersparse:PusherSparseEnv'

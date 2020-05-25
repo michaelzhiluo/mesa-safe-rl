@@ -75,7 +75,7 @@ class QNetwork(nn.Module):
 class QNetworkConstraint(nn.Module):
     def __init__(self, num_inputs, num_actions, hidden_dim):
         super(QNetworkConstraint, self).__init__()
-
+        self.bn1 = nn.BatchNorm1d(num_inputs + num_actions)
         # Q1 architecture
         self.linear1 = nn.Linear(num_inputs + num_actions, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)

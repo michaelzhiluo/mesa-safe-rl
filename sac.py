@@ -154,10 +154,10 @@ class SAC(object):
         (qf1_loss + qf2_loss).backward()
         self.critic_optim.step()
 
-        print(recovery_policy_loss)
-        self.recovery_policy_optim.zero_grad()
-        recovery_policy_loss.backward()
-        self.recovery_policy_optim.step()
+        # print(recovery_policy_loss)
+        # self.recovery_policy_optim.zero_grad()
+        # recovery_policy_loss.backward()
+        # self.recovery_policy_optim.step()
 
         self.policy_optim.zero_grad()
         policy_loss.backward()

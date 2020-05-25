@@ -11,7 +11,10 @@ experiment_map = {
 			"sac_penalty1": "2020-04-15_17-21-40_SAC_simplepointbot0_Gaussian_",
 			"sac_penalty10": "2020-04-15_18-01-42_SAC_simplepointbot0_Gaussian_",
 			"sac_penalty100": "2020-04-15_18-24-50_SAC_simplepointbot0_Gaussian_",
-			"q-filter": "2020-04-16_12-46-37_SAC_simplepointbot0_Gaussian_"
+			"sac_lagrange_fixed": "2020-05-21_13-32-32_SAC_simplepointbot0_Gaussian_",
+			"sac_lagrange_fixed": "2020-05-21_15-27-49_SAC_simplepointbot0_Gaussian_",
+			
+			"sac_ddpg_recovery": "2020-05-21_14-30-13_SAC_simplepointbot0_Gaussian_"
 		},
 		"outfile": "pointbot0.png"
 	},
@@ -35,7 +38,9 @@ names = {
 	"sac_penalty10": "SAC (penalty 10)",
 	"sac_penalty100": "SAC (penalty 100)",
 	"recovery": "SAC + Recovery",
-	"q-filter": "Q-Filter"
+	"q-filter": "Q-Filter",
+	"sac_lagrange_fixed": "SAC + Recovery + Critic Ascent",
+	"sac_ddpg_recovery": "SAC + DDPG Recovery"
 }
 
 
@@ -45,7 +50,9 @@ colors = {
 	"sac_penalty10": "black",
 	"sac_penalty100": "purple",
 	"recovery": "red",
-	"q-filter": "blue"
+	"q-filter": "blue",
+	"sac_lagrange_fixed": "blue",
+	"sac_ddpg_recovery": "grey"
 }
 
 
@@ -85,13 +92,13 @@ def plot_experiment(experiment):
 		axs[0].plot(train_violations, c=colors[alg], label=names[alg])
 		axs[1].plot(train_rewards, c=colors[alg], label=names[alg])
 
-	# axs[0].legend(loc="lower right")
-	# axs[1].legend(loc="lower right")
+	axs[0].legend(loc="lower right")
+	axs[1].legend(loc="lower right")
 	plt.savefig(experiment_map[experiment]["outfile"])
 	# plt.show()
 
 
-experiment = "pointbot1"
+experiment = "pointbot0"
 
 if __name__ == '__main__':
 	plot_experiment(experiment)
