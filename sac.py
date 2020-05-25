@@ -15,7 +15,7 @@ class SAC(object):
         self.alpha = args.alpha
         self.env_name = args.env_name
         self.gamma_safe = args.gamma_safe
-
+        self.ddpg_recovery = args.ddpg_recovery
         self.policy_type = args.policy
         self.target_update_interval = args.target_update_interval
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
@@ -78,7 +78,8 @@ class SAC(object):
                 self.recovery_policy = DeterministicPolicy(observation_space.shape[0], action_space.shape[0], args.hidden_size, action_space).to(self.device)
 
             self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
-            self.recovery_policy_optim = Adam(self.recovery_policy.parameters(), lr=args.lr)
+            if self.ddpg_recovery:
+                self.recovery_policy_optim = Adam(self.recovery_policy.parameters(), lr=args.lr)
 
         else:
             self.alpha = 0
@@ -143,12 +144,14 @@ class SAC(object):
         qf1_pi, qf2_pi = self.critic(state_batch, pi)
         min_qf_pi = torch.min(qf1_pi, qf2_pi)
 
-        safety_qf1_pi, safety_qf2_pi = self.safety_critic.get_value(state_batch, recovery_pi, eval=True)
-        max_safety_qf_pi = torch.max(safety_qf1_pi, safety_qf2_pi)
+        if self.ddpg_recovery:
+            safety_qf1_pi, safety_qf2_pi = self.safety_critic.get_value(state_batch, recovery_pi, eval=True)
+            max_safety_qf_pi = torch.max(safety_qf1_pi, safety_qf2_pi)
 
         policy_loss = ((self.alpha * log_pi) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
 
-        recovery_policy_loss = max_safety_qf_pi.mean()
+        if self.ddpg_recovery:
+            recovery_policy_loss = max_safety_qf_pi.mean()
 
         self.critic_optim.zero_grad()
         (qf1_loss + qf2_loss).backward()

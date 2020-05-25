@@ -36,6 +36,11 @@ register(
 )
 
 register(
+    id='ShelfReach-v0',
+    entry_point='env.shelf_reach_env:ShelfRotEnv'
+)
+
+register(
     id='CliffPusher-v0',
     entry_point='env.cliffpusher:PusherEnv'
 )

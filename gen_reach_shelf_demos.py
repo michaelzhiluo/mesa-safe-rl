@@ -62,7 +62,7 @@ parser.add_argument('--save_rollouts', action="store_true")
 args = parser.parse_args()
 
 # Environment
-env = gym.make('ShelfDynamic-v0')
+env = gym.make('ShelfReach-v0')
 
 torch.manual_seed(args.seed)
 np.random.seed(args.seed)
@@ -94,23 +94,13 @@ while i_demos < args.num_demos:
     done = False
 
     t = 0
-    im_list = [env.render().squeeze()]
     while not done: 
         if args.constraint_demos:
-            time_seed = np.random.random()
-            if time_seed < 0.6:
-                idx = 15
-            else:
-                idx = t
-            if t < 7:
-                action = env.expert_action(idx, noise_std=0.02)
-            else:
-                action = env.expert_action(idx, noise_std=0.1)
+            action = env.expert_action(t, noise_std=0.05)
         else:
-            action = env.expert_action(t, noise_std=0.0)
+            action = env.expert_action(t, noise_std=0.005)
 
         next_state, reward, done, info = env.step(action) # Step
-        im_list.append(env.render().squeeze())
 
         if episode_steps == env._max_episode_steps:
             done = True
@@ -147,13 +137,13 @@ while i_demos < args.num_demos:
 
         state = next_state
         t += 1
+
     print("DEMO EPISODE REWARD", episode_reward)
     print("DEMO EPISODE CONSTRAINTS", episode_constraints)
     print("DEMO EPISODE STEPS", episode_steps)
 
     if not args.constraint_demos: 
         if episode_reward > 0 and episode_constraints == 0:
-            # npy_to_gif(im_list, "out_{}".format(i_demos))
             i_demos += 1
         else:
              # Remove last rollout if it doesn't do the task...
@@ -171,9 +161,9 @@ if args.constraint_demos:
     f_name += ".pkl"
 
     if not args.save_rollouts:
-        pickle.dump(demo_transitions, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf_reach", f_name), "wb") )
     else:
-        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf_reach", f_name), "wb") )
 else:
     f_name = "task_demos"
     if args.save_rollouts:
@@ -183,7 +173,7 @@ else:
     f_name += ".pkl"
 
     if not args.save_rollouts:
-        pickle.dump(demo_transitions, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
+        pickle.dump(demo_transitions, open(os.path.join("demos/shelf_reach", f_name), "wb") )
     else:
-        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf_dynamic", f_name), "wb") )
+        pickle.dump(demo_rollouts, open(os.path.join("demos/shelf_reach", f_name), "wb") )
 
