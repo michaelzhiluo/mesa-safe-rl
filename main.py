@@ -126,7 +126,8 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'shelf_dynamic_env': 'ShelfDynamic-v0',
           'shelf_reach_env': 'ShelfReach-v0',
           'cliffpusher': 'CliffPusher-v0',
-          'reacher': 'Reacher-v0'
+          'reacher': 'Reacher-v0',
+          'car': 'Car-v0'
           }
 
 def npy_to_gif(im_list, filename, fps=4):
