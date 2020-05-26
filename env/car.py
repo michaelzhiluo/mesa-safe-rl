@@ -20,10 +20,6 @@ from obstacle import Obstacle, ComplexObstacle
 """
 Constants associated with the PointBot env.
 """
-
-START_POS = [-50, 0]
-END_POS = [0, 0]
-GOAL_THRESH = 1.
 START_STATE = [0., 0, 0]
 TARGET_X = 50
 
@@ -63,7 +59,8 @@ class DubinsCar(Env, utils.EzPickle):
 
     def __init__(self):
         utils.EzPickle.__init__(self)
-        self.hist = self.cost = self.done = self.time = self.state = None
+        self.hist = self.done = self.time = self.state = None
+        self.reward = []
         self.horizon = HORIZON
         self.action_space = Box(-np.ones(2) * MAX_FORCE, np.ones(2) * MAX_FORCE)
         self.observation_space = Box(-np.ones(3) * np.float('inf'), np.ones(3) * np.float('inf'))
@@ -75,16 +72,17 @@ class DubinsCar(Env, utils.EzPickle):
         a = process_action(a)
         old_state = self.state.copy()
         next_state = self._next_state(self.state, a)
-        cur_cost = self.step_cost(self.state, a)
-        self.cost.append(cur_cost)
+        cur_rew = self.step_reward(self.state, a)
+        self.reward.append(cur_rew)
         self.state = next_state
         self.time += 1
         self.hist.append(self.state)
-        self.done = HORIZON <= self.time
+        constraint = collision(next_state)
+        self.done = HORIZON <= self.time# or constraint
 
-        return self.state, cur_cost, self.done, {
-                "constraint": collision(next_state),
-                "reward": cur_cost,
+        return self.state, cur_rew, self.done, {
+                "constraint": constraint,
+                "reward": cur_rew,
                 "state": old_state,
                 "next_state": next_state,
                 "action": a}
@@ -99,15 +97,15 @@ class DubinsCar(Env, utils.EzPickle):
 
     def _next_state(self, s, a, override=False):
         if collision(s):
-            print("obs", s, a)
+            # print("obs", s, a)
             return s
         else:
             new_state = np.copy(s)
             new_state += np.array([s[2] * np.cos(a[1]), s[2] * np.sin(a[1]), a[0]])
         return new_state
 
-    def step_cost(self, s, a):
-        return np.square(s[0] - TARGET_X)
+    def step_reward(self, s, a):
+        return -np.square(s[0] - TARGET_X)
 
     def values(self):
         return np.cumsum(np.array(self.cost)[::-1])[::-1]
@@ -123,18 +121,14 @@ class DubinsCar(Env, utils.EzPickle):
             states = self.hist
         states = np.array(states)
         plt.scatter(states[:,0], states[:,1])
-        plt.show()
-
-    # Returns whether a state is stable or not
-    def is_stable(self, s):
-        return np.linalg.norm(np.subtract(GOAL_STATE, s)) <= GOAL_THRESH
+        plt.savefig('car_traj.png')
 
     def teacher(self, sess=None):
         return SimplePointBotTeacher()
 
     def expert_action(self, s):
         a = [1, 0]
-        print(s)
+        # print(s)
         if s[1] > 3:
             a[1] = -np.pi/2
         elif s[1] < -3:
@@ -160,7 +154,7 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
             action = env.action_space.sample()
             next_state = env._next_state(state, action)
             constraint = collision(next_state)
-            reward = env.step_cost(state, action)
+            reward = env.step_reward(state, action)
             transitions.append((state, action, constraint, next_state, done))
             rollouts[-1].append((state, action, constraint, next_state, done))
             state = next_state
@@ -179,9 +173,10 @@ if __name__ == '__main__':
     for i in range(5):
         env.step([1,.1])
     for i in range(HORIZON-1):
-        env.step(env.expert_action(env.state))
-    print(env.hist)
+        s,r,d,i = env.step(env.expert_action(env.state))
+        print("REWARD: ", r)
     env.plot_trajectory()
+    assert(False)
 
     get_random_transitions(10000)
 
