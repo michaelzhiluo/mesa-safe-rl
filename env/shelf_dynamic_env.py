@@ -42,8 +42,8 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         self._previous_target_qpos_dynamic_obs = None
         self.target_height_thresh = 0.03
         self.object_fall_thresh = -0.03
-        self.obj_y_dist_range = np.array([0.05, 0.2])
-        self.obj_x_range = np.array([-0.2, -0.1])
+        self.obj_y_dist_range = np.array([0.2, 0.3])
+        self.obj_x_range = np.array([-0.15, -0.07])
         self.randomize_objects = not FIXED_ENV
         self.dense_reward = DENSE_REWARD
         self.gt_state = GT_STATE
@@ -178,28 +178,29 @@ class ShelfDynamicEnv(BaseMujocoEnv):
         cur_pos = self.position[:3]
         cur_pos[1] += 0.28 # compensate for length of jaws
 
-        start_time = np.random.choice(range(9, 14))
-        if t < start_time:
-            return [0, 0, 0, 0] + np.random.randn(self._adim) * noise_std
+        if t < 2:
+            return [0, 0, 0.03, 0] + np.random.randn(self._adim) * noise_std 
 
         target_obj_pos = self.object_poses[1][:3]
         action = np.zeros(self._adim)
         delta = target_obj_pos - cur_pos
-        # print("DELTA: ", delta)
-        # print(self.jaw_width)
         if np.abs(delta[0]) > 0.03:
             if demo_quality =='high':
                 action[0] = 1.3*delta[0]
             else:
                 action[0] = 0.5 * delta[0]
             action[3] = 0.02
-        elif np.abs(delta[1]) > 0.05:
+        elif np.abs(delta[1]) > 0.03:
             # print("HERE")
             if demo_quality == 'high':
                 action[1] = 1.3*delta[1]
             else:
                 action[1] = 0.5 * delta[1]
-            action[3] = 0.02
+            action[3] = 0.01
+            if t > 6 and cur_pos[2] > 0.03:
+                # print("HERE22")
+                action[2] = -0.05
+                # action[3] = 0.06
         elif self.jaw_width > 0.06:
             action[3] = 0.06
         else:
@@ -286,7 +287,7 @@ if __name__ == '__main__':
     env = ShelfDynamicEnv()
     im_list = [env.render().squeeze()]
     for t in range(25):
-        ac = env.expert_action(t, noise_std=0.0)
+        ac = env.expert_action(t, noise_std=0.03)
         # ac = [0, 0, 0, 0.6]
         ns, r, done, info = env.step(ac)
         print(info['constraint'])

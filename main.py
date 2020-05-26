@@ -253,7 +253,9 @@ parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
                     help='Override default parameters, see https://github.com/kchua/handful-of-trials#overrides')
 args = parser.parse_args()
 
-
+# TODO: clean this up later
+if 'shelf' in args.env_name:
+    args.num_constraint_transitions = 20000
 
 logdir = 'runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")

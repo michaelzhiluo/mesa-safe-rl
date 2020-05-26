@@ -92,7 +92,7 @@ class ShelfDynamicConfigModule:
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
     PLAN_HOR = 15
-    MODEL_IN, MODEL_OUT = 37, 33
+    MODEL_IN, MODEL_OUT = 37, 33 # need to add qvel at some point...
     GP_NINDUCING_POINTS = 200
 
     def __init__(self):
