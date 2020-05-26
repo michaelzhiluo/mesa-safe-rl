@@ -65,7 +65,7 @@ class DubinsCar(Env, utils.EzPickle):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
         self.horizon = HORIZON
-        self.action_space = Box(-np.ones(2) * MAX_FORCE, np.ones(2) * MAX_FORCE)
+        self.action_space = Box(-np.array([MAX_FORCE, np.pi]), np.array([MAX_FORCE, np.pi]))
         self.observation_space = Box(-np.ones(3) * np.float('inf'), np.ones(3) * np.float('inf'))
         self._max_episode_steps = HORIZON
         self.target_x = TARGET_X
