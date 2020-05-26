@@ -99,15 +99,12 @@ while i_demos < args.num_demos:
         if args.constraint_demos:
             time_seed = np.random.random()
             if time_seed < 0.6:
-                idx = 15
+                idx = 2
             else:
                 idx = t
-            if t < 7:
-                action = env.expert_action(idx, noise_std=0.02)
-            else:
-                action = env.expert_action(idx, noise_std=0.1)
+            action = env.expert_action(idx, noise_std=0.05)
         else:
-            action = env.expert_action(t, noise_std=0.0)
+            action = env.expert_action(t, noise_std=0.005)
 
         next_state, reward, done, info = env.step(action) # Step
         im_list.append(env.render().squeeze())

@@ -16,6 +16,7 @@ experiment_map = {
             "sac_penalty75": ["2020-04-27_09-25-19_SAC_maze_Gaussian_", "2020-04-27_09-25-35_SAC_maze_Gaussian_", "2020-04-27_09-25-48_SAC_maze_Gaussian_"],
             "sac_penalty100": ["2020-04-27_09-23-49_SAC_maze_Gaussian_", "2020-04-27_09-24-03_SAC_maze_Gaussian_", "2020-04-27_09-24-15_SAC_maze_Gaussian_"],
             "sac_lagrangian": ["2020-04-30_09-42-50_SAC_maze_Gaussian_", "2020-04-30_09-42-55_SAC_maze_Gaussian_", "2020-04-30_10-16-13_SAC_maze_Gaussian_"]
+            # "recovery": ["2020-05-24_11-39-18_SAC_maze_Gaussian_", "2020-05-24_11-39-26_SAC_maze_Gaussian_"]
         },
         "outfile": "maze_plot.png"
     },
@@ -79,12 +80,12 @@ experiment_map = {
     },
     "shelf_dynamic": {
         "algs": {
-            "sac_norecovery": ["2020-05-20_01-46-08_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_04-43-54_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_06-33-55_SAC_shelf_dynamic_env_Gaussian_"],
-            "sac_penalty3": ["2020-05-20_03-14-53_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_06-34-42_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_06-37-31_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery_0.3": ["2020-05-20_21-04-39_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery_0.4": ["2020-05-20_09-56-03_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_09-56-25_SAC_shelf_dynamic_env_Gaussian_", "2020-05-20_09-56-39_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery_0.6": ["2020-05-20_21-35-04_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery_0.8": ["2020-05-20_21-35-14_SAC_shelf_dynamic_env_Gaussian_"]
+            "sac_norecovery": ["2020-05-24_09-07-14_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-07-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-59_SAC_shelf_dynamic_env_Gaussian_"],
+            "sac_penalty3": ["2020-05-24_09-05-16_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_10-26-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-28_SAC_shelf_dynamic_env_Gaussian_"],
+            "sac_penalty10": ["2020-05-25_09-48-06_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-47-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-48-15_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.3": ["2020-05-24_21-59-33_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.4": ["2020-05-24_21-57-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-28_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.6": ["2020-05-24_21-59-38_SAC_shelf_dynamic_env_Gaussian_"],
         },
         "outfile": "shelf_dynamic.png"
     } 
@@ -171,13 +172,12 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-# 10000
-def plot_experiment(experiment, max_eps=5500): # 3000 for normal shelf...
+def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
     axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-    axs[0].set_ylim(-0.1, max_eps + 1)
+    axs[0].set_ylim(-0.1, int(0.65*max_eps) + 1)
     axs[0].set_xlabel("Episode", fontsize=16)
     axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
     axs[0].tick_params(axis='both', which='major', labelsize=14)
@@ -189,7 +189,7 @@ def plot_experiment(experiment, max_eps=5500): # 3000 for normal shelf...
     axs[1].tick_params(axis='both', which='major', labelsize=14)
 
     axs[2].set_title("Cumulative Task Successes vs. Episode", fontsize=20)
-    axs[2].set_ylim(0, max_eps+1)
+    axs[2].set_ylim(0, int(0.65*max_eps)+1)
     axs[2].set_xlabel("Episode", fontsize=16)
     axs[2].set_ylabel("Cumulative Task Successes", fontsize=16)
     axs[2].tick_params(axis='both', which='major', labelsize=14)
@@ -324,6 +324,7 @@ def plot_experiment(experiment, max_eps=5500): # 3000 for normal shelf...
 
 if __name__ == '__main__':
     experiment = "shelf_dynamic"
+    # experiment = "maze"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
