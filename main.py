@@ -83,9 +83,11 @@ def agent_setup(env, logdir, args):
 
 
 def get_action(state, env, agent, recovery_policy, args, train=True, im_state=None):
-    def recovery_thresh(state, action, agent, args):
+    def recovery_thresh(state, action, agent, recovery_policy, args):
         if not args.use_recovery:
             return False
+        if args.reachability_test:
+            return not recovery_policy.reachability_test(state, action, args.eps_safe)
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0))
         print("CRITIC VAL: ", critic_val)
         if critic_val > args.eps_safe and not args.pred_time:
@@ -93,6 +95,9 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
         elif critic_val < args.t_safe and args.pred_time:
             return True
         return False
+
+
+
     policy_state = im_state if im_state is not None else state
     if args.start_steps > total_numsteps and train:
         action = env.action_space.sample()  # Sample random action
@@ -100,7 +105,9 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
         action = agent.select_action(policy_state)  # Sample action from policy
     else:
         action = agent.select_action(policy_state, eval=True)  # Sample action from policy
-    if recovery_thresh(state, action, agent, args):
+
+    # print("test", test)
+    if recovery_thresh(state, action, agent, recovery_policy, args):
         recovery = True
         if not args.disable_learned_recovery:
             if args.ddpg_recovery:
@@ -232,6 +239,7 @@ parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
 parser.add_argument('--use_recovery', action="store_true")
+parser.add_argument('--reachability_test', action="store_true")
 parser.add_argument('--ddpg_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
 parser.add_argument('--critic_safe_update_freq', type=int, default=1)

@@ -135,6 +135,8 @@ class MPC(Controller):
         self.obs_cost_fn = get_required_argument(params.opt_cfg, "obs_cost_fn", "Must provide cost on observations.")
         self.ac_cost_fn = get_required_argument(params.opt_cfg, "ac_cost_fn", "Must provide cost on actions.")
 
+        self.reachability_hor = 2
+
         self.save_all_models = params.log_cfg.get("save_all_models", False)
         self.log_traj_preds = params.log_cfg.get("log_traj_preds", False)
         self.log_particles = params.log_cfg.get("log_particles", False)
@@ -280,6 +282,17 @@ class MPC(Controller):
         for update_fn in self.update_fns:
             update_fn()
 
+    def reachability_test(self, obs, ac, eps_safe):
+        self.sy_cur_obs = obs
+        # init_mean = np.concatenate([np.copy(self.prev_sol)[self.per * self.dU:], np.zeros(self.per * self.dU)])
+        init_mean = np.tile((self.ac_lb + self.ac_ub) / 2, [self.reachability_hor - 1])
+        init_var = np.tile(np.square(self.ac_ub - self.ac_lb) / 16, [self.reachability_hor - 1])
+
+        final_mean, best_cost = self.optimizer.obtain_solution(init_mean, init_var, query_action=ac, hor=self.reachability_hor - 1)
+        return best_cost < eps_safe
+
+
+
     def act(self, obs, t, get_pred_cost=False):
         """Returns the action that this controller would take at time t given observation obs.
 
@@ -330,15 +343,20 @@ class MPC(Controller):
             self.pred_means, self.pred_vars = [], []
     
     @torch.no_grad()
-    def _compile_cost(self, ac_seqs):
+    def _compile_cost(self, ac_seqs, reachability=False):
 
         nopt = ac_seqs.shape[0]
+
+        if reachability:
+            nsteps = self.reachability_hor
+        else:
+            nsteps = self.plan_hor
 
         ac_seqs = torch.from_numpy(ac_seqs).float().to(TORCH_DEVICE)
 
         # Reshape ac_seqs so that it's amenable to parallel compute
         # Before, ac seqs has dimension (400, 25) which are pop size and sol dim coming from CEM
-        ac_seqs = ac_seqs.view(-1, self.plan_hor, self.dU)
+        ac_seqs = ac_seqs.view(-1, nsteps, self.dU)
         #  After, ac seqs has dimension (400, 25, 1)
 
         transposed = ac_seqs.transpose(0, 1)
@@ -350,7 +368,7 @@ class MPC(Controller):
         tiled = expanded.expand(-1, -1, self.npart, -1)
         # Then, (25, 400, 20, 1)
 
-        ac_seqs = tiled.contiguous().view(self.plan_hor, -1, self.dU)
+        ac_seqs = tiled.contiguous().view(nsteps, -1, self.dU)
         # Then, (25, 8000, 1)
 
         # Expand current observation
@@ -360,7 +378,8 @@ class MPC(Controller):
 
         costs = torch.zeros(nopt, self.npart, device=TORCH_DEVICE)
 
-        for t in range(self.plan_hor):
+
+        for t in range(nsteps):
             cur_acs = ac_seqs[t]
 
             next_obs = self._predict_next_obs(cur_obs, cur_acs)
@@ -375,16 +394,22 @@ class MPC(Controller):
                 assert(self.value_func and not self.pred_time)
                 cost = self.value_func.get_value(cur_obs, cur_acs).squeeze()
             else:
+                assert 0
                 cost = self.obs_cost_fn(next_obs) + self.ac_cost_fn(cur_acs)
 
             cost = cost.view(-1, self.npart)
 
-            costs += cost
+            if reachability:
+                costs = cost
+            else:
+                costs += cost
             cur_obs = self.obs_postproc2(next_obs)
 
         # Replace nan with high cost
         costs[costs != costs] = 1e6
 
+        # if reachability:
+        #     return costs.max(dim=1).detach().cpu().numpy()
         return costs.mean(dim=1).detach().cpu().numpy()
 
     def update_value_func(self, value_func):
