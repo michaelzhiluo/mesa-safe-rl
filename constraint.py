@@ -54,7 +54,7 @@ class ValueFunction:
             self.plot(ep)
 
     def plot(self, ep):
-        if self.env_name == 'maze':
+        if self.env_name == 'maze' or self.env_name == 'image_maze':
             x_bounds = [-0.3, 0.3]
             y_bounds = [-0.3, 0.3]
         elif self.env_name == 'simplepointbot0':

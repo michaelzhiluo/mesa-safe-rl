@@ -27,6 +27,7 @@ MAX_VEL = 1
 HORIZON = 100
 
 NOISE_SCALE = 0.05
+DIST_THRESH = 0.5
 
 
 def collision(state):
@@ -71,7 +72,7 @@ class DubinsCar(Env, utils.EzPickle):
         self.time += 1
         self.hist.append(self.state)
         constraint = collision(next_state)
-        self.done = HORIZON <= self.time# or constraint
+        self.done = HORIZON <= self.time or -cur_rew < DIST_THRESH
 
         return self.state, cur_rew, self.done, {
                 "constraint": constraint,
