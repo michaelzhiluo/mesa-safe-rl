@@ -141,6 +141,8 @@ def get_constraint_demos(env, args):
     if not args.task_demos:
         if args.env_name == 'reacher':
             constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
+        elif args.env_name == 'maze':
+            constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
             constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
@@ -150,6 +152,7 @@ def get_constraint_demos(env, args):
         # TODO: cleanup, for now this is hard-coded for maze
         if args.cnn and args.env_name == 'maze':
             constraint_demo_data, task_demo_data_images = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos, images=True)
+            constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
             if args.cnn:
@@ -259,6 +262,7 @@ if 'shelf' in args.env_name:
 
 logdir = 'runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
                                                              args.policy, "autotune" if args.automatic_entropy_tuning else "")
+print("LOGDIR: ", logdir)
 writer = SummaryWriter(logdir=logdir)
 pickle.dump(args, open(os.path.join(logdir, "args.pkl"), "wb") )
 
@@ -292,13 +296,12 @@ if args.use_recovery and not args.disable_learned_recovery:
             break
     print("Number of Constraint Transitions: ", num_constraint_transitions)
     print("Number of Constraint Violations: ", num_viols)
-    if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+    if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'car']:
         plot = True
     else:
         plot = False
     agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
 
-print("LOGDIR: ", logdir)
 # If use task demos, add them to memory and train agent
 if task_demos:
     num_task_transitions = 0
@@ -337,6 +340,7 @@ for i_episode in itertools.count(1):
     train_rollouts.append([])
     ep_states = [state]
     ep_actions = []
+    ep_constraints = []
 
     while not done:
         if args.env_name == 'reacher':
@@ -389,13 +393,14 @@ for i_episode in itertools.count(1):
 
         ep_states.append(state)
         ep_actions.append(real_action)
+        ep_constraints.append([info['constraint']])
 
     if args.env_name == 'reacher':
         recorder.capture_frame()
         recorder.close()
 
     if args.use_recovery and not args.disable_learned_recovery:
-        all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions)})
+        all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
         if i_episode % args.recovery_policy_update_freq == 0:
             train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
             all_ep_data = []

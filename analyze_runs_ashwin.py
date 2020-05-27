@@ -58,7 +58,7 @@ experiment_map = {
             "sac_norecovery": ["2020-05-07_20-54-58_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-14_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-33_SAC_shelf_env_Gaussian_"],
             "recovery_0.4_20k": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"],
             # "recovery_0.4_20k_gamma0.9": ["2020-05-18_01-27-18_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-28_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-38_SAC_shelf_env_Gaussian_"],
-            "recovery_0.4_5k": ["2020-05-09_04-36-14_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-20_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-27_SAC_shelf_env_Gaussian_"],
+            # "recovery_0.4_5k": ["2020-05-09_04-36-14_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-20_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-27_SAC_shelf_env_Gaussian_"],
             # "recovery_0.8_images": ["2020-05-10_05-37-07_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-50_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-34_SAC_shelf_env_Gaussian_"],
             # "sac_penalty3_images": ["2020-05-11_04-30-15_SAC_shelf_env_Gaussian_", "2020-05-11_04-30-28_SAC_shelf_env_Gaussian_", "2020-05-11_04-30-36_SAC_shelf_env_Gaussian_"],
             # "sac_penalty10_images": ["2020-05-11_04-31-11_SAC_shelf_env_Gaussian_", "2020-05-11_04-31-22_SAC_shelf_env_Gaussian_", "2020-05-11_04-31-32_SAC_shelf_env_Gaussian_"],
@@ -66,6 +66,7 @@ experiment_map = {
             # "recovery_0.6_gamma0.5_penalty3": ["2020-05-17_05-57-36_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-43_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-54_SAC_shelf_env_Gaussian_"]
             "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
             "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
+            "sac_lagrangian": ["2020-05-04_04-34-38_SAC_shelf_env_Gaussian_", "2020-05-04_04-34-54_SAC_shelf_env_Gaussian_", "2020-05-04_04-35-08_SAC_shelf_env_Gaussian_"] # TODO: rerun eventually...
             # "recovery_0.4_20k_gamma0.5": ["2020-05-17_05-48-29_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-23_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-14_SAC_shelf_env_Gaussian_"]
             # "recovery_0.6_dense_gamma0.3": ["2020-05-15_23-16-25_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-30_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-34_SAC_shelf_env_Gaussian_"],
             # "recovery_0.6_dense_gamma0.4": ["2020-05-15_23-15-53_SAC_shelf_env_Gaussian_", "2020-05-15_23-15-57_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-02_SAC_shelf_env_Gaussian_"],
@@ -83,7 +84,8 @@ experiment_map = {
             "sac_norecovery": ["2020-05-24_09-07-14_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-07-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-59_SAC_shelf_dynamic_env_Gaussian_"],
             "sac_penalty3": ["2020-05-24_09-05-16_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_10-26-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-28_SAC_shelf_dynamic_env_Gaussian_"],
             "sac_penalty10": ["2020-05-25_09-48-06_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-47-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-48-15_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery_0.2": ["2020-05-25_09-41-29_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-42-02_SAC_shelf_dynamic_env_Gaussian_"],
+            # "recovery_0.2": ["2020-05-25_09-41-29_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-42-02_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_20-21-35_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery_0.25": ["2020-05-26_03-32-21_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-30_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-37_SAC_shelf_dynamic_env_Gaussian_"],
             "recovery_0.3": ["2020-05-24_21-59-33_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-26_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-51_SAC_shelf_dynamic_env_Gaussian_"],
             # "recovery_0.4": ["2020-05-24_21-57-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-28_SAC_shelf_dynamic_env_Gaussian_"]
         },
@@ -102,11 +104,12 @@ names = {
     "sac_lagrangian" : "SAC + Lagrangian",
     "recovery_0.1": "SAC + Recovery (eps=0.1)",
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
+    "recovery_0.25": "SAC + Recovery (eps=0.25)",
     "recovery_0.3": "SAC + Recovery (eps=0.3)",
     "recovery_0.4": "SAC + Recovery (eps=0.4)",
-    "recovery_0.4_20k": "SAC + Recovery (eps=0.4), 20k transitions",
+    "recovery_0.4_20k": "SAC + Recovery",
     # "recovery_0.4_20k_gamma0.9": "SAC + Recovery (eps=0.4), 20k transitions, gamma=0.9",
-    "recovery_0.4_5k": "SAC + Recovery (eps=0.4), 5k transitions",
+    # "recovery_0.4_5k": "SAC + Recovery (eps=0.4)",
     "recovery_0.5": "SAC + Recovery (eps=0.5)",
     "recovery_0.6": "SAC + Recovery (eps=0.6)",
     "recovery_0.8": "SAC + Recovery (eps=0.8)",
@@ -140,6 +143,7 @@ colors = {
     "recovery": "red",
     "sac_lagrangian": "pink",
     "recovery_0.2": "purple",
+    "recovery_0.25": "cyan",
     "recovery_0.3": "black",
     "recovery_0.4_20k": "blue",
     # "recovery_0.4_20k_gamma0.9": "black",
@@ -178,13 +182,13 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
     axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-    axs[0].set_ylim(-0.1, int(0.65*max_eps) + 1)
+    axs[0].set_ylim(-0.1, int(0.35*max_eps) + 1)
     axs[0].set_xlabel("Episode", fontsize=16)
     axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
     axs[0].tick_params(axis='both', which='major', labelsize=14)
 
     axs[1].set_title("Cumulative Task Successes vs. Episode", fontsize=20)
-    axs[1].set_ylim(0, int(0.65*max_eps)+1)
+    axs[1].set_ylim(0, int(max_eps)+1)
     axs[1].set_xlabel("Episode", fontsize=16)
     axs[1].set_ylabel("Cumulative Task Successes", fontsize=16)
     axs[1].tick_params(axis='both', which='major', labelsize=14)
@@ -228,7 +232,8 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
                 last_reward = 0
                 for step_stats in traj_stats:
                     train_violations[-1].append(step_stats['constraint'])
-                    recovery_called[-1].append(step_stats['recovery'])
+                    # recovery_called[-1].append(step_stats['recovery'])
+                    recovery_called[-1].append(0)
                     train_rewards[-1] += step_stats['reward']
                     last_reward = step_stats['reward']
                 last_rewards.append(last_reward)
@@ -324,7 +329,7 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
 
 
 if __name__ == '__main__':
-    experiment = "shelf_dynamic"
+    experiment = "shelf"
     # experiment = "maze"
     plot_experiment(experiment)
 
