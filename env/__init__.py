@@ -16,6 +16,11 @@ register(
 )
 
 register(
+    id='ImageMaze-v0',
+    entry_point='env.image_maze:MazeImageNavigation'
+)
+
+register(
     id='CliffWalker-v0',
     entry_point='env.cliffwalker:CliffWalkerEnv'
 )

@@ -14,36 +14,24 @@ from gym import Env
 from gym import utils
 from gym.spaces import Box
 
-from obstacle import Obstacle, ComplexObstacle
-
 
 """
 Constants associated with the PointBot env.
 """
-START_STATE = [0., 0, 0]
-TARGET_X = 50
+START_STATE = [0, 0, 0]
+TARGET_X = 15
+ROAD_WIDTH = 4
 
-
-MAX_FORCE = np.pi
+MAX_FORCE = 7e-3
+MAX_VEL = 1
 HORIZON = 100
 
 NOISE_SCALE = 0.05
-
-
-OBSTACLE = [
-        [[-30, -20, 0], [-10, 10, 0]]]
-
-CAUTION_ZONE = [
-        [[-32, -18], [-12, 12]]]
-
-
+DIST_THRESH = 0.5
 
 
 def collision(state):
-    return not -4 <= state[1] <= 4
-        
-OBSTACLE = ComplexObstacle(OBSTACLE)
-CAUTION_ZONE = ComplexObstacle(CAUTION_ZONE)
+    return not -ROAD_WIDTH <= state[1] <= ROAD_WIDTH
 
 
 def process_action(a):
@@ -53,6 +41,12 @@ def process_action(a):
         a[0] = MAX_FORCE
     return a
 
+def clip_vel(s):
+    if s[2] < -MAX_VEL:
+        s[2] = -MAX_VEL
+    elif s[2] > MAX_VEL:
+        s[2] = MAX_VEL
+    return s
 
 
 class DubinsCar(Env, utils.EzPickle):
@@ -78,7 +72,7 @@ class DubinsCar(Env, utils.EzPickle):
         self.time += 1
         self.hist.append(self.state)
         constraint = collision(next_state)
-        self.done = HORIZON <= self.time# or constraint
+        self.done = HORIZON <= self.time or -cur_rew < DIST_THRESH
 
         return self.state, cur_rew, self.done, {
                 "constraint": constraint,
@@ -101,11 +95,12 @@ class DubinsCar(Env, utils.EzPickle):
             return s
         else:
             new_state = np.copy(s)
-            new_state += np.array([s[2] * np.cos(a[1]), s[2] * np.sin(a[1]), a[0]])
+            new_state = new_state + np.array([s[2] * np.cos(a[1]), s[2] * np.sin(a[1]), a[0]])
+            new_state = clip_vel(new_state)
         return new_state
 
     def step_reward(self, s, a):
-        return -np.square(s[0] - TARGET_X)
+        return -np.abs(s[0] - TARGET_X)
 
     def values(self):
         return np.cumsum(np.array(self.cost)[::-1])[::-1]
@@ -147,18 +142,37 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
     transitions = []
     rollouts = []
     done = False
-    for i in range(num_transitions//10):
+    collisions = 0
+    for i in range(int(0.7*num_transitions//10)):
         rollouts.append([])
-        state = np.array([np.random.uniform(0, 50), np.random.uniform(-4, 4), np.random.uniform(-10, 10)])
+        if np.random.random() < 0.5:
+            state = np.array([np.random.uniform(0, TARGET_X), np.random.uniform(ROAD_WIDTH*7/8, ROAD_WIDTH), np.random.uniform(-MAX_VEL, MAX_VEL)])
+        else:
+            state = np.array([np.random.uniform(0, TARGET_X), np.random.uniform(-ROAD_WIDTH, -ROAD_WIDTH*7/8), np.random.uniform(-MAX_VEL, MAX_VEL)])
         for j in range(10):
             action = env.action_space.sample()
             next_state = env._next_state(state, action)
             constraint = collision(next_state)
+            collisions += constraint
             reward = env.step_reward(state, action)
             transitions.append((state, action, constraint, next_state, done))
             rollouts[-1].append((state, action, constraint, next_state, done))
             state = next_state
 
+    for i in range(int(0.3*num_transitions//10)):
+        rollouts.append([])
+        state = env.reset()
+        for j in range(10):
+            action = env.expert_action(state)
+            next_state = env._next_state(state, action)
+            constraint = collision(next_state)
+            collisions += constraint
+            reward = env.step_reward(state, action)
+            transitions.append((state, action, constraint, next_state, done))
+            rollouts[-1].append((state, action, constraint, next_state, done))
+            state = next_state
+
+    print("Num collisions: ", collisions)
     if save_rollouts:
         return rollouts
     else:

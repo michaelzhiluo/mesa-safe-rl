@@ -54,7 +54,7 @@ class ValueFunction:
             self.plot(ep)
 
     def plot(self, ep):
-        if self.env_name == 'maze':
+        if self.env_name == 'maze' or self.env_name == 'image_maze':
             x_bounds = [-0.3, 0.3]
             y_bounds = [-0.3, 0.3]
         elif self.env_name == 'simplepointbot0':
@@ -63,6 +63,9 @@ class ValueFunction:
         elif self.env_name == 'simplepointbot1':
             x_bounds = [-75, 25]
             y_bounds = [-75, 25]
+        elif self.env_name == 'car':
+            x_bounds = [0, 20]
+            y_bounds = [-5, 5]
         else:
             raise NotImplementedError("Plotting unsupported for this env")
 
@@ -71,11 +74,25 @@ class ValueFunction:
         y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
         for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
             for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
-                states.append([x, y])
+                if self.env_name != 'car':
+                    states.append([x, y])
+                else:
+                    for i in range(100):
+                        v = np.random.random()*2 - 1 # random velocities on [-1, 1]
+                        states.append([x, y, v])
 
         if not self.opt:
-            grid = self.model(self.torchify(np.array(states))).detach().cpu().numpy()
-            grid = grid.reshape(y_pts, x_pts)
+            if self.env_name != 'car':
+                grid = self.model(self.torchify(np.array(states))).detach().cpu().numpy()
+                grid = grid.reshape(y_pts, x_pts)
+            else:
+                grid = []
+                for i in range(x_pts*y_pts):
+                    grid.append(self.model(self.torchify(np.array(states[i:i+100]))).detach().cpu().numpy())
+                grid = np.array(grid)
+                grid = grid.squeeze()
+                grid = np.mean(grid, axis=-1)
+                grid = grid.reshape((y_pts, x_pts))
         else:
             raise(NotImplementedError("Need to implement opt"))
 
