@@ -135,8 +135,7 @@ class MPC(Controller):
         self.obs_cost_fn = get_required_argument(params.opt_cfg, "obs_cost_fn", "Must provide cost on observations.")
         self.ac_cost_fn = get_required_argument(params.opt_cfg, "ac_cost_fn", "Must provide cost on actions.")
 
-        self.reachability_hor = 2
-
+        self.reachability_hor = params.opt_cfg.get("reachability_hor", 2)
         self.save_all_models = params.log_cfg.get("save_all_models", False)
         self.log_traj_preds = params.log_cfg.get("log_traj_preds", False)
         self.log_particles = params.log_cfg.get("log_particles", False)
