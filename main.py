@@ -110,12 +110,7 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
     if recovery_thresh(state, action, agent, recovery_policy, args):
         recovery = True
         if not args.disable_learned_recovery:
-            if args.ddpg_recovery:
-                 real_action = agent.select_recovery_action(state, eval= not train)
-            else:
-                real_action = recovery_policy.act(state, 0)
-            # real_action = agent.select_recovery_action(state, eval= not train)
-            # print("recovery", state, real_action)
+            real_action = recovery_policy.act(state, 0)
         else:
             real_action = env.safe_action(state)
     else:
@@ -244,7 +239,7 @@ parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
 parser.add_argument('--use_recovery', action="store_true")
 parser.add_argument('--reachability_test', action="store_true")
-parser.add_argument('--ddpg_recovery', action="store_true")
+parser.add_argument('--SAC_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
 parser.add_argument('--critic_safe_update_freq', type=int, default=1)
 parser.add_argument('--task_demos', action="store_true")
