@@ -53,10 +53,10 @@ experiment_map = {
     #     },
     #     "outfile": "shelf.png"
     # } 
-    "shelf": { # Sparse reward instead... (all up to 3000)
+    "shelf": { # Sparse reward instead... (all up to 2800)
         "algs": {
             "sac_norecovery": ["2020-05-07_20-54-58_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-14_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-33_SAC_shelf_env_Gaussian_"],
-            "recovery_0.4_20k": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"],
+            "recovery": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"], # eps_safe 0.4, 20k
             # "recovery_0.4_20k_gamma0.9": ["2020-05-18_01-27-18_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-28_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-38_SAC_shelf_env_Gaussian_"],
             # "recovery_0.4_5k": ["2020-05-09_04-36-14_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-20_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-27_SAC_shelf_env_Gaussian_"],
             # "recovery_0.8_images": ["2020-05-10_05-37-07_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-50_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-34_SAC_shelf_env_Gaussian_"],
@@ -85,8 +85,8 @@ experiment_map = {
             "sac_penalty3": ["2020-05-24_09-05-16_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_10-26-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-28_SAC_shelf_dynamic_env_Gaussian_"],
             "sac_penalty10": ["2020-05-25_09-48-06_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-47-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-48-15_SAC_shelf_dynamic_env_Gaussian_"],
             # "recovery_0.2": ["2020-05-25_09-41-29_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-42-02_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_20-21-35_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery_0.25": ["2020-05-26_03-32-21_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-30_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-37_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery_0.3": ["2020-05-24_21-59-33_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-26_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-51_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery": ["2020-05-26_03-32-21_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-30_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-37_SAC_shelf_dynamic_env_Gaussian_"], # eps_safe=0.25
+            # "recovery_0.3": ["2020-05-24_21-59-33_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-26_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-51_SAC_shelf_dynamic_env_Gaussian_"],
             # "recovery_0.4": ["2020-05-24_21-57-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-28_SAC_shelf_dynamic_env_Gaussian_"]
         },
         "outfile": "shelf_dynamic.png"
@@ -104,7 +104,7 @@ names = {
     "sac_lagrangian" : "SAC + Lagrangian",
     "recovery_0.1": "SAC + Recovery (eps=0.1)",
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
-    "recovery_0.25": "SAC + Recovery (eps=0.25)",
+    # "recovery": "SAC + Recovery (eps=0.25)",
     "recovery_0.3": "SAC + Recovery (eps=0.3)",
     "recovery_0.4": "SAC + Recovery (eps=0.4)",
     "recovery_0.4_20k": "SAC + Recovery",
@@ -136,26 +136,26 @@ names = {
 
 colors = {
     "sac_norecovery": "g",
-    "sac_penalty20": "orange",
-    "sac_penalty50": "black",
-    "sac_penalty75": "blue",
-    "sac_penalty100": "purple",
+    "sac_penalty20": "blue",
+    "sac_penalty50": "orange",
+    "sac_penalty75": "purple",
+    "sac_penalty100": "black",
     "recovery": "red",
     "sac_lagrangian": "pink",
     "recovery_0.2": "purple",
     "recovery_0.25": "cyan",
     "recovery_0.3": "black",
-    "recovery_0.4_20k": "blue",
+    "recovery_0.4_20k": "red",
     # "recovery_0.4_20k_gamma0.9": "black",
     "recovery_0.4_5k": "red",
     "recovery_0.4": "blue",
     "recovery_0.6": "cyan",
     "recovery_0.8": "purple",
     "sac_penalty1": "red",
-    "sac_penalty3": "orange",
-    "sac_penalty5": "yellow",
-    "sac_penalty10": "magenta",
-    "sac_penalty25": "magenta",
+    "sac_penalty3": "blue",
+    # "sac_penalty5": "yellow",
+    "sac_penalty10": "orange",
+    # "sac_penalty25": "magenta",
 
     # "recovery_0.8_images": "purple",
     # "sac_penalty3_images": "orange",
@@ -205,8 +205,23 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
     axs[3].set_ylabel("Cumulative Recovery Calls + Constraint Violated", fontsize=16)
     axs[3].tick_params(axis='both', which='major', labelsize=14)
 
+    alg_names = experiment_map[experiment]["algs"].keys()
+    penalty_names = [name for name in alg_names if "penalty" in name]
+    for i in range(len(penalty_names)):
+        for j in range(len(penalty_names)):
+            if i > j and int(penalty_names[i].split("penalty")[1]) < int(penalty_names[j].split("penalty")[1]):
+                tmp = penalty_names[i]
+                penalty_names[i] = penalty_names[j]
+                penalty_names[j] = tmp
+    alg_names_new = ['sac_norecovery']
+    alg_names_new += penalty_names
+    if 'sac_lagrangian' in alg_names:
+        alg_names_new += ['sac_lagrangian']
+    if 'recovery' in alg_names:
+        alg_names_new += ['recovery']
 
-    for alg in experiment_map[experiment]["algs"]:
+    print("ALG NAMES NEW: ", alg_names_new)
+    for alg in alg_names_new:
         exp_dirs = experiment_map[experiment]["algs"][alg]
         fnames = [osp.join("runs", exp_dir, "run_stats.pkl") for exp_dir in exp_dirs]
 
@@ -232,7 +247,7 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
                 last_reward = 0
                 for step_stats in traj_stats:
                     train_violations[-1].append(step_stats['constraint'])
-                    # recovery_called[-1].append(step_stats['recovery'])
+                    recovery_called[-1].append(step_stats['recovery'])
                     recovery_called[-1].append(0)
                     train_rewards[-1] += step_stats['reward']
                     last_reward = step_stats['reward']
@@ -329,7 +344,7 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
 
 
 if __name__ == '__main__':
-    experiment = "shelf"
+    experiment = "shelf_dynamic"
     # experiment = "maze"
     plot_experiment(experiment)
 
