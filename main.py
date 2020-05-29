@@ -371,7 +371,6 @@ for i_episode in itertools.count(1):
         next_state, reward, done, info = env.step(real_action) # Step
         info['recovery'] = recovery_used
 
-        done = done or episode_steps == env._max_episode_steps
 
         # TODO; cleanup for now this is hard-coded for maze
         if args.cnn and 'maze' in args.env_name:
@@ -388,6 +387,7 @@ for i_episode in itertools.count(1):
             reward -= args.constraint_reward_penalty
 
         mask = float(not done)
+        done = done or episode_steps == env._max_episode_steps
         # TODO; cleanup for now this is hard-coded for maze
         if args.cnn and ('maze' in args.env_name or 'shelf' in args.env_name):
             memory.push(im_state, action, reward, im_next_state, mask)
