@@ -19,11 +19,11 @@ from gym.spaces import Box
 Constants associated with the PointBot env.
 """
 START_STATE = [0, 0, 0]
-TARGET_X = 15
+TARGET_X = 50
 ROAD_WIDTH = 4
 
-MAX_FORCE = 7e-3
-MAX_VEL = 1
+MAX_FORCE = 0.25
+MAX_VEL = 1.5
 HORIZON = 100
 
 NOISE_SCALE = 0.05
