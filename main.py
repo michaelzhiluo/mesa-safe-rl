@@ -46,6 +46,7 @@ def recovery_config_setup(args):
     ctrl_args = DotMap(**{key: val for (key, val) in args.ctrl_arg})
     cfg = create_config(args.env_name, "MPC", ctrl_args, args.override, logdir)
     cfg.ctrl_cfg.pred_time = args.pred_time
+    cfg.ctrl_cfg.opt_cfg.reachability_hor = args.reachability_hor
     if args.use_value:
         cfg.ctrl_cfg.use_value = True
     elif args.use_qvalue:
@@ -86,10 +87,9 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
     def recovery_thresh(state, action, agent, recovery_policy, args):
         if not args.use_recovery:
             return False
-        if args.reachability_test:
-            return not recovery_policy.reachability_test(state, action, args.eps_safe)
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0))
-        print("CRITIC VAL: ", critic_val)
+        if args.reachability_test: # reachability test combined with safety check
+            return (not recovery_policy.reachability_test(state, action, args.eps_safe)) or (critic_val > args.eps_safe)
         if critic_val > args.eps_safe and not args.pred_time:
             return True
         elif critic_val < args.t_safe and args.pred_time:
@@ -253,6 +253,7 @@ parser.add_argument('--pred_time', action="store_true")
 parser.add_argument('--opt_value', action="store_true")
 parser.add_argument('--num_task_transitions', type=int, default=10000000)
 parser.add_argument('--num_constraint_transitions', type=int, default=10000) # Make this 20K+ for original shelf env stuff, trying with fewer rn
+parser.add_argument('--reachability_hor', type=int, default=2)
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')

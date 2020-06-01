@@ -388,7 +388,7 @@ class MPC(Controller):
                 if self.pred_time:
                     cost = -self.value_func.get_value(next_obs).squeeze() #+ self.ac_cost_fn(cur_acs)
                 else:
-                    cost = self.value_func.get_value(next_obs).squeeze() #+ self.ac_cost_fn(cur_acs)
+                    cost = self.value_func.get_value(next_obs).squeeze() + self.ac_cost_fn(cur_acs)
             elif self.use_qvalue:
                 assert(self.value_func and not self.pred_time)
                 cost = self.value_func.get_value(cur_obs, cur_acs).squeeze()
