@@ -118,7 +118,7 @@ class QNetworkCNN(nn.Module):
         if 'shelf' in env_name:
             self.final_linear_size = 768
         elif 'maze' in env_name:
-            self.final_linear_size = 1024
+            self.final_linear_size = 576
         else:
             assert(False)
 
@@ -193,7 +193,7 @@ class GaussianPolicyCNN(nn.Module):
         if 'shelf' in env_name:
             self.linear_dim = 768
         elif 'maze' in env_name:
-            self.linear_dim = 1024
+            self.linear_dim = 576
         else:
             assert(False)
 
@@ -222,7 +222,6 @@ class GaussianPolicyCNN(nn.Module):
         conv1 = F.relu(bn1(self.conv1(state)))
         conv2 = F.relu(bn2(self.conv2(conv1)))
         conv3 = F.relu(bn3(self.conv3(conv2)))
-
         final_conv = conv3.view(-1, self.linear_dim)
 
         # Now do normal SAC stuff

@@ -23,6 +23,8 @@
     <geom name="wall2A" type="box" condim="1" pos="0.1 0.2 .02" zaxis="-1 0 0"  size=".02 .2 .005" material="decoration" />
     <geom name="wall1B" type="box" condim="1" pos="-0.1 -0.25 .02" zaxis="-1 0 0"  size=".02 .25 .005" material="decoration" />
     <geom name="wall2B" type="box" condim="1" pos="0.1 -0.2 .02" zaxis="-1 0 0"  size=".02 .2 .005" material="decoration" />
+    <geom name="wall1C" type="box" condim="1" pos="-0 -0.1 .02" zaxis="0 -1 0"  size=".1 .025 .005" material="decoration" />
+    <geom name="wall2C" type="box" condim="1" pos="0.2 -0.1 .02" zaxis="0 -1 0"  size=".1 .02 .005" material="decoration" />
 
     <body name="tool" pos="0.0 -0.0 0.0" >
       <geom name="toolgeom" rgba="1 0 0 1" type="cylinder" size="0.035 0.035  0.035 " pos="0.0 -0.00 0.035" />

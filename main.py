@@ -75,7 +75,7 @@ def experiment_setup(logdir, args):
 
 def agent_setup(env, logdir, args):
     if args.cnn and 'maze' in args.env_name:
-        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
+        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(44, 44, 3))
     elif args.cnn and 'shelf' in args.env_name:
         agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(48, 64, 3))
     else:
@@ -336,7 +336,7 @@ for i_episode in itertools.count(1):
         recorder = VideoRecorder(env, osp.join(logdir, 'video_{}.mp4'.format(i_episode)))
     # TODO; cleanup for now this is hard-coded for maze
     if args.cnn and 'maze' in args.env_name:
-        im_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+        im_state = process_obs(env._get_obs(images=True), args.env_name)
     elif args.cnn and 'shelf' in args.env_name:
         im_state = process_obs(env.render(), args.env_name)
     else:
@@ -370,7 +370,7 @@ for i_episode in itertools.count(1):
 
         # TODO; cleanup for now this is hard-coded for maze
         if args.cnn and 'maze' in args.env_name:
-            im_next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+            im_next_state = process_obs(env._get_obs(images=True), args.env_name)
         elif args.cnn and 'shelf' in args.env_name:
             im_next_state = process_obs(env.render(), args.env_name)
 
@@ -432,11 +432,11 @@ for i_episode in itertools.count(1):
 
             # TODO; clean up the following code
             if 'maze' in args.env_name:
-                im_list = [env.sim.render(64, 64, camera_name= "cam0")]
+                im_list = [env._get_obs(images=True)]
             elif 'shelf' in args.env_name:
                 im_list = [env.render().squeeze()]
             if args.cnn and 'maze' in args.env_name:
-                im_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+                im_state = process_obs(env._get_obs(images=True), args.env_name)
             elif args.cnn and 'shelf' in args.env_name:
                 im_state = process_obs(env.render(), args.env_name)
 
@@ -451,11 +451,11 @@ for i_episode in itertools.count(1):
 
                 # TODO: clean up the following code
                 if 'maze' in args.env_name:
-                    im_list.append(env.sim.render(64, 64, camera_name= "cam0"))
+                    im_list.append(env._get_obs(images=True))
                 elif 'shelf' in args.env_name:
                     im_list.append(env.render().squeeze())
                 if args.cnn and 'maze' in args.env_name:
-                    im_next_state = process_obs(env.sim.render(64, 64, camera_name= "cam0"), args.env_name)
+                    im_next_state = process_obs(env._get_obs(images=True), args.env_name)
                 elif args.cnn and 'shelf' in args.env_name:
                     im_next_state = process_obs(env.render(), args.env_name)
 

@@ -8,7 +8,7 @@ from gym import Env
 from gym import utils
 from gym.spaces import Box
 from mujoco_py import load_model_from_path, MjSim
-
+import moviepy.editor as mpy
 from .maze_const_images import *
 import cv2
 
@@ -18,6 +18,10 @@ def process_action(a):
 def process_obs(obs):
     im = np.transpose(obs, (2, 0, 1))
     return im
+
+def npy_to_gif(im_list, filename, fps=4):
+    clip = mpy.ImageSequenceClip(im_list, fps=fps)
+    clip.write_gif(filename + '.gif')
 
 def get_random_transitions(num_transitions, images=False, save_rollouts=False, task_demos=False):
     env = MazeImageNavigation()
@@ -155,7 +159,9 @@ class MazeImageNavigation(Env, utils.EzPickle):
 
         return obs, reward, self.done, info
       
-    def _get_obs(self):
+    def _get_obs(self, images=False):
+        if images:
+            return self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64]
         #joint poisitions and velocities
         state = np.concatenate([self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
         
@@ -163,18 +169,14 @@ class MazeImageNavigation(Env, utils.EzPickle):
           return state[:2] # State is just (x, y) now
 
         #get images
-        ims = self.sim.render(64, 64, camera_name= "cam0")
+        ims = self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64]
         return ims/255
 
     def reset(self, difficulty='m', check_constraint=True):
-        if difficulty is None:
-          self.sim.data.qpos[0] = np.random.uniform(-0.27, 0.27)
-        elif difficulty == 'e':
+        if difficulty == 'e':
           self.sim.data.qpos[0] = np.random.uniform(0.1, 0.27)
         elif difficulty == 'm':
-          self.sim.data.qpos[0] = np.random.uniform(-0.1, 0.1)
-        elif difficulty == 'h':
-          self.sim.data.qpos[0] = np.random.uniform(-0.27, -0.1)
+            self.sim.data.qpos[0] = np.random.uniform(-0.1, 0.1)
         self.sim.data.qpos[1] = np.random.uniform(0, 0.27)
         self.steps = 0
 
@@ -259,6 +261,7 @@ class MazeImageTeacher(object):
         obs = self.env.reset(difficulty='m')
         O, A, cost_sum, costs = [obs], [], 0, []
         constraints_violated = 0
+        im_list = [self.env._get_obs(images=True)]
 
         noise_idx = np.random.randint(int(2 * HORIZON / 4))
         for i in range(HORIZON):
@@ -286,6 +289,7 @@ class MazeImageTeacher(object):
             # print("DONE", done)
             constraints_violated += info['constraint']
             O.append(obs)
+            im_list.append(self.env._get_obs(images=True))
             cost_sum += cost
             costs.append(cost)
             if done:
@@ -296,12 +300,12 @@ class MazeImageTeacher(object):
         print(cost_sum)
         print(len(O))
         print("CONSTRAINTS: ", constraints_violated)
-
+        print("FINAL COST: ", cost)
         if int(cost_sum) == -HORIZON:
             print("FAILED")
             # return self.get_rollout(noise_param_in)
 
-        cv2.imwrite('maze.jpg', 255*obs)
+        npy_to_gif(im_list, 'image_maze')
         assert(False)
 
         print("obs", O)
