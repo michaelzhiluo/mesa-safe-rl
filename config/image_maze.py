@@ -130,7 +130,7 @@ class MazeImageConfigModule:
 
     @staticmethod
     def ac_cost_fn(acs):
-        return 0.01 * (acs ** 2).sum(dim=1)
+        return 0.0 * (acs ** 2).sum(dim=1)
 
     def nn_constructor(self, model_init_cfg):
         ensemble_size = get_required_argument(model_init_cfg, "num_nets", "Must provide ensemble size")

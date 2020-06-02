@@ -124,7 +124,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
         # self.goal[0] = np.random.uniform(0.15, 0.27)
         # self.goal[1] = np.random.uniform(-0.27, 0.27)
         self.goal[0] = 0.25
-        self.goal[1] = 0
+        self.goal[1] = 0.25
 
     def step(self, action):
         action = process_action(action)
@@ -175,7 +175,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
           self.sim.data.qpos[0] = np.random.uniform(-0.1, 0.1)
         elif difficulty == 'h':
           self.sim.data.qpos[0] = np.random.uniform(-0.27, -0.1)
-        self.sim.data.qpos[1] = np.random.uniform(-0.27, 0.27)
+        self.sim.data.qpos[1] = np.random.uniform(0, 0.27)
         self.steps = 0
 
         # self.sim.data.qpos[0] = 0.25

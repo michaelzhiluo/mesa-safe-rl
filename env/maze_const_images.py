@@ -3,7 +3,7 @@ Constants associated with the Maze env.
 """
 
 HORIZON = 100
-MAX_FORCE = 0.1
+MAX_FORCE = 0.3
 FAILURE_COST = 0
 GOAL_THRESH = 3e-2
 

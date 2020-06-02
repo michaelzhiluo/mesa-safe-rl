@@ -25,13 +25,13 @@
     <geom name="wall2B" type="box" condim="1" pos="0.1 -0.2 .02" zaxis="-1 0 0"  size=".02 .2 .005" material="decoration" />
 
     <body name="tool" pos="0.0 -0.0 0.0" >
-      <geom name="toolgeom" rgba="1 0 0 1" type="cylinder" size="0.025 0.025  0.025 " pos="0.0 -0.00 0.025" />
+      <geom name="toolgeom" rgba="1 0 0 1" type="cylinder" size="0.035 0.035  0.035 " pos="0.0 -0.00 0.035" />
       <joint name="tool_x" type="slide" pos="0 0 0" axis="1 0 0" range="-0.3 0.3" damping="0.01"/>
       <joint name="tool_y" type="slide" pos="0 0 0" axis="0 1 0" range="-0.3 0.3" damping="0.01"/>
     </body>
 
     <!-- Target -->
-    <geom name="target" rgba="1 0 0 0" pos="0 0 .01" material="target" type="sphere" size=".025" contype="0" conaffinity="0"/>
+    <geom name="target" rgba="1 0 0 0" pos="0 0 .01" material="target" type="sphere" size=".035" contype="0" conaffinity="0"/>
   </worldbody>
 
   <actuator>
