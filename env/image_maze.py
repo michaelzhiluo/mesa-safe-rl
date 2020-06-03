@@ -123,7 +123,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
         else:
             self.observation_space = Box(-0.3, 0.3, shape=obs.shape)
 
-        self.gain = 1.05
+        self.gain = 5
         self.goal = np.zeros((2,))
         # self.goal[0] = np.random.uniform(0.15, 0.27)
         # self.goal[1] = np.random.uniform(-0.27, 0.27)
@@ -161,7 +161,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
       
     def _get_obs(self, images=False):
         if images:
-            return self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64]
+            return cv2.resize(self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64], (64, 64), interpolation=cv2.INTER_AREA)
         #joint poisitions and velocities
         state = np.concatenate([self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
         
@@ -169,7 +169,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
           return state[:2] # State is just (x, y) now
 
         #get images
-        ims = self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64]
+        ims = cv2.resize(self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64], (64, 64), interpolation=cv2.INTER_AREA)
         return ims/255
 
     def reset(self, difficulty='m', check_constraint=True):

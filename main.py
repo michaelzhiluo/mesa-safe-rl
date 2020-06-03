@@ -75,7 +75,7 @@ def experiment_setup(logdir, args):
 
 def agent_setup(env, logdir, args):
     if args.cnn and 'maze' in args.env_name:
-        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(44, 44, 3))
+        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
     elif args.cnn and 'shelf' in args.env_name:
         agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(48, 64, 3))
     else:

@@ -118,7 +118,7 @@ class QNetworkCNN(nn.Module):
         if 'shelf' in env_name:
             self.final_linear_size = 768
         elif 'maze' in env_name:
-            self.final_linear_size = 576
+            self.final_linear_size = 1024
         else:
             assert(False)
 
@@ -193,7 +193,7 @@ class GaussianPolicyCNN(nn.Module):
         if 'shelf' in env_name:
             self.linear_dim = 768
         elif 'maze' in env_name:
-            self.linear_dim = 576
+            self.linear_dim = 1024
         else:
             assert(False)
 
