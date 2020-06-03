@@ -8,6 +8,8 @@ experiment_map = {
     "maze": {
         "algs": {
             "recovery": ["2020-04-22_00-28-46_SAC_maze_Gaussian_", "2020-04-22_03-19-56_SAC_maze_Gaussian_", "2020-04-22_07-59-58_SAC_maze_Gaussian_"],
+            # "recovery": ["2020-06-01_06-12-07_SAC_maze_Gaussian_", "2020-06-01_06-12-31_SAC_maze_Gaussian_", "2020-06-01_06-12-41_SAC_maze_Gaussian_"], # Latest run on master...not *quite* as good, maybe need to look into it still?
+            # "recovery_reachability" : ["2020-06-01_10-17-26_SAC_maze_Gaussian_", "2020-06-01_10-17-37_SAC_maze_Gaussian_", "2020-06-01_10-17-50_SAC_maze_Gaussian_"], # reachability stuff barely gives a win so not using it for now
             "sac_norecovery": ["2020-04-22_00-50-15_SAC_maze_Gaussian_", "2020-04-22_09-54-41_SAC_maze_Gaussian_", "2020-04-22_09-56-59_SAC_maze_Gaussian_"],
             # "sac_penalty5": ["2020-04-22_05-55-55_SAC_maze_Gaussian_", "2020-04-22_09-54-56_SAC_maze_Gaussian_", "2020-04-22_09-58-36_SAC_maze_Gaussian_"],
             # "sac_penalty10": ["2020-04-22_05-56-18_SAC_maze_Gaussian_", "2020-04-22_09-55-06_SAC_maze_Gaussian_", "2020-04-22_10-09-11_SAC_maze_Gaussian_"],
@@ -101,6 +103,7 @@ names = {
     "sac_penalty75": "SAC (penalty 75)",
     "sac_penalty100": "SAC (penalty 100)",
     "recovery": "SAC + Recovery",
+    "recovery_reachability": "SAC + Recovery + Reachablity",
     "sac_lagrangian" : "SAC + Lagrangian",
     "recovery_0.1": "SAC + Recovery (eps=0.1)",
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
@@ -141,6 +144,7 @@ colors = {
     "sac_penalty75": "purple",
     "sac_penalty100": "black",
     "recovery": "red",
+    "recovery_reachability": "cyan",
     "sac_lagrangian": "pink",
     "recovery_0.2": "purple",
     "recovery_0.25": "cyan",
@@ -219,6 +223,8 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
         alg_names_new += ['sac_lagrangian']
     if 'recovery' in alg_names:
         alg_names_new += ['recovery']
+    if 'recovery_reachability' in alg_names:
+        alg_names_new += ['recovery_reachability']
 
     print("ALG NAMES NEW: ", alg_names_new)
     for alg in alg_names_new:
@@ -247,8 +253,11 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
                 last_reward = 0
                 for step_stats in traj_stats:
                     train_violations[-1].append(step_stats['constraint'])
-                    recovery_called[-1].append(step_stats['recovery'])
-                    recovery_called[-1].append(0)
+                    # recovery_called[-1].append(step_stats['recovery'])
+                    if alg == "recovery" or alg == "recovery_reachability":
+                        recovery_called[-1].append(step_stats['recovery'])
+                    else:
+                        recovery_called[-1].append(0)
                     train_rewards[-1] += step_stats['reward']
                     last_reward = step_stats['reward']
                 last_rewards.append(last_reward)
@@ -344,8 +353,8 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
 
 
 if __name__ == '__main__':
-    experiment = "shelf_dynamic"
-    # experiment = "maze"
+    # experiment = "shelf_dynamic"
+    experiment = "maze"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
