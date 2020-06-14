@@ -31,6 +31,8 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
     rollouts = []
 
     for i in range(int(0.7*num_transitions)):
+        if i % 500 == 0:
+            print("DEMO: ", i)
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
             if sample < 0.4: # maybe make 0.2 to 0.3
@@ -40,14 +42,14 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             state = env.reset(mode, check_constraint=False)
             rollouts.append([])
 
-            if images:
-                im_state = env.sim.render(64, 64, camera_name= "cam0")
-                im_state = process_obs(im_state)
+            if not GT_STATE:
+                state = process_obs(state)
+
         action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
-        if images:
-            im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-            im_next_state = process_obs(im_next_state)
+        if not GT_STATE:
+            next_state = process_obs(next_state)
+
         constraint = info['constraint']
 
         rollouts[-1].append((state, action, constraint, next_state, done))
@@ -60,6 +62,8 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             im_state = im_next_state
 
     for i in range(int(0.3*num_transitions)):
+        if i % 500 == 0:
+            print("DEMO: ", i)
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
             if sample < 0.4: # maybe make 0.2 to 0.3
@@ -69,14 +73,13 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             state = env.reset(mode, check_constraint=False)
             rollouts.append([])
 
-            if images:
-                im_state = env.sim.render(64, 64, camera_name= "cam0")
-                im_state = process_obs(im_state)
+            if not GT_STATE:
+                state = process_obs(state)
         action = env.expert_action()
         next_state, reward, done, info = env.step(action)
-        if images:
-            im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-            im_next_state = process_obs(im_next_state)
+        if not GT_STATE:
+            next_state = process_obs(next_state)
+            
         constraint = info['constraint']
 
         rollouts[-1].append((state, action, constraint, next_state, done))
