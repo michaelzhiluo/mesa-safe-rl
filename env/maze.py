@@ -160,6 +160,8 @@ class MazeNavigation(Env, utils.EzPickle):
         return obs, reward, self.done, info
       
     def _get_obs(self, images=False):
+        if images:
+            return self.sim.render(64, 64, camera_name= "cam0")
         #joint poisitions and velocities
         state = np.concatenate([self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
         
@@ -174,12 +176,12 @@ class MazeNavigation(Env, utils.EzPickle):
         if difficulty is None:
           self.sim.data.qpos[0] = np.random.uniform(-0.27, 0.27)
         elif difficulty == 'e':
-          self.sim.data.qpos[0] = np.random.uniform(0.1, 0.27)
+          self.sim.data.qpos[0] = np.random.uniform(0.14, 0.22)
         elif difficulty == 'm':
-          self.sim.data.qpos[0] = np.random.uniform(-0.1, 0.1)
+          self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
         elif difficulty == 'h':
-          self.sim.data.qpos[0] = np.random.uniform(-0.27, -0.1)
-        self.sim.data.qpos[1] = np.random.uniform(-0.27, 0.27)
+          self.sim.data.qpos[0] = np.random.uniform(-0.22, -0.13)
+        self.sim.data.qpos[1] = np.random.uniform(-0.22, 0.22)
         self.steps = 0
 
         # self.sim.data.qpos[0] = 0.25

@@ -30,7 +30,9 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
     total = 0
     rollouts = []
 
-    for i in range(1*num_transitions//2):
+    for i in range(int(0.7*num_transitions)):
+        if i % 500 == 0:
+            print("DEMO: ", i)
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
             if sample < 0.4: # maybe make 0.2 to 0.3
@@ -40,14 +42,14 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             state = env.reset(mode, check_constraint=False)
             rollouts.append([])
 
-            if images:
-                im_state = env.sim.render(64, 64, camera_name= "cam0")
-                im_state = process_obs(im_state)
+            if not GT_STATE:
+                state = process_obs(state)
+
         action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
-        if images:
-            im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-            im_next_state = process_obs(im_next_state)
+        if not GT_STATE:
+            next_state = process_obs(next_state)
+
         constraint = info['constraint']
 
         rollouts[-1].append((state, action, constraint, next_state, done))
@@ -59,7 +61,9 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
         if images:
             im_state = im_next_state
 
-    for i in range(1*num_transitions//2):
+    for i in range(int(0.3*num_transitions)):
+        if i % 500 == 0:
+            print("DEMO: ", i)
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
             if sample < 0.4: # maybe make 0.2 to 0.3
@@ -69,14 +73,13 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             state = env.reset(mode, check_constraint=False)
             rollouts.append([])
 
-            if images:
-                im_state = env.sim.render(64, 64, camera_name= "cam0")
-                im_state = process_obs(im_state)
+            if not GT_STATE:
+                state = process_obs(state)
         action = env.expert_action()
         next_state, reward, done, info = env.step(action)
-        if images:
-            im_next_state = env.sim.render(64, 64, camera_name= "cam0")
-            im_next_state = process_obs(im_next_state)
+        if not GT_STATE:
+            next_state = process_obs(next_state)
+            
         constraint = info['constraint']
 
         rollouts[-1].append((state, action, constraint, next_state, done))
@@ -143,7 +146,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
         self.sim.data.qvel[:] = 0
         self.steps +=1 
         constraint = int(self.sim.data.ncon > 3)
-        self.done = self.steps >= self.horizon or constraint or (self.get_distance_score() < GOAL_THRESH)
+        self.done = self.steps >= self.horizon or (self.get_distance_score() < GOAL_THRESH) or constraint
         if not self.dense_reward:
             reward = - (self.get_distance_score() > GOAL_THRESH).astype(float)
         else:
@@ -174,10 +177,10 @@ class MazeImageNavigation(Env, utils.EzPickle):
 
     def reset(self, difficulty='m', check_constraint=True):
         if difficulty == 'e':
-          self.sim.data.qpos[0] = np.random.uniform(0.1, 0.27)
+          self.sim.data.qpos[0] = np.random.uniform(0.15, 0.22)
         elif difficulty == 'm':
-            self.sim.data.qpos[0] = np.random.uniform(-0.1, 0.1)
-        self.sim.data.qpos[1] = np.random.uniform(0, 0.27)
+            self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
+        self.sim.data.qpos[1] = np.random.uniform(0, 0.22)
         self.steps = 0
 
         # self.sim.data.qpos[0] = 0.25

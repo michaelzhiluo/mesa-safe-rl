@@ -91,7 +91,7 @@ class MazeImageConfigModule:
     TASK_HORIZON = 150
     NTRAIN_ITERS = 100
     NROLLOUTS_PER_ITER = 1
-    PLAN_HOR = 15
+    PLAN_HOR = 10
     MODEL_IN, MODEL_OUT = 4, 2
     GP_NINDUCING_POINTS = 200
 
@@ -105,8 +105,8 @@ class MazeImageConfigModule:
             },
             "CEM": {
                 "popsize": 400,
-                "num_elites": 40,
-                "max_iters": 5,
+                "num_elites": 10,
+                "max_iters": 10,
                 "alpha": 0.1
             }
         }

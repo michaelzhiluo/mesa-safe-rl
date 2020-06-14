@@ -304,7 +304,7 @@ if args.use_recovery and not args.disable_learned_recovery:
             break
     print("Number of Constraint Transitions: ", num_constraint_transitions)
     print("Number of Constraint Violations: ", num_viols)
-    if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze', 'car']:
+    if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
         plot = True
     else:
         plot = False
