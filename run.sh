@@ -40,6 +40,11 @@ python -m main --cuda --env-name maze --constraont_reward_penalty 50
 python -m main --cuda --env-name maze --eps_safe 0.05 --RCPO
 
 # --- SHELF ENV ---
+# Data Gen: 
+# Task demos: python -m gen_shelf_demos --cuda --gt_state --num_demos 250 
+# Constraint demos: python -m gen_shelf_demos --cuda --gt_state --num_demos 10000 --constraint_demos
+# Task demos for RCPO: python -m gen_shelf_demos --cuda --gt_state --num_demos 250 --RCPO_demos
+
 # Recovery RL (Master)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --use_recovery --critic_safe_update_freq 20 --recovery_policy_update_freq 20 --gamma_safe 0.85 --eps_safe 0.4 --use_value
 
@@ -56,6 +61,10 @@ python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.000
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda {}
 
 # --- DYNAMIC SHELF ENV ---
+# Data Gen:
+# Task demos: python -m gen_dynamic_shelf_demos --cuda --gt_state --num_demos 250 
+# Constraint demos: python -m gen_dynamic_shelf_demos --cuda --gt_state --num_demos 10000 --constraint_demos
+# Task demos for RCPO: python -m gen_dynamic_shelf_demos --cuda --gt_state --num_demos 250 --RCPO_demos
 
 # Recovery RL (Master)
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --use_recovery --critic_safe_update_freq 20 --recovery_policy_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_value
@@ -90,6 +99,26 @@ python -m main --cuda --env-name image_maze --cnn --use_qvalue --eps_safe 0.05 -
 python -m main --cuda --env-name image_maze --cnn --RCPO --lambda {}
 
 # --- IMAGE SHELF ENV ---
+# Data Gen:
+# Task demos: python -m gen_shelf_demos --cuda --num_demos 250 
+# Constraint demos: python -m gen_shelf_demos --cuda --num_demos 10000 --constraint_demos
+# Task demos for RCPO: python -m gen_shelf_demos --cuda --num_demos 250 --RCPO_demos
+
+# Recovery RL
+
+# Unconstrained
+
+# Reward Penalty
+
+# Lagrangian
+
+# RCPO
+
+# --- IMAGE DYNAMIC SHELF ENV ---
+# Data Gen:
+# Task demos: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 
+# Constraint demos: python -m gen_dynamic_shelf_demos --cuda --num_demos 10000 --constraint_demos
+# Task demos for RCPO: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 --RCPO_demos
 
 # Recovery RL
 
