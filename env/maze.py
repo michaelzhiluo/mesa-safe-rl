@@ -159,7 +159,9 @@ class MazeNavigation(Env, utils.EzPickle):
 
         return obs, reward, self.done, info
       
-    def _get_obs(self):
+    def _get_obs(self, images=False):
+        if images:
+            return self.sim.render(64, 64, camera_name= "cam0")
         #joint poisitions and velocities
         state = np.concatenate([self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
         
