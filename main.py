@@ -90,6 +90,8 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)) # TODO: make sure this is exactly equal to reachability_hor=1
         if args.reachability_test: # reachability test combined with safety check
             return not recovery_policy.reachability_test(state, action, args.eps_safe)
+        if args.lookahead_test:
+            return not recovery_policy.lookahead_test(state, action, args.eps_safe)
         if critic_val > args.eps_safe and not args.pred_time:
             return True
         elif critic_val < args.t_safe and args.pred_time:
@@ -239,6 +241,7 @@ parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
 parser.add_argument('--use_recovery', action="store_true")
 parser.add_argument('--reachability_test', action="store_true")
+parser.add_argument('--lookahead_test', action="store_true")
 parser.add_argument('--SAC_recovery', action="store_true")
 parser.add_argument('--recovery_policy_update_freq', type=int, default=1)
 parser.add_argument('--critic_safe_update_freq', type=int, default=1)

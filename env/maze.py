@@ -159,11 +159,11 @@ class MazeNavigation(Env, utils.EzPickle):
 
         return obs, reward, self.done, info
       
-    def _get_obs(self):
+    def _get_obs(self, images=False):
         #joint poisitions and velocities
         state = np.concatenate([self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
         
-        if not self.images:
+        if not self.images and not images:
           return state[:2] # State is just (x, y) now
 
         #get images

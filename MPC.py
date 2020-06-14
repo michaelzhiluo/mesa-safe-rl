@@ -291,6 +291,16 @@ class MPC(Controller):
         return best_cost < eps_safe
 
 
+    def lookahead_test(self, obs, ac, eps_safe):
+        self.sy_cur_obs = obs
+        # init_mean = np.concatenate([np.copy(self.prev_sol)[self.per * self.dU:], np.zeros(self.per * self.dU)])
+        init_mean = np.tile((self.ac_lb + self.ac_ub) / 2, [self.reachability_hor - 1])
+        init_var = np.tile(np.square(self.ac_ub - self.ac_lb) / 16, [self.reachability_hor - 1])
+
+        final_mean, best_cost = self.optimizer.obtain_solution(init_mean, init_var, query_action=ac, hor=1)
+        return best_cost < eps_safe
+
+
 
     def act(self, obs, t, get_pred_cost=False):
         """Returns the action that this controller would take at time t given observation obs.

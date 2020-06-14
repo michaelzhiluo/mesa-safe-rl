@@ -57,7 +57,7 @@ class CEMOptimizer(Optimizer):
     def reset(self):
         pass
 
-    def obtain_solution(self, init_mean, init_var, query_action=None, hor=None):
+    def obtain_solution(self, init_mean, init_var, query_action=None, hor=None, iters=None):
         """Optimizes the cost function using the provided initial candidate distribution
 
         Arguments:
@@ -67,7 +67,10 @@ class CEMOptimizer(Optimizer):
         mean, var, t = init_mean, init_var, 0
         X = stats.truncnorm(-2, 2, loc=np.zeros_like(mean), scale=np.ones_like(var))
 
-        while (t < self.max_iters) and np.max(var) > self.epsilon:
+        if iters is None:
+            iters = self.max_iters
+
+        while (t < iters) and np.max(var) > self.epsilon:
             lb_dist, ub_dist = mean - self.lb[:len(init_mean)], self.ub[:len(init_mean)] - mean
             constrained_var = np.minimum(np.minimum(np.square(lb_dist / 2), np.square(ub_dist / 2)), var)
             samples = X.rvs(size=[self.popsize, len(init_mean)]) * np.sqrt(constrained_var) + mean
