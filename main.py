@@ -301,7 +301,7 @@ if args.use_recovery and not args.disable_learned_recovery:
             break
     print("Number of Constraint Transitions: ", num_constraint_transitions)
     print("Number of Constraint Violations: ", num_viols)
-    if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+    if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
         plot = True
     else:
         plot = False
@@ -410,7 +410,7 @@ for i_episode in itertools.count(1):
             train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
             all_ep_data = []
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
-            if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+            if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
                 plot = True
             else:
                 plot = False
