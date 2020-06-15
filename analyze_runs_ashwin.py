@@ -22,6 +22,16 @@ experiment_map = {
         },
         "outfile": "maze_plot.png"
     },
+    "image_maze": {
+        "algs": {
+            "recovery": ["2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
+            "sac_norecovery": ["2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
+            "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
+            "sac_penalty20": ["2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
+            "sac_penalty5": ["2020-06-15_02-22-21_SAC_image_maze_Gaussian_", "2020-06-15_02-22-29_SAC_image_maze_Gaussian_", "2020-06-15_02-22-36_SAC_image_maze_Gaussian_"]
+        },
+        "outfile": "image_maze_plot.png"
+    },
     "pointbot0": {
         "algs": {
             "sac_norecovery": ["2020-04-30_03-27-49_SAC_simplepointbot0_Gaussian_", "2020-04-30_04-29-05_SAC_simplepointbot0_Gaussian_", "2020-04-30_04-35-14_SAC_simplepointbot0_Gaussian_"],
@@ -158,7 +168,7 @@ colors = {
     "recovery_0.8": "purple",
     "sac_penalty1": "red",
     "sac_penalty3": "blue",
-    # "sac_penalty5": "yellow",
+    "sac_penalty5": "yellow",
     "sac_penalty10": "orange",
     # "sac_penalty25": "magenta",
 
@@ -182,7 +192,7 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
+def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
@@ -218,7 +228,11 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
                 tmp = penalty_names[i]
                 penalty_names[i] = penalty_names[j]
                 penalty_names[j] = tmp
-    alg_names_new = ['sac_norecovery']
+
+    if 'sac_norecovery' in alg_names:
+        alg_names_new = ['sac_norecovery']
+    else:
+        alg_names_new = []
     alg_names_new += penalty_names
     if 'sac_lagrangian' in alg_names:
         alg_names_new += ['sac_lagrangian']
@@ -280,7 +294,7 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
                     diff = 50 - ep_lengths[i]
                     train_rewards[i] += diff * last_rewards[i]
 
-            if experiment == 'maze':
+            if 'maze' in experiment:
                 task_successes = (-last_rewards < 0.03).astype(int)
             elif 'shelf' in experiment:
                 task_successes = (last_rewards > 4.5).astype(int)
@@ -354,8 +368,8 @@ def plot_experiment(experiment, max_eps=2000): # 3000 for normal shelf...
 
 
 if __name__ == '__main__':
-    experiment = "shelf_dynamic"
-    # experiment = "maze"
+    # experiment = "shelf_dynamic"
+    experiment = "image_maze"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
