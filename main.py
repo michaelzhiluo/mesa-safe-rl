@@ -236,6 +236,7 @@ parser.add_argument('--cnn', action="store_true",
 parser.add_argument('--critic_pretraining_steps', type=int, default=3000)
 
 parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
+parser.add_argument('--safety_critic_penalty', type=float, default=-1)
 # For recovery policy
 parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
@@ -384,6 +385,10 @@ for i_episode in itertools.count(1):
 
         if args.constraint_reward_penalty > 0 and info['constraint']:
             reward -= args.constraint_reward_penalty
+
+        if args.safety_critic_penalty > 0:
+            critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)).detach().cpu().numpy()[0, 0]
+            reward -= args.safety_critic_penalty * critic_val
 
         mask = float(not done)
         done = done or episode_steps == env._max_episode_steps
