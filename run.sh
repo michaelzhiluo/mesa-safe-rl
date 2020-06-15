@@ -123,7 +123,7 @@ python -m main --cuda --env-name image_maze --cnn --use_qvalue --eps_safe 0.05 -
 python -m main --cuda --env-name image_maze --cnn --RCPO --lamda 20
 
 # Safety Critic Penalty (vismpc-recovery)
-python -m main --cuda --env-name image_maze --cnn --safety_critic_penalty {}
+python -m main --cuda --env-name image_maze --cnn --safety_critic_penalty 20 --model_fname model2_lowdata --beta 10 --kappa 10000 --load_vismpc  --use_value
 
 # --- IMAGE SHELF ENV ---
 # Data Gen:
