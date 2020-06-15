@@ -221,6 +221,8 @@ parser.add_argument('--batch_size', type=int, default=256, metavar='N',
                     help='batch size (default: 256)')
 parser.add_argument('--num_steps', type=int, default=1000000, metavar='N',
                     help='maximum number of steps (default: 1000000)')
+parser.add_argument('--num_eps', type=int, default=1000000, metavar='N',
+                    help='maximum number of episodes (default: 1000000)')
 parser.add_argument('--hidden_size', type=int, default=256, metavar='N',
                     help='hidden size (default: 256)')
 parser.add_argument('--updates_per_step', type=int, default=1, metavar='N',
@@ -435,7 +437,7 @@ for i_episode in itertools.count(1):
     print("Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
     print_episode_info(train_rollouts[-1])
 
-    if total_numsteps > args.num_steps:
+    if total_numsteps > args.num_steps or i_episode > args.num_eps:
         break
 
     if i_episode % 10 == 0 and args.eval is True:
