@@ -100,7 +100,7 @@ python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --t
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --critic_safe_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_qvalue --DGD_constraints --nu 1
 
 # RCPO (RCPO)
-python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lambda {}
+python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda {}
 
 # Safety Critic Penalty (Master)
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --safety_critic_penalty {}
@@ -120,7 +120,7 @@ python -m main --cuda --env-name image_maze --cnn --constraint_reward_penalty 20
 python -m main --cuda --env-name image_maze --cnn --use_qvalue --eps_safe 0.05 --gamma_safe 0.8 --critic_safe_update_freq 20 --DGD_constraints --nu {}
 
 # RCPO (RCPO)
-python -m main --cuda --env-name image_maze --cnn --RCPO --lambda {}
+python -m main --cuda --env-name image_maze --cnn --RCPO --lamda 20
 
 # Safety Critic Penalty (vismpc-recovery)
 python -m main --cuda --env-name image_maze --cnn --safety_critic_penalty {}

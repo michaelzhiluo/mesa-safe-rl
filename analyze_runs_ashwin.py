@@ -18,7 +18,6 @@ experiment_map = {
             "sac_penalty75": ["2020-04-27_09-25-19_SAC_maze_Gaussian_", "2020-04-27_09-25-35_SAC_maze_Gaussian_", "2020-04-27_09-25-48_SAC_maze_Gaussian_"],
             "sac_penalty100": ["2020-04-27_09-23-49_SAC_maze_Gaussian_", "2020-04-27_09-24-03_SAC_maze_Gaussian_", "2020-04-27_09-24-15_SAC_maze_Gaussian_"],
             "sac_lagrangian": ["2020-04-30_09-42-50_SAC_maze_Gaussian_", "2020-04-30_09-42-55_SAC_maze_Gaussian_", "2020-04-30_10-16-13_SAC_maze_Gaussian_"]
-            # "recovery": ["2020-05-24_11-39-18_SAC_maze_Gaussian_", "2020-05-24_11-39-26_SAC_maze_Gaussian_"]
         },
         "outfile": "maze_plot.png"
     },
@@ -28,7 +27,10 @@ experiment_map = {
             "sac_norecovery": ["2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
             "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
             "sac_penalty20": ["2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
-            "sac_penalty5": ["2020-06-15_02-22-21_SAC_image_maze_Gaussian_", "2020-06-15_02-22-29_SAC_image_maze_Gaussian_", "2020-06-15_02-22-36_SAC_image_maze_Gaussian_"]
+            "sac_penalty5": ["2020-06-15_02-22-21_SAC_image_maze_Gaussian_", "2020-06-15_02-22-29_SAC_image_maze_Gaussian_", "2020-06-15_02-22-36_SAC_image_maze_Gaussian_"],
+            # "sac_lagrangian": ["2020-06-15_07-58-23_SAC_image_maze_Gaussian_", "2020-06-15_07-58-28_SAC_image_maze_Gaussian_", "2020-06-15_07-58-34_SAC_image_maze_Gaussian_"], # nu = 10
+            "sac_lagrangian": ["2020-06-15_02-58-01_SAC_image_maze_Gaussian_", "2020-06-15_02-58-09_SAC_image_maze_Gaussian_", "2020-06-15_02-58-18_SAC_image_maze_Gaussian_"], # nu = 50
+            # "sac_lagrangian": ["2020-06-15_04-21-43_SAC_image_maze_Gaussian_", "2020-06-15_04-21-52_SAC_image_maze_Gaussian_", "2020-06-15_04-21-59_SAC_image_maze_Gaussian_"], # nu = 200
         },
         "outfile": "image_maze_plot.png"
     },
