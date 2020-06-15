@@ -13,3 +13,4 @@ unzip mjpro150_linux.zip
 mkdir ~/.mujoco
 mv mjpro150 ~/.mujoco/
 rm mjpro150_linux.zip
+cp mjkey.txt ~/.mujoco/
