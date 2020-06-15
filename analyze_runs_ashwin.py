@@ -25,11 +25,12 @@ experiment_map = {
         "algs": {
             "recovery": ["2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
             "sac_norecovery": ["2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
-            "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
+            # "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
             "sac_penalty20": ["2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
-            "sac_penalty5": ["2020-06-15_02-22-21_SAC_image_maze_Gaussian_", "2020-06-15_02-22-29_SAC_image_maze_Gaussian_", "2020-06-15_02-22-36_SAC_image_maze_Gaussian_"],
-            # "sac_lagrangian": ["2020-06-15_07-58-23_SAC_image_maze_Gaussian_", "2020-06-15_07-58-28_SAC_image_maze_Gaussian_", "2020-06-15_07-58-34_SAC_image_maze_Gaussian_"], # nu = 10
-            "sac_lagrangian": ["2020-06-15_02-58-01_SAC_image_maze_Gaussian_", "2020-06-15_02-58-09_SAC_image_maze_Gaussian_", "2020-06-15_02-58-18_SAC_image_maze_Gaussian_"], # nu = 50
+            # "sac_penalty5": ["2020-06-15_02-22-21_SAC_image_maze_Gaussian_", "2020-06-15_02-22-29_SAC_image_maze_Gaussian_", "2020-06-15_02-22-36_SAC_image_maze_Gaussian_"],
+            "sac_lagrangian": ["2020-06-15_07-58-23_SAC_image_maze_Gaussian_", "2020-06-15_07-58-28_SAC_image_maze_Gaussian_", "2020-06-15_07-58-34_SAC_image_maze_Gaussian_"], # nu = 10
+            "RCPO": ["2020-06-15_08-34-02_SAC_image_maze_Gaussian_", "2020-06-15_08-36-06_SAC_image_maze_Gaussian_", "2020-06-15_08-47-25_SAC_image_maze_Gaussian_"]
+            # "sac_lagrangian": ["2020-06-15_02-58-01_SAC_image_maze_Gaussian_", "2020-06-15_02-58-09_SAC_image_maze_Gaussian_", "2020-06-15_02-58-18_SAC_image_maze_Gaussian_"], # nu = 50
             # "sac_lagrangian": ["2020-06-15_04-21-43_SAC_image_maze_Gaussian_", "2020-06-15_04-21-52_SAC_image_maze_Gaussian_", "2020-06-15_04-21-59_SAC_image_maze_Gaussian_"], # nu = 200
         },
         "outfile": "image_maze_plot.png"
@@ -124,6 +125,7 @@ names = {
     "recovery_0.3": "SAC + Recovery (eps=0.3)",
     "recovery_0.4": "SAC + Recovery (eps=0.4)",
     "recovery_0.4_20k": "SAC + Recovery",
+    "RCPO": "RCPO",
     # "recovery_0.4_20k_gamma0.9": "SAC + Recovery (eps=0.4), 20k transitions, gamma=0.9",
     # "recovery_0.4_5k": "SAC + Recovery (eps=0.4)",
     "recovery_0.5": "SAC + Recovery (eps=0.5)",
@@ -172,6 +174,7 @@ colors = {
     "sac_penalty3": "blue",
     "sac_penalty5": "yellow",
     "sac_penalty10": "orange",
+    "RCPO": 'magenta'
     # "sac_penalty25": "magenta",
 
     # "recovery_0.8_images": "purple",
@@ -238,10 +241,10 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
     alg_names_new += penalty_names
     if 'sac_lagrangian' in alg_names:
         alg_names_new += ['sac_lagrangian']
+    if 'RCPO' in alg_names:
+        alg_names_new += ['RCPO']
     if 'recovery' in alg_names:
         alg_names_new += ['recovery']
-    if 'recovery_reachability' in alg_names:
-        alg_names_new += ['recovery_reachability']
 
     print("ALG NAMES NEW: ", alg_names_new)
     for alg in alg_names_new:
