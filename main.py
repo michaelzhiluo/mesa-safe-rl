@@ -188,6 +188,10 @@ def process_obs(obs, env_name):
 parser = argparse.ArgumentParser(description='PyTorch Soft Actor-Critic Args')
 parser.add_argument('--env-name', default="HalfCheetah-v2",
                     help='Mujoco Gym environment (default: HalfCheetah-v2)')
+parser.add_argument('--logdir', default="runs",
+                    help='exterior log directory')
+parser.add_argument('--logdir_suffix', default="",
+                    help='log directory suffix')
 parser.add_argument('--policy', default="Gaussian",
                     help='Policy Type: Gaussian | Deterministic (default: Gaussian)')
 parser.add_argument('--eval', type=bool, default=True,
@@ -269,8 +273,11 @@ args = parser.parse_args()
 if 'shelf' in args.env_name:
     args.num_constraint_transitions = 20000
 
-logdir = 'runs/{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
-                                                             args.policy, "autotune" if args.automatic_entropy_tuning else "")
+if not os.path.exists(args.logdir):
+    os.makedirs(args.logdir)
+
+logdir = os.path.join(args.logdir, '{}_SAC_{}_{}_{}'.format(datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"), args.env_name,
+                                                             args.policy, args.logdir_suffix))
 print("LOGDIR: ", logdir)
 writer = SummaryWriter(logdir=logdir)
 pickle.dump(args, open(os.path.join(logdir, "args.pkl"), "wb") )

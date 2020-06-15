@@ -27,16 +27,16 @@ python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.7
 python main.py --env-name simplepointbot1 --cuda 
 
 # Reward Penalty (Master)
-python main.py --env-name simplepointbot0 --cuda --constraint_reward_penalty 10
+python main.py --env-name simplepointbot1 --cuda --constraint_reward_penalty 10
 
 # Lagrangian (saclagrangian-new)
-python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints --nu {} --eps_safe 0.2
+python main.py --env-name simplepointbot1 --cuda --use_qvalue --DGD_constraints --nu {} --eps_safe 0.2
 
 # RCPO (RCPO)
 python main.py --env-name simplepointbot1 --cuda --eps_safe 0.1 --RCPO --lamda 10
 
 # Safety Critic Penalty (Master)
-python main.py --env-name simplepointbot0 --cuda --safety_critic_penalty {}
+python main.py --env-name simplepointbot1 --cuda --safety_critic_penalty {}
 
 # --- MAZE ENV --- 
 # Recovery RL (Master)
