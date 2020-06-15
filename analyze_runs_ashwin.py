@@ -81,7 +81,9 @@ experiment_map = {
             # "recovery_0.6_gamma0.5_penalty3": ["2020-05-17_05-57-36_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-43_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-54_SAC_shelf_env_Gaussian_"]
             "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
             "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
-            "sac_lagrangian": ["2020-05-04_04-34-38_SAC_shelf_env_Gaussian_", "2020-05-04_04-34-54_SAC_shelf_env_Gaussian_", "2020-05-04_04-35-08_SAC_shelf_env_Gaussian_"] # TODO: rerun eventually...
+            "sac_lagrangian": ["2020-06-15_09-50-15_SAC_shelf_env_Gaussian_", "2020-06-15_09-50-45_SAC_shelf_env_Gaussian_", "2020-06-15_09-51-01_SAC_shelf_env_Gaussian_"] # nu = 1
+            # "sac_lagrangian": ["2020-06-15_09-52-16_SAC_shelf_env_Gaussian_", "2020-06-15_09-52-43_SAC_shelf_env_Gaussian_"] # nu = 10
+            # "sac_lagrangian": ["2020-06-15_09-53-42_SAC_shelf_env_Gaussian_", "2020-06-15_09-53-53_SAC_shelf_env_Gaussian_", "2020-06-15_09-54-06_SAC_shelf_env_Gaussian_"] # nu = 100
             # "recovery_0.4_20k_gamma0.5": ["2020-05-17_05-48-29_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-23_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-14_SAC_shelf_env_Gaussian_"]
             # "recovery_0.6_dense_gamma0.3": ["2020-05-15_23-16-25_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-30_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-34_SAC_shelf_env_Gaussian_"],
             # "recovery_0.6_dense_gamma0.4": ["2020-05-15_23-15-53_SAC_shelf_env_Gaussian_", "2020-05-15_23-15-57_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-02_SAC_shelf_env_Gaussian_"],
@@ -197,7 +199,7 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
+def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf...
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
@@ -275,7 +277,8 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
                     train_violations[-1].append(step_stats['constraint'])
                     # recovery_called[-1].append(step_stats['recovery'])
                     if alg == "recovery" or alg == "recovery_reachability":
-                        recovery_called[-1].append(step_stats['recovery'])
+                        # recovery_called[-1].append(step_stats['recovery'])
+                        recovery_called[-1].append(0)
                     else:
                         recovery_called[-1].append(0)
                     train_rewards[-1] += step_stats['reward']
@@ -374,7 +377,8 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    experiment = "image_maze"
+    # experiment = "image_maze"
+    experiment = "shelf"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5

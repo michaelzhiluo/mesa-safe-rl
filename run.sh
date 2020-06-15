@@ -76,7 +76,7 @@ python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.000
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --gamma_safe 0.85 --eps_safe 0.4 --critic_safe_update_freq 20 --use_qvalue --DGD_constraints --nu 1
 
 # RCPO (RCPO)
-python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda {}
+python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda 3
 
 # Safety Critic Penalty (Master)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --safety_critic_penalty {}
@@ -100,7 +100,7 @@ python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --t
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --critic_safe_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_qvalue --DGD_constraints --nu 1
 
 # RCPO (RCPO)
-python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda {}
+python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda 3
 
 # Safety Critic Penalty (Master)
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --safety_critic_penalty {}
