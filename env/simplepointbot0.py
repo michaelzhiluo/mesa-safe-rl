@@ -87,7 +87,7 @@ class SimplePointBot(Env, utils.EzPickle):
         self.state = next_state
         self.time += 1
         self.hist.append(self.state)
-        self.done = cur_cost > -1
+        self.done = cur_cost > -1 or self.obstacle(next_state)
 
         return self.state, cur_cost, self.done, {
                 "constraint": self.obstacle(next_state),
