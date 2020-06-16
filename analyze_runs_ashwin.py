@@ -29,7 +29,8 @@ experiment_map = {
             "sac_penalty20": ["2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
             # "sac_penalty5": ["2020-06-15_02-22-21_SAC_image_maze_Gaussian_", "2020-06-15_02-22-29_SAC_image_maze_Gaussian_", "2020-06-15_02-22-36_SAC_image_maze_Gaussian_"],
             "RCPO": ["2020-06-15_08-34-02_SAC_image_maze_Gaussian_", "2020-06-15_08-36-06_SAC_image_maze_Gaussian_", "2020-06-15_08-47-25_SAC_image_maze_Gaussian_"],
-            "sac_lagrangian": ["2020-06-15_19-53-56_SAC_image_maze_Gaussian_", "2020-06-15_20-48-22_SAC_image_maze_Gaussian_", "2020-06-15_19-54-24_SAC_image_maze_Gaussian_"] # nu = 1
+            "sac_lagrangian": ["2020-06-15_19-53-56_SAC_image_maze_Gaussian_", "2020-06-15_20-48-22_SAC_image_maze_Gaussian_", "2020-06-15_19-54-24_SAC_image_maze_Gaussian_"], # nu = 1
+            "sac_lagrangian_update": ["2020-06-16_00-11-54_SAC_image_maze_Gaussian_", "2020-06-16_00-12-06_SAC_image_maze_Gaussian_", "2020-06-16_00-12-27_SAC_image_maze_Gaussian_"] 
             # "sac_lagrangian": ["2020-06-15_07-58-23_SAC_image_maze_Gaussian_", "2020-06-15_07-58-28_SAC_image_maze_Gaussian_", "2020-06-15_07-58-34_SAC_image_maze_Gaussian_"], # nu = 10
             # "sac_lagrangian": ["2020-06-15_02-58-01_SAC_image_maze_Gaussian_", "2020-06-15_02-58-09_SAC_image_maze_Gaussian_", "2020-06-15_02-58-18_SAC_image_maze_Gaussian_"], # nu = 50
             # "sac_lagrangian": ["2020-06-15_04-21-43_SAC_image_maze_Gaussian_", "2020-06-15_04-21-52_SAC_image_maze_Gaussian_", "2020-06-15_04-21-59_SAC_image_maze_Gaussian_"], # nu = 200
@@ -83,7 +84,8 @@ experiment_map = {
             "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
             "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
             "RCPO": ["2020-06-15_19-49-04_SAC_shelf_env_Gaussian_", "2020-06-15_19-49-23_SAC_shelf_env_Gaussian_", "2020-06-15_19-49-39_SAC_shelf_env_Gaussian_"],
-            "sac_lagrangian": ["2020-06-15_09-50-15_SAC_shelf_env_Gaussian_", "2020-06-15_09-50-45_SAC_shelf_env_Gaussian_", "2020-06-15_09-51-01_SAC_shelf_env_Gaussian_"] # nu = 1
+            "sac_lagrangian": ["2020-06-15_09-50-15_SAC_shelf_env_Gaussian_", "2020-06-15_09-50-45_SAC_shelf_env_Gaussian_", "2020-06-15_09-51-01_SAC_shelf_env_Gaussian_"], # nu = 1
+            "sac_lagrangian_update": ["2020-06-16_02-30-16_SAC_shelf_env_Gaussian_", "2020-06-16_00-10-45_SAC_shelf_env_Gaussian_", "2020-06-16_00-10-57_SAC_shelf_env_Gaussian_"] 
             # "sac_lagrangian": ["2020-06-15_09-52-16_SAC_shelf_env_Gaussian_", "2020-06-15_09-52-43_SAC_shelf_env_Gaussian_"] # nu = 10
             # "sac_lagrangian": ["2020-06-15_09-53-42_SAC_shelf_env_Gaussian_", "2020-06-15_09-53-53_SAC_shelf_env_Gaussian_", "2020-06-15_09-54-06_SAC_shelf_env_Gaussian_"] # nu = 100
             # "recovery_0.4_20k_gamma0.5": ["2020-05-17_05-48-29_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-23_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-14_SAC_shelf_env_Gaussian_"]
@@ -106,7 +108,8 @@ experiment_map = {
             # "recovery_0.2": ["2020-05-25_09-41-29_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-42-02_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_20-21-35_SAC_shelf_dynamic_env_Gaussian_"],
             "recovery": ["2020-05-26_03-32-21_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-30_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-37_SAC_shelf_dynamic_env_Gaussian_"], # eps_safe=0.25
             "RCPO": ["2020-06-15_19-47-45_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-48-05_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-48-19_SAC_shelf_dynamic_env_Gaussian_"],
-            "sac_lagrangian": ["2020-06-04_04-31-13_SAC_shelf_dynamic_env_Gaussian_", "2020-06-03_23-56-14_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-41-22_SAC_shelf_dynamic_env_Gaussian_"] # nu = 1 (tried nu=1, 10, 100 this was best)
+            "sac_lagrangian": ["2020-06-04_04-31-13_SAC_shelf_dynamic_env_Gaussian_", "2020-06-03_23-56-14_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-41-22_SAC_shelf_dynamic_env_Gaussian_"], # nu = 1 (tried nu=1, 10, 100 this was best)
+            "sac_lagrangian_update": ["2020-06-16_00-02-34_SAC_shelf_dynamic_env_Gaussian_", "2020-06-16_00-03-21_SAC_shelf_dynamic_env_Gaussian_", "2020-06-16_00-03-30_SAC_shelf_dynamic_env_Gaussian_"] 
             # "recovery_0.3": ["2020-05-24_21-59-33_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-26_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-51_SAC_shelf_dynamic_env_Gaussian_"],
             # "recovery_0.4": ["2020-05-24_21-57-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-28_SAC_shelf_dynamic_env_Gaussian_"]
         },
@@ -124,6 +127,7 @@ names = {
     "recovery": "SAC + Recovery",
     "recovery_reachability": "SAC + Recovery + Reachablity",
     "sac_lagrangian" : "SAC + Lagrangian",
+    "sac_lagrangian_update": "SAC + Lagrangian Update",
     "recovery_0.1": "SAC + Recovery (eps=0.1)",
     "recovery_0.2": "SAC + Recovery (eps=0.2)",
     # "recovery": "SAC + Recovery (eps=0.25)",
@@ -166,6 +170,7 @@ colors = {
     "recovery": "red",
     "recovery_reachability": "cyan",
     "sac_lagrangian": "pink",
+    "sac_lagrangian_update": "teal",
     "recovery_0.2": "purple",
     "recovery_0.25": "cyan",
     "recovery_0.3": "black",
@@ -202,7 +207,7 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
+def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf...
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
@@ -246,6 +251,8 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
     alg_names_new += penalty_names
     if 'sac_lagrangian' in alg_names:
         alg_names_new += ['sac_lagrangian']
+    if 'sac_lagrangian_update' in alg_names:
+        alg_names_new += ['sac_lagrangian_update']
     if 'RCPO' in alg_names:
         alg_names_new += ['RCPO']
     if 'recovery' in alg_names:
@@ -280,8 +287,8 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
                     train_violations[-1].append(step_stats['constraint'])
                     # recovery_called[-1].append(step_stats['recovery'])
                     if alg == "recovery" or alg == "recovery_reachability":
-                        recovery_called[-1].append(step_stats['recovery'])
-                        # recovery_called[-1].append(0)
+                        # recovery_called[-1].append(step_stats['recovery'])
+                        recovery_called[-1].append(0)
                     else:
                         recovery_called[-1].append(0)
                     train_rewards[-1] += step_stats['reward']
@@ -380,8 +387,8 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf...
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    experiment = "image_maze"
-    # experiment = "shelf"
+    # experiment = "image_maze"
+    experiment = "shelf"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
