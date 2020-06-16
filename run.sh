@@ -127,9 +127,9 @@ python -m main --cuda --env-name image_maze --cnn --safety_critic_penalty 20 --m
 
 # --- IMAGE SHELF ENV ---
 # Data Gen:
-# Task demos: python -m gen_shelf_demos --cuda --num_demos 250 
-# Constraint demos: python -m gen_shelf_demos --cuda --num_demos 10000 --constraint_demos
-# Task demos for RCPO: python -m gen_shelf_demos --cuda --num_demos 250 --RCPO_demos
+# Task demos: python -m gen_shelf_demos --cuda --num_demos 250 (vismpc-recovery)
+# Constraint demos: python -m gen_shelf_demos --cuda --num_demos 10000 --constraint_demos --vismpc_train_data (vismpc-recovery)
+# Task demos for RCPO: python -m gen_shelf_demos --cuda --num_demos 250 --RCPO_demos (RCPO)
 
 # Recovery RL
 python -m main --cuda --env-name shelf_env --use_recovery --use_value --critic_safe_update_freq 20000 --recovery_policy_update_freq 20000 --gamma_safe 0.85 --eps_safe 0.4 --cnn --vismpc_recovery --num_constraint_transitions 250000 --model_fname model_shelf3 --beta 10 --kappa 10000 --load_vismpc
@@ -144,9 +144,9 @@ python -m main --cuda --env-name shelf_env --use_recovery --use_value --critic_s
 
 # --- IMAGE DYNAMIC SHELF ENV ---
 # Data Gen:
-# Task demos: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 
-# Constraint demos: python -m gen_dynamic_shelf_demos --cuda --num_demos 10000 --constraint_demos
-# Task demos for RCPO: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 --RCPO_demos
+# Task demos: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 (vismpc-recovery)
+# Constraint demos: python -m gen_dynamic_shelf_demos --cuda --num_demos 10000 --constraint_demos --vismpc_train_data (vismpc-recovery)
+# Task demos for RCPO: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 --RCPO_demos (RCPO)
 
 # Recovery RL
 
