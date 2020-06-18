@@ -114,7 +114,17 @@ experiment_map = {
             # "recovery_0.4": ["2020-05-24_21-57-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-28_SAC_shelf_dynamic_env_Gaussian_"]
         },
         "outfile": "shelf_dynamic.png"
-    } 
+    },
+    "image_shelf": {
+        "algs": {
+            "sac_norecovery": ["2020-06-17_07-48-06_SAC_shelf_env_Gaussian_", "2020-06-17_07-50-05_SAC_shelf_env_Gaussian_"],
+            # "recovery": ["2020-06-17_03-58-30_SAC_shelf_env_Gaussian_", "2020-06-17_03-58-44_SAC_shelf_env_Gaussian_", "2020-06-17_07-40-38_SAC_shelf_env_Gaussian_"], # eps_safe = 0.25
+            # "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
+            "recovery": ["2020-06-17_03-57-09_SAC_shelf_env_Gaussian_", "2020-06-17_03-57-51_SAC_shelf_env_Gaussian_"],
+            "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_"]
+        },
+        "outfile": "image_shelf.png"
+    }  
 }
 
 
@@ -207,12 +217,16 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
+<<<<<<< Updated upstream
 def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf...
+=======
+def plot_experiment(experiment, max_eps=2100): # 3000 for normal shelf...
+>>>>>>> Stashed changes
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
     axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-    axs[0].set_ylim(-0.1, int(0.35*max_eps) + 1)
+    axs[0].set_ylim(-0.1, int(0.8*max_eps) + 1)
     axs[0].set_xlabel("Episode", fontsize=16)
     axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
     axs[0].tick_params(axis='both', which='major', labelsize=14)
@@ -388,7 +402,12 @@ def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf...
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
     # experiment = "image_maze"
+<<<<<<< Updated upstream
     experiment = "shelf"
+=======
+    # experiment = "shelf"
+    experiment = "image_shelf"
+>>>>>>> Stashed changes
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
