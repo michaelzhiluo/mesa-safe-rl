@@ -498,6 +498,6 @@ for i_episode in itertools.count(1):
         print("Test Episodes: {}, Avg. Reward: {}".format(episodes, round(avg_reward, 2)))
         print("----------------------------------------")
 
-        dump_logs(test_rollouts, train_rollouts, logdir)
+    dump_logs(test_rollouts, train_rollouts, logdir)
         
 env.close()
