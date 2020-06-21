@@ -94,7 +94,7 @@ python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --t
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000
 
 # Reward Penalty (Master)
-python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --constraont_reward_penalty 3
+python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --constraint_reward_penalty 3
 
 # Lagrangian (saclagrangian-new)
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --critic_safe_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_qvalue --DGD_constraints --nu 1
@@ -131,12 +131,14 @@ python -m main --cuda --env-name image_maze --cnn --safety_critic_penalty 20 --m
 # Constraint demos: python -m gen_shelf_demos --cuda --num_demos 10000 --constraint_demos --vismpc_train_data (vismpc-recovery)
 # Task demos for RCPO: python -m gen_shelf_demos --cuda --num_demos 250 --RCPO_demos (RCPO)
 
-# Recovery RL
-python -m main --cuda --env-name shelf_env --use_recovery --use_value --critic_safe_update_freq 20000 --recovery_policy_update_freq 20000 --gamma_safe 0.85 --eps_safe 0.25 --cnn --vismpc_recovery --num_constraint_transitions 250000 --model_fname model_shelf3 --beta 10 --kappa 10000 --load_vismpc --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000
+# Recovery RL (model_shelf3 for high data)
+python -m main --cuda --env-name shelf_env --use_recovery --use_value --critic_safe_update_freq 20000 --recovery_policy_update_freq 20000 --gamma_safe 0.85 --eps_safe 0.25 --cnn --vismpc_recovery --num_constraint_transitions 250000 --model_fname model_shelf_lowdata --beta 10 --kappa 10000 --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --load_vismpc
 
 # Unconstrained
+python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn
 
 # Reward Penalty
+python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn --constraint_reward_penalty 10
 
 # Lagrangian
 
@@ -149,10 +151,13 @@ python -m main --cuda --env-name shelf_env --use_recovery --use_value --critic_s
 # Task demos for RCPO: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 --RCPO_demos (RCPO)
 
 # Recovery RL
+python -m main --cuda --env-name shelf_dynamic_env --use_recovery --use_value --critic_safe_update_freq 20000 --recovery_policy_update_freq 20000 --gamma_safe 0.85 --eps_safe 0.1 --cnn --vismpc_recovery --num_constraint_transitions 25000 --model_fname model_shelf_dynamic_low_data --beta 10 --kappa 10000 --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --load_vismpc
 
 # Unconstrained
+python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn
 
 # Reward Penalty
+python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn --constraint_reward_penalty 3
 
 # Lagrangian
 
