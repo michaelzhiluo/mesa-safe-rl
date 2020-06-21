@@ -118,9 +118,10 @@ experiment_map = {
     "image_shelf": {
         "algs": {
             "sac_norecovery": ["2020-06-17_07-48-06_SAC_shelf_env_Gaussian_", "2020-06-17_07-50-05_SAC_shelf_env_Gaussian_"],
-            # "recovery": ["2020-06-17_03-58-30_SAC_shelf_env_Gaussian_", "2020-06-17_03-58-44_SAC_shelf_env_Gaussian_", "2020-06-17_07-40-38_SAC_shelf_env_Gaussian_"], # eps_safe = 0.25
-            # "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
-            "recovery": ["2020-06-20_05-54-22_SAC_shelf_env_Gaussian_", "2020-06-19_17-56-06_SAC_shelf_env_Gaussian_"], # eps_safe = 0.15
+            # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-41-30_SAC_shelf_env_Gaussian_"], # eps_safe = 0.25
+            # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-02-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.2
+            "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
+            # "recovery": ["2020-06-20_05-54-22_SAC_shelf_env_Gaussian_", "2020-06-19_17-56-06_SAC_shelf_env_Gaussian_"], # eps_safe = 0.15
             # "recovery": ["2020-06-19_03-00-51_SAC_shelf_env_Gaussian_", "2020-06-19_17-39-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.1
             "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_"]
         },
