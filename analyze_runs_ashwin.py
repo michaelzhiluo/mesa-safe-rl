@@ -131,7 +131,7 @@ experiment_map = {
     "image_shelf_dynamic": {
         "algs": {
             "sac_norecovery": ["2020-06-22_06-46-55_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_06-47-04_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery": ["2020-06-22_05-41-53_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_05-34-42_SAC_shelf_dynamic_env_Gaussian_"],
+            "recovery": ["2020-06-22_11-48-37_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_11-49-03_SAC_shelf_dynamic_env_Gaussian_"], # eps=0.1
             "sac_penalty3": ["2020-06-22_06-48-53_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_06-39-57_SAC_shelf_dynamic_env_Gaussian_"],
             "sac_penalty10": ["2020-06-22_06-40-16_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_06-40-36_SAC_shelf_dynamic_env_Gaussian_"]
         },
@@ -229,7 +229,7 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf..., 4000 for image shelf
+def plot_experiment(experiment, max_eps=1000): # 3000 for normal shelf..., 4000 for image shelf
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
@@ -411,8 +411,8 @@ if __name__ == '__main__':
     # experiment = "shelf_dynamic"
     # experiment = "image_maze"
     # experiment = "shelf"
-    experiment = "image_shelf"
-    # experiment = "image_shelf_dynamic"
+    # experiment = "image_shelf"
+    experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
