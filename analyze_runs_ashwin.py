@@ -124,7 +124,8 @@ experiment_map = {
             "recovery": ["2020-06-21_23-02-02_SAC_shelf_env_Gaussian_", "2020-06-21_23-05-33_SAC_shelf_env_Gaussian_", "2020-06-21_23-06-37_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3 low data
             # "recovery": ["2020-06-20_05-54-22_SAC_shelf_env_Gaussian_", "2020-06-19_17-56-06_SAC_shelf_env_Gaussian_"], # eps_safe = 0.15
             # "recovery": ["2020-06-19_03-00-51_SAC_shelf_env_Gaussian_", "2020-06-19_17-39-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.1
-            "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_"]
+            "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_"],
+            "sac_penalty3": ["2020-06-22_22-24-29_SAC_shelf_env_Gaussian_"]
         },
         "outfile": "image_shelf.png"
     },
@@ -229,7 +230,7 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=1000): # 3000 for normal shelf..., 4000 for image shelf
+def plot_experiment(experiment, max_eps=4000): # 3000 for normal shelf..., 4000 for image shelf
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
@@ -411,8 +412,8 @@ if __name__ == '__main__':
     # experiment = "shelf_dynamic"
     # experiment = "image_maze"
     # experiment = "shelf"
-    # experiment = "image_shelf"
-    experiment = "image_shelf_dynamic"
+    experiment = "image_shelf"
+    # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
