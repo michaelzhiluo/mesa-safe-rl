@@ -115,18 +115,18 @@ python -m main --cuda --env-name image_maze --cnn --RCPO --lamda {} --eps_safe 0
 # Constraint demos: python -m gen_shelf_demos --cuda --num_demos 10000 --constraint_demos --vismpc_train_data (vismpc-recovery)
 # Task demos for RCPO: python -m gen_shelf_demos --cuda --num_demos 250 --RCPO_demos (RCPO)
 
-# Recovery RL (model_shelf3 for high data)
+# Recovery RL (vismpc-recovery) (model_shelf3 for high data)
 python -m main --cuda --env-name shelf_env --use_recovery --use_value --critic_safe_update_freq 20000 --recovery_policy_update_freq 20000 --gamma_safe 0.85 --eps_safe 0.25 --cnn --vismpc_recovery --num_constraint_transitions 250000 --model_fname model_shelf_lowdata --beta 10 --kappa 10000 --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --load_vismpc
 
-# Unconstrained
+# Unconstrained (Master)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn
 
-# Reward Penalty
+# Reward Penalty (Master)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn --constraint_reward_penalty 10
 
-# Lagrangian
+# Lagrangian (saclagrangian-new) --> Note for this need to change images to true in env
 
-# RCPO
+# RCPO (RCPO) --> Note for this need to change images to true in env
 
 # --- IMAGE DYNAMIC SHELF ENV ---
 # Data Gen:
@@ -134,15 +134,15 @@ python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.000
 # Constraint demos: python -m gen_dynamic_shelf_demos --cuda --num_demos 10000 --constraint_demos --vismpc_train_data (vismpc-recovery)
 # Task demos for RCPO: python -m gen_dynamic_shelf_demos --cuda --num_demos 250 --RCPO_demos (RCPO)
 
-# Recovery RL
-python -m main --cuda --env-name shelf_dynamic_env --use_recovery --use_value --critic_safe_update_freq 20000 --recovery_policy_update_freq 20000 --gamma_safe 0.85 --eps_safe 0.1 --cnn --vismpc_recovery --num_constraint_transitions 25000 --model_fname model_shelf_dynamic_low_data --beta 10 --kappa 10000 --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --load_vismpc
+# Recovery RL (vismpc-recovery)
+python -m main --cuda --env-name shelf_dynamic_env --use_recovery --use_value --critic_safe_update_freq 20000 --recovery_policy_update_freq 20000 --gamma_safe 0.85 --eps_safe 0.1 --cnn --vismpc_recovery --num_constraint_transitions 250000 --model_fname model_shelf_dynamic --beta 10 --kappa 10000 --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --load_vismpc
 
-# Unconstrained
+# Unconstrained (Master)
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn
 
-# Reward Penalty
+# Reward Penalty (Master)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --cnn --constraint_reward_penalty 3
 
-# Lagrangian
+# Lagrangian (saclagrangian-new) --> Note for this need to change images to true in env
 
-# RCPO
+# RCPO (RCPO) --> Note for this need to change images to true in env
