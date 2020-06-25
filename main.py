@@ -97,8 +97,8 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
             print("RECOVERY: ", critic_vals)
             return True
         elif critic_val < args.t_safe and args.pred_time:
-            print("FORWARD: ", critic_val)
             return True
+        print("FORWARD: ", critic_val)
         return False
 
 
