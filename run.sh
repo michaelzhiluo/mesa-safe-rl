@@ -13,10 +13,7 @@ python main.py --env-name simplepointbot0 --cuda --constraint_reward_penalty 1
 python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints --nu {} --eps_safe 0.2
 
 # RCPO (RCPO)
-python main.py --env-name simplepointbot0 --cuda --eps_safe 0.1 --RCPO --lamda 1
-
-# Safety Critic Penalty (Master)
-python main.py --env-name simplepointbot0 --cuda --safety_critic_penalty 1
+python main.py --env-name simplepointbot0 --cuda --eps_safe 0.1 --gamma_safe 0.8 --RCPO --lamda {} --use_value
 
 # --- POINTBOT 1 ENV ---
 # Recovery RL (Master)
@@ -33,10 +30,7 @@ python main.py --env-name simplepointbot1 --cuda --constraint_reward_penalty 10
 python main.py --env-name simplepointbot1 --cuda --use_qvalue --DGD_constraints --nu {} --eps_safe 0.2
 
 # RCPO (RCPO)
-python main.py --env-name simplepointbot1 --cuda --eps_safe 0.1 --RCPO --lamda 10
-
-# Safety Critic Penalty (Master)
-python main.py --env-name simplepointbot1 --cuda --safety_critic_penalty {}
+python main.py --env-name simplepointbot1 --cuda --eps_safe 0.1 --gamma_safe 0.9 --RCPO --lamda {} --use_value
 
 # --- MAZE ENV --- 
 # Recovery RL (Master)
@@ -52,10 +46,7 @@ python -m main --cuda --env-name maze --constraint_reward_penalty 50
 python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu {} --eps_safe 0.05
 
 # RCPO (RCPO)
-python -m main --cuda --env-name maze --eps_safe 0.05 --RCPO
-
-# Safety Critic Penalty (Master)
-python main.py --env-name maze --cuda --safety_critic_penalty {}
+python -m main --cuda --env-name maze --eps_safe 0.05 --gamma_safe 0.85 --RCPO --lambda {} --use_value
 
 # --- SHELF ENV ---
 # Data Gen: 
@@ -76,10 +67,8 @@ python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.000
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --gamma_safe 0.85 --eps_safe 0.4 --critic_safe_update_freq 20 --use_qvalue --DGD_constraints --nu 1
 
 # RCPO (RCPO)
-python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda 3
+python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda {} --eps_safe 0.4 --gamma_safe 0.85 --critic_safe_update_freq 20 --use_value
 
-# Safety Critic Penalty (Master)
-python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --safety_critic_penalty {}
 
 # --- DYNAMIC SHELF ENV ---
 # Data Gen:
@@ -100,10 +89,8 @@ python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --t
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --critic_safe_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_qvalue --DGD_constraints --nu 1
 
 # RCPO (RCPO)
-python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda 3
+python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda {} --critic_safe_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_value
 
-# Safety Critic Penalty (Master)
-python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --safety_critic_penalty {}
 
 # --- IMAGE MAZE ENV ---
 
@@ -120,10 +107,7 @@ python -m main --cuda --env-name image_maze --cnn --constraint_reward_penalty 20
 python -m main --cuda --env-name image_maze --cnn --use_qvalue --eps_safe 0.05 --gamma_safe 0.8 --critic_safe_update_freq 20 --DGD_constraints --nu {}
 
 # RCPO (RCPO)
-python -m main --cuda --env-name image_maze --cnn --RCPO --lamda 20
-
-# Safety Critic Penalty (vismpc-recovery)
-python -m main --cuda --env-name image_maze --cnn --safety_critic_penalty 20 --model_fname model2_lowdata --beta 10 --kappa 10000 --load_vismpc  --use_value
+python -m main --cuda --env-name image_maze --cnn --RCPO --lamda {} --eps_safe 0.05 --gamma_safe 0.8 --critic_safe_update_freq 200000 --use_value
 
 # --- IMAGE SHELF ENV ---
 # Data Gen:
