@@ -148,7 +148,7 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
     done = False
     for i in range(num_transitions//10):
         rollouts.append([])
-        state = np.array([np.random.uniform(-50, 10), np.random.uniform(-40, 40)])
+        state = np.array([np.random.uniform(-40, -10), np.random.uniform(-15, 15)])
         for j in range(10):
             action = np.clip(np.random.randn(2), -1, 1)
             next_state = env._next_state(state, action, override=True)
@@ -156,6 +156,8 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
             reward = env.step_cost(state, action)
             transitions.append((state, action, constraint, next_state, done))
             rollouts[-1].append((state, action, constraint, next_state, done))
+            if constraint:
+                break
 
     if save_rollouts:
         return rollouts
