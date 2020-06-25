@@ -87,6 +87,7 @@ def agent_setup(env, logdir, args):
 def get_action(state, env, agent, recovery_policy, args, train=True, im_state=None):
     def recovery_thresh(state, action, agent, recovery_policy, args):
         if not args.use_recovery:
+            print("FORWARD: ", critic_val)
             return False
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)) # TODO: make sure this is exactly equal to reachability_hor=1
         if args.reachability_test: # reachability test combined with safety check
