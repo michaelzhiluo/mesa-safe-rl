@@ -94,8 +94,10 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
         if args.lookahead_test:
             return not recovery_policy.lookahead_test(state, action, args.eps_safe)
         if critic_val > args.eps_safe and not args.pred_time:
+            print("RECOVERY: ", critic_vals)
             return True
         elif critic_val < args.t_safe and args.pred_time:
+            print("FORWARD: ", critic_val)
             return True
         return False
 
