@@ -169,6 +169,8 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
             transitions.append((state, action, constraint, next_state, done))
             rollouts[-1].append((state, action, constraint, next_state, done))
             state = next_state
+            if constraint:
+                break
 
     if save_rollouts:
         return rollouts

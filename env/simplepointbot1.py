@@ -146,9 +146,22 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
     transitions = []
     rollouts = []
     done = False
-    for i in range(num_transitions//10):
+    for i in range(num_transitions//10//4):
         rollouts.append([])
         state = np.array([np.random.uniform(-40, -10), np.random.uniform(-15, 15)])
+        for j in range(10):
+            action = np.clip(np.random.randn(2), -1, 1)
+            next_state = env._next_state(state, action, override=True)
+            constraint = env.obstacle(next_state)
+            reward = env.step_cost(state, action)
+            transitions.append((state, action, constraint, next_state, done))
+            rollouts[-1].append((state, action, constraint, next_state, done))
+            if constraint:
+                break
+
+    for i in range(num_transitions//10 * 3//4):
+        rollouts.append([])
+        state = np.array([np.random.uniform(-33, -17), np.random.uniform(-15, 15)])
         for j in range(10):
             action = np.clip(np.random.randn(2), -1, 1)
             next_state = env._next_state(state, action, override=True)

@@ -9,7 +9,7 @@ import itertools
 import torch
 from sac import SAC
 from tensorboardX import SummaryWriter
-from replay_memory import ReplayMemory
+from replay_memory import ReplayMemory, ConstraintReplayMemory
 from MPC import MPC
 from dotmap import DotMap
 from config import create_config
@@ -289,7 +289,7 @@ agent, recovery_policy, env = experiment_setup(logdir, args)
 
 # Memory
 memory = ReplayMemory(args.replay_size)
-recovery_memory = ReplayMemory(args.safe_replay_size)
+recovery_memory = ConstraintReplayMemory(args.safe_replay_size)
 
 # Training Loop
 total_numsteps = 0

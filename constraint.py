@@ -96,6 +96,11 @@ class ValueFunction:
         else:
             raise(NotImplementedError("Need to implement opt"))
 
+        if self.env_name == 'simplepointbot0':
+            plt.gca().add_patch(Rectangle((0,25),500,50,linewidth=1,edgecolor='r',facecolor='none'))
+        elif self.env_name == 'simplepointbot1':
+            plt.gca().add_patch(Rectangle((45,65),10,20,linewidth=1,edgecolor='r',facecolor='none'))
+
         plt.imshow(grid.T)
         plt.savefig(osp.join(self.logdir, "value_" + str(ep)))
 
