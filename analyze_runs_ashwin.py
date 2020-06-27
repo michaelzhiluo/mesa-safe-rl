@@ -117,7 +117,7 @@ experiment_map = {
     },
     "image_shelf": {
         "algs": {
-            "sac_norecovery": ["2020-06-17_07-48-06_SAC_shelf_env_Gaussian_", "2020-06-17_07-50-05_SAC_shelf_env_Gaussian_"],
+            "sac_norecovery": ["2020-06-17_07-48-06_SAC_shelf_env_Gaussian_", "2020-06-17_07-50-05_SAC_shelf_env_Gaussian_", "2020-06-27_01-28-54_SAC_shelf_env_Gaussian_"],
             # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-41-30_SAC_shelf_env_Gaussian_"], # eps_safe = 0.25
             # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-02-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.2
             # "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
