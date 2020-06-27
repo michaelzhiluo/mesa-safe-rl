@@ -125,7 +125,7 @@ experiment_map = {
             # "recovery": ["2020-06-20_05-54-22_SAC_shelf_env_Gaussian_", "2020-06-19_17-56-06_SAC_shelf_env_Gaussian_"], # eps_safe = 0.15
             # "recovery": ["2020-06-19_03-00-51_SAC_shelf_env_Gaussian_", "2020-06-19_17-39-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.1
             "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_"],
-            "sac_penalty3": ["2020-06-22_22-24-29_SAC_shelf_env_Gaussian_"]
+            "sac_penalty3": ["2020-06-22_22-24-29_SAC_shelf_env_Gaussian_", "2020-06-25_23-35-20_SAC_shelf_env_Gaussian_"]
         },
         "outfile": "image_shelf.png"
     },
