@@ -117,13 +117,15 @@ experiment_map = {
     },
     "image_shelf": {
         "algs": {
-            # "sac_norecovery": ["2020-06-17_07-48-06_SAC_shelf_env_Gaussian_", "2020-06-17_07-50-05_SAC_shelf_env_Gaussian_", "2020-06-27_01-28-54_SAC_shelf_env_Gaussian_"], # no online update
-            # "sac_norecovery": ["2020-06-27_00-57-48_SAC_shelf_env_Gaussian_", "2020-06-27_01-46-20_SAC_shelf_env_Gaussian_", "2020-06-27_01-46-39_SAC_shelf_env_Gaussian_"], # update every 10 eps
-            "sac_norecovery": ["2020-06-27_08-09-30_SAC_shelf_env_Gaussian_", "2020-06-27_08-10-19_SAC_shelf_env_Gaussian_"], # update every 50 eps
+            "sac_norecovery": ["2020-06-17_07-48-06_SAC_shelf_env_Gaussian_", "2020-06-17_07-50-05_SAC_shelf_env_Gaussian_", "2020-06-27_01-28-54_SAC_shelf_env_Gaussian_"],
             # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-41-30_SAC_shelf_env_Gaussian_"], # eps_safe = 0.25
             # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-02-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.2
-            # "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
-            "recovery": ["2020-06-21_23-02-02_SAC_shelf_env_Gaussian_", "2020-06-21_23-05-33_SAC_shelf_env_Gaussian_", "2020-06-21_23-06-37_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3 low data
+            "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
+
+            # "recovery" : ["2020-06-28_03-37-12_SAC_shelf_env_Gaussian_", "2020-06-28_03-36-47_SAC_shelf_env_Gaussian_", "2020-06-28_03-37-37_SAC_shelf_env_Gaussian_"],
+            # "recovery": ["2020-06-28_02-24-00_SAC_shelf_env_Gaussian_", "2020-06-28_02-24-18_SAC_shelf_env_Gaussian_", "2020-06-28_02-24-26_SAC_shelf_env_Gaussian_"],
+
+            # "recovery": ["2020-06-21_23-02-02_SAC_shelf_env_Gaussian_", "2020-06-21_23-05-33_SAC_shelf_env_Gaussian_", "2020-06-21_23-06-37_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3 low data
             # "recovery": ["2020-06-20_05-54-22_SAC_shelf_env_Gaussian_", "2020-06-19_17-56-06_SAC_shelf_env_Gaussian_"], # eps_safe = 0.15
             # "recovery": ["2020-06-19_03-00-51_SAC_shelf_env_Gaussian_", "2020-06-19_17-39-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.1
             "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_", "2020-06-27_01-29-00_SAC_shelf_env_Gaussian_"],
