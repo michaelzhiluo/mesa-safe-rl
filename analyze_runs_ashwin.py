@@ -121,7 +121,10 @@ experiment_map = {
             # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-41-30_SAC_shelf_env_Gaussian_"], # eps_safe = 0.25
             # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-02-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.2
             # "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
-            'recovery': ["2020-06-28_21-57-12_SAC_shelf_env_Gaussian_", "2020-06-28_21-57-32_SAC_shelf_env_Gaussian_", "2020-06-28_21-57-40_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
+            # 'recovery': ["2020-06-28_21-58-25_SAC_shelf_env_Gaussian_", "2020-06-28_21-59-18_SAC_shelf_env_Gaussian_", "2020-06-28_21-59-31_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
+            'recovery': ["2020-06-29_08-00-13_SAC_shelf_env_Gaussian_", "2020-06-29_08-00-23_SAC_shelf_env_Gaussian_", "2020-06-29_08-01-04_SAC_shelf_env_Gaussian_"], # update model only...
+                                                                                                                                                                       # batch balancing...
+                                                                                                                                                                       # Vsafe update with new trained model (replay one)
 
             # "recovery" : ["2020-06-28_03-37-12_SAC_shelf_env_Gaussian_", "2020-06-28_03-36-47_SAC_shelf_env_Gaussian_", "2020-06-28_03-37-37_SAC_shelf_env_Gaussian_"],
             # "recovery": ["2020-06-28_02-24-00_SAC_shelf_env_Gaussian_", "2020-06-28_02-24-18_SAC_shelf_env_Gaussian_", "2020-06-28_02-24-26_SAC_shelf_env_Gaussian_"],
@@ -235,7 +238,7 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=4000): # 3000 for normal shelf..., 4000 for image shelf
+def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf..., 4000 for image shelf
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
