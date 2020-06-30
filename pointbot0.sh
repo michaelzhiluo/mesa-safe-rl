@@ -1,9 +1,9 @@
 #!/bin/bash
-# for i in {1..3}
-# do
-# 	echo "Recovery Run $i"
-# 	python main.py --env-name simplepointbot0 --cuda --use_recovery --gamma_safe 0.8 --eps_safe 0.2 --use_qvalue --logdir pointbot0 --logdir_suffix recovery --num_eps 100 --seed $i
-# done
+for i in {1..3}
+do
+	echo "Recovery Run $i"
+	python main.py --env-name simplepointbot0 --cuda --use_recovery --gamma_safe 0.8 --eps_safe 0.1 --use_value --logdir pointbot0 --logdir_suffix recovery --num_eps 300 --seed $i
+done
 
 # for i in {1..3}
 # do
@@ -43,14 +43,14 @@
 for i in {1..3}
 do
 	echo "Reward Penalty 1000 Run $i"
-	python main.py --env-name simplepointbot0 --cuda --constraint_reward_penalty 1000 --logdir pointbot0 --logdir_suffix reward_1000 --num_eps 100 --seed $i
+	python main.py --env-name simplepointbot0 --cuda --constraint_reward_penalty 1000 --logdir pointbot0 --logdir_suffix reward_1000 --num_eps 300 --seed $i
 done
 
 
 for i in {1..3}
 do
 	echo "Reward Penalty 3000 Run $i"
-	python main.py --env-name simplepointbot0 --cuda --constraint_reward_penalty 3000 --logdir pointbot0 --logdir_suffix reward_3000 --num_eps 100 --seed $i
+	python main.py --env-name simplepointbot0 --cuda --constraint_reward_penalty 3000 --logdir pointbot0 --logdir_suffix reward_3000 --num_eps 300 --seed $i
 done
 
 

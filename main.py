@@ -88,18 +88,15 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
     def recovery_thresh(state, action, agent, recovery_policy, args):
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)) # TODO: make sure this is exactly equal to reachability_hor=1
         if not args.use_recovery:
-            print("FORWARD: ", critic_val)
             return False
         if args.reachability_test: # reachability test combined with safety check
             return not recovery_policy.reachability_test(state, action, args.eps_safe)
         if args.lookahead_test:
             return not recovery_policy.lookahead_test(state, action, args.eps_safe)
         if critic_val > args.eps_safe and not args.pred_time:
-            print("RECOVERY: ", critic_vals)
             return True
         elif critic_val < args.t_safe and args.pred_time:
             return True
-        print("FORWARD: ", critic_val)
         return False
 
 
