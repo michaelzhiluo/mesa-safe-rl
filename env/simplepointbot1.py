@@ -149,26 +149,72 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
     for i in range(num_transitions//10//4):
         rollouts.append([])
         state = np.array([np.random.uniform(-40, -10), np.random.uniform(-15, 15)])
+        while env.obstacle(state):
+            state = np.array([np.random.uniform(-40, -10), np.random.uniform(-15, 15)])
         for j in range(10):
             action = np.clip(np.random.randn(2), -1, 1)
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, done))
-            rollouts[-1].append((state, action, constraint, next_state, done))
+            transitions.append((state, action, constraint, next_state, not done))
+            rollouts[-1].append((state, action, constraint, next_state, not done))
+            state = next_state
             if constraint:
                 break
 
-    for i in range(num_transitions//10 * 3//4):
+    for i in range(num_transitions//10 * 1//4):
         rollouts.append([])
-        state = np.array([np.random.uniform(-33, -17), np.random.uniform(-15, 15)])
+        state = np.array([np.random.uniform(-35, -30), np.random.uniform(-12, 12)])
         for j in range(10):
-            action = np.clip(np.random.randn(2), -1, 1)
+            action = np.clip(np.array([np.random.uniform(0.5, 1, 1), np.random.randn(1)]), -1, 1).ravel()
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, done))
-            rollouts[-1].append((state, action, constraint, next_state, done))
+            transitions.append((state, action, constraint, next_state, not done))
+            rollouts[-1].append((state, action, constraint, next_state, not done))
+            state = next_state
+            if constraint:
+                break
+
+    for i in range(num_transitions//10 * 1//4):
+        rollouts.append([])
+        state = np.array([np.random.uniform(-20, -15), np.random.uniform(-12, 12)])
+        for j in range(10):
+            action = np.clip(np.array([np.random.uniform(-1, -0.5, 1), np.random.randn(1)]), -1, 1).ravel()
+            next_state = env._next_state(state, action, override=True)
+            constraint = env.obstacle(next_state)
+            reward = env.step_cost(state, action)
+            transitions.append((state, action, constraint, next_state, not done))
+            rollouts[-1].append((state, action, constraint, next_state, not done))
+            state = next_state
+            if constraint:
+                break
+
+    for i in range(num_transitions//10 * 1//4):
+        rollouts.append([])
+        state = np.array([np.random.uniform(-30, -20), np.random.uniform(10, 15)])
+        for j in range(10):
+            action = np.clip(np.array([np.random.randn(1), np.random.uniform(-1, -0.5, 1)]), -1, 1).ravel()
+            next_state = env._next_state(state, action, override=True)
+            constraint = env.obstacle(next_state)
+            reward = env.step_cost(state, action)
+            transitions.append((state, action, constraint, next_state, not done))
+            rollouts[-1].append((state, action, constraint, next_state, not done))
+            state = next_state
+            if constraint:
+                break
+
+    for i in range(num_transitions//10 * 1//4):
+        rollouts.append([])
+        state = np.array([np.random.uniform(-30, -20), np.random.uniform(-15, -10)])
+        for j in range(10):
+            action = np.clip(np.array([np.random.randn(1), np.random.uniform(0.5, 1, 1)]), -1, 1).ravel()
+            next_state = env._next_state(state, action, override=True)
+            constraint = env.obstacle(next_state)
+            reward = env.step_cost(state, action)
+            transitions.append((state, action, constraint, next_state, not done))
+            rollouts[-1].append((state, action, constraint, next_state, not done))
+            state = next_state
             if constraint:
                 break
 

@@ -304,7 +304,6 @@ if args.use_recovery and not args.disable_learned_recovery:
     demo_data_states = np.array([d[0] for d in constraint_demo_data])
     demo_data_actions = np.array([d[1] for d in constraint_demo_data])
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
-    train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
     num_constraint_transitions = 0
     num_viols = 0
     for transition in constraint_demo_data:
@@ -319,7 +318,14 @@ if args.use_recovery and not args.disable_learned_recovery:
         plot = True
     else:
         plot = False
-    agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
+    if args.use_qvalue:
+        for i in range(5000):
+            agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
+                    batch_size=min(args.batch_size, len(constraint_demo_data)))
+    else:
+        agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
+    train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
+
 
 # If use task demos, add them to memory and train agent
 if task_demos:
@@ -370,6 +376,9 @@ for i_episode in itertools.count(1):
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
+                if args.use_qvalue:
+                    agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
+                            batch_size=args.batch_size)
                 writer.add_scalar('loss/critic_1', critic_1_loss, updates)
                 writer.add_scalar('loss/critic_2', critic_2_loss, updates)
                 writer.add_scalar('loss/policy', policy_loss, updates)
@@ -432,7 +441,8 @@ for i_episode in itertools.count(1):
                 plot = True
             else:
                 plot = False
-            agent.train_safety_critic(i_episode, recovery_memory, agent.policy_sample, training_iterations=50, batch_size=100, plot=plot)
+            if args.use_value:
+                agent.train_safety_critic(i_episode, recovery_memory, agent.policy_sample, training_iterations=50, batch_size=100, plot=plot)
 
     writer.add_scalar('reward/train', episode_reward, i_episode)
     print("Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
