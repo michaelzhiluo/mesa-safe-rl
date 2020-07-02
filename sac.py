@@ -63,6 +63,8 @@ class QSafeWrapper:
             self.plot(policy, self.updates, [-1, 0], "left")
             self.plot(policy, self.updates, [0, 1], "up")
             self.plot(policy, self.updates, [0, -1], "down")
+            # if self.updates % 2000 == 0:
+            #     plt.show()
 
 
     def get_value(self, states, actions):

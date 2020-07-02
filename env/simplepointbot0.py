@@ -166,8 +166,8 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, not done))
-            rollouts[-1].append((state, action, constraint, next_state, not done))
+            transitions.append((state, action, constraint, next_state, not constraint))
+            rollouts[-1].append((state, action, constraint, next_state, not constraint))
             state = next_state
             if constraint:
                 break

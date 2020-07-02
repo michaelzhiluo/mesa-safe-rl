@@ -319,7 +319,7 @@ if args.use_recovery and not args.disable_learned_recovery:
     else:
         plot = False
     if args.use_qvalue:
-        for i in range(5000):
+        for i in range(10000):
             agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
