@@ -39,7 +39,8 @@ def print_episode_info(rollout):
     for inf in rollout:
         num_violations += int(inf['constraint'])
     print("final reward: %f"%rollout[-1]["reward"])
-    print(rollout[-1]["state"])
+    if len(rollout[-1]["state"].shape) < 3:
+        print(rollout[-1]["state"])
     print("num violations: %d"%num_violations)
 
 
@@ -241,6 +242,7 @@ parser.add_argument('--cuda', action="store_true",
 parser.add_argument('--cnn', action="store_true", 
                     help='visual observations (default: False)')
 parser.add_argument('--critic_pretraining_steps', type=int, default=3000)
+parser.add_argument('--critic_safe_pretraining_steps', type=int, default=10000)
 
 parser.add_argument('--constraint_reward_penalty', type=float, default=-1)
 parser.add_argument('--safety_critic_penalty', type=float, default=-1)
@@ -320,7 +322,7 @@ if args.use_recovery and not args.disable_learned_recovery:
     else:
         plot = False
     if args.use_qvalue:
-        for i in range(10000):
+        for i in range(args.critic_safe_pretraining_steps):
             agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
