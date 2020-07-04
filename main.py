@@ -79,7 +79,7 @@ def agent_setup(env, logdir, args):
     return agent
 
 
-def get_action(state, env, agent, recovery_policy, args, train=True, im_state=None):
+def get_action(state, env, agent, recovery_policy, args, train=True):
     def recovery_thresh(state, action, agent, recovery_policy, args):
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)) # TODO: make sure this is exactly equal to reachability_hor=1
         if not args.use_recovery:
@@ -96,7 +96,7 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
 
 
 
-    policy_state = im_state if im_state is not None else state
+    policy_state = state
     if args.start_steps > total_numsteps and train:
         action = env.action_space.sample()  # Sample random action
     elif train:
@@ -383,7 +383,7 @@ for i_episode in itertools.count(1):
                 writer.add_scalar('entropy_temprature/alpha', alpha, updates)
                 updates += 1
 
-        action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args, im_state=im_state)
+        action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args)
         next_state, reward, done, info = env.step(real_action) # Step
         info['recovery'] = recovery_used
 
@@ -457,7 +457,7 @@ for i_episode in itertools.count(1):
             episode_steps = 0
             done = False
             while not done:
-                action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args, train=False, im_state=im_state)
+                action, real_action, recovery_used = get_action(state, env, agent, recovery_policy, args, train=False)
                 next_state, reward, done, info = env.step(real_action) # Step
                 info['recovery'] = recovery_used
                 done = done or episode_steps == env._max_episode_steps
