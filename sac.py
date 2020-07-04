@@ -15,12 +15,19 @@ from constraint import ValueFunction, QFunction
 
 class QSafeWrapper:
 
-    def __init__(self, obs_dim, ac_dim, hidden_size, logdir, action_space, args):
+    def __init__(self, obs_space, ac_dim, hidden_size, logdir, action_space, args):
         self.env_name = args.env_name
         self.logdir = logdir
         self.device = torch.device("cuda" if args.cuda else "cpu")
-        self.safety_critic = QNetworkConstraint(obs_dim, ac_dim, hidden_size).to(device=self.device)
-        self.safety_critic_target = QNetworkConstraint(obs_dim, ac_dim, args.hidden_size).to(device=self.device)
+
+        self.images = args.cnn
+        if not self.images:
+            self.safety_critic = QNetworkConstraint(obs_space.shape[0], ac_dim, hidden_size).to(device=self.device)
+            self.safety_critic_target = QNetworkConstraint(obs_space.shape[0], ac_dim, args.hidden_size).to(device=self.device)
+        else:
+            self.safety_critic = QNetworkConstraintCNN(obs_space, ac_dim,.hidden_size, args.env_name).to(self.device)
+            self.safety_critic_target = QNetworkConstraintCNN(obs_space, ac_dim, hidden_size, args.env_name).to(self.device)
+
         self.lr = 1e-3 if self.env_name == "maze" else args.lr
         self.safety_critic_optim = Adam(self.safety_critic.parameters(), lr=args.lr)
         hard_update(self.safety_critic_target, self.safety_critic)
@@ -30,7 +37,11 @@ class QSafeWrapper:
         self.updates = 0
         self.target_update_interval = args.target_update_interval
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
-        self.policy = DeterministicPolicy(obs_dim, ac_dim, hidden_size, action_space).to(self.device)
+        if not self.images:
+            self.policy = DeterministicPolicy(obs_space.shape[0], ac_dim, hidden_size, action_space).to(self.device)
+        else:
+            self.policy = DeterministicPolicyCNN(obs_space, ac_dim, hidden_size, args.env_name, action_space).to(self.device)
+            
         self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
         self.pos_fraction = args.pos_fraction if args.pos_fraction >= 0 else None
         self.ddpg_recovery = args.ddpg_recovery
@@ -76,7 +87,7 @@ class QSafeWrapper:
             soft_update(self.safety_critic_target, self.safety_critic, self.tau)
         self.updates += 1
 
-        if plot and self.updates % 1000 == 0:
+        if plot and self.updates % 1000 == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
             self.plot(policy, self.updates, [1, 0], "right")
             self.plot(policy, self.updates, [-1, 0], "left")
             self.plot(policy, self.updates, [0, 1], "up")
@@ -220,7 +231,7 @@ class SAC(object):
         if args.use_value:
             self.safety_critic = self.V_safe
         else:
-            self.Q_safe = QSafeWrapper(observation_space.shape[0], action_space.shape[0], args.hidden_size, logdir, action_space, args)
+            self.Q_safe = QSafeWrapper(observation_space, action_space.shape[0], args.hidden_size, logdir, action_space, args)
             self.safety_critic = self.Q_safe
 
     def select_action(self, state, eval=False):
