@@ -15,7 +15,7 @@ from constraint import ValueFunction, QFunction
 
 class QSafeWrapper:
 
-    def __init__(self, obs_dim, ac_dim, hidden_size, logdir, args):
+    def __init__(self, obs_dim, ac_dim, hidden_size, logdir, action_space, args):
         self.env_name = args.env_name
         self.logdir = logdir
         self.device = torch.device("cuda" if args.cuda else "cpu")
@@ -30,10 +30,15 @@ class QSafeWrapper:
         self.updates = 0
         self.target_update_interval = args.target_update_interval
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
+        self.policy = DeterministicPolicy(obs_dim, ac_dim, hidden_size, action_space).to(self.device)
+        self.policy_optim = Adam(self.policy.parameters(), lr=args.lr)
+        self.pos_fraction = args.pos_fraction if args.pos_fraction >= 0 else None
+        self.ddpg_recovery = args.ddpg_recovery
+
 
     def update_parameters(self, ep=None, memory=None, policy=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
-        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(batch_size=batch_size)
+        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(batch_size=batch_size, pos_fraction=self.pos_fraction)
         state_batch = torch.FloatTensor(state_batch).to(self.device)
         next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
         action_batch = torch.FloatTensor(action_batch).to(self.device)
@@ -54,6 +59,19 @@ class QSafeWrapper:
         (qf1_loss + qf2_loss).backward()
         self.safety_critic_optim.step()
 
+
+        if self.ddpg_recovery:
+            pi, log_pi, _ = self.policy.sample(state_batch)
+
+            qf1_pi, qf2_pi = self.safety_critic(state_batch, pi)
+            max_qf_pi = torch.max(qf1_pi, qf2_pi)
+
+            policy_loss = max_qf_pi.mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
+
+            self.policy_optim.zero_grad()
+            policy_loss.backward()
+            self.policy_optim.step()
+
         if self.updates % self.target_update_interval == 0:
             soft_update(self.safety_critic_target, self.safety_critic, self.tau)
         self.updates += 1
@@ -63,7 +81,7 @@ class QSafeWrapper:
             self.plot(policy, self.updates, [-1, 0], "left")
             self.plot(policy, self.updates, [0, 1], "up")
             self.plot(policy, self.updates, [0, -1], "down")
-            # if self.updates % 2000 == 0:
+            # if self.updates % 2000 == 0 and self.updates > 5000:
             #     plt.show()
 
 
@@ -72,7 +90,13 @@ class QSafeWrapper:
             q1, q2 = self.safety_critic(states, actions)
             return torch.max(q1, q2)
 
-     
+    def select_action(self, state, eval=False):
+        state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
+        if eval is False:
+            action, _, _ = self.policy.sample(state)
+        else:
+            _, _, action = self.policy.sample(state)
+        return action.detach().cpu().numpy()[0]
 
     def plot(self, pi, ep, action=None, suffix="", critic=None):
         if self.env_name == 'maze':
@@ -196,7 +220,7 @@ class SAC(object):
         if args.use_value:
             self.safety_critic = self.V_safe
         else:
-            self.Q_safe = QSafeWrapper(observation_space.shape[0], action_space.shape[0], args.hidden_size, logdir, args)
+            self.Q_safe = QSafeWrapper(observation_space.shape[0], action_space.shape[0], args.hidden_size, logdir, action_space, args)
             self.safety_critic = self.Q_safe
 
     def select_action(self, state, eval=False):

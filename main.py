@@ -113,7 +113,10 @@ def get_action(state, env, agent, recovery_policy, args, train=True, im_state=No
     if recovery_thresh(state, action, agent, recovery_policy, args):
         recovery = True
         if not args.disable_learned_recovery:
-            real_action = recovery_policy.act(state, 0)
+            if args.ddpg_recovery:
+                real_action = agent.safety_critic.select_action(state)
+            else:
+                real_action = recovery_policy.act(state, 0)
         else:
             real_action = env.safe_action(state)
     else:
@@ -199,6 +202,8 @@ parser.add_argument('--eval', type=bool, default=True,
                     help='Evaluates a policy a policy every 10 episode (default: True)')
 parser.add_argument('--gamma', type=float, default=0.99, metavar='G',
                     help='discount factor for reward (default: 0.99)')
+parser.add_argument('--pos_fraction', type=float, default=-1, metavar='G',
+                    help='fraction of positive examples for critic training')
 parser.add_argument('--gamma_safe', type=float, default=0.5, metavar='G',
                     help='discount factor for constraints (default: 0.9)')
 parser.add_argument('--eps_safe', type=float, default=0.1, metavar='G',
@@ -248,6 +253,7 @@ parser.add_argument('--safety_critic_penalty', type=float, default=-1)
 parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
 parser.add_argument('--use_recovery', action="store_true")
+parser.add_argument('--ddpg_recovery', action="store_true")
 parser.add_argument('--reachability_test', action="store_true")
 parser.add_argument('--lookahead_test', action="store_true")
 parser.add_argument('--SAC_recovery', action="store_true")
