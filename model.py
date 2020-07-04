@@ -399,7 +399,7 @@ class DeterministicPolicyCNN(nn.Module):
         else:
             assert(False)
 
-        self.linear1 = nn.Linear(num_inputs, hidden_dim)
+        self.linear1 = nn.Linear(self.linear_dim, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
 
         self.mean = nn.Linear(hidden_dim, num_actions)
@@ -444,7 +444,7 @@ class DeterministicPolicyCNN(nn.Module):
         self.action_scale = self.action_scale.to(device)
         self.action_bias = self.action_bias.to(device)
         self.noise = self.noise.to(device)
-        return super(DeterministicPolicy, self).to(device)
+        return super(DeterministicPolicyCNN, self).to(device)
 
 
 class DeterministicPolicy(nn.Module):

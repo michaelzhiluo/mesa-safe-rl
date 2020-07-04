@@ -58,7 +58,7 @@ def recovery_config_setup(args):
     return cfg
 
 def experiment_setup(logdir, args):
-    if args.use_recovery and not args.disable_learned_recovery:
+    if args.use_recovery and not args.disable_learned_recovery and not args.ddpg_recovery:
         cfg = recovery_config_setup(args)
         recovery_policy = MPC(cfg.ctrl_cfg)
         env = cfg.ctrl_cfg.env
@@ -67,7 +67,7 @@ def experiment_setup(logdir, args):
         env = gym.make(ENV_ID[args.env_name])
     set_seed(args.seed, env)
     agent = agent_setup(env, logdir, args)
-    if args.use_recovery and not args.disable_learned_recovery:
+    if args.use_recovery and not args.disable_learned_recovery and not args.ddpg_recovery:
         if args.use_value:
             recovery_policy.update_value_func(agent.V_safe)
         elif args.use_qvalue: 
@@ -75,12 +75,7 @@ def experiment_setup(logdir, args):
     return agent, recovery_policy, env
 
 def agent_setup(env, logdir, args):
-    if args.cnn and 'maze' in args.env_name:
-        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(64, 64, 3))
-    elif args.cnn and 'shelf' in args.env_name:
-        agent = SAC(env.observation_space, env.action_space, args, logdir, im_shape=(48, 64, 3))
-    else:
-        agent = SAC(env.observation_space, env.action_space, args, logdir)
+    agent = SAC(env.observation_space, env.action_space, args, logdir)
     return agent
 
 
@@ -330,7 +325,8 @@ if args.use_recovery and not args.disable_learned_recovery:
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
         agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
-    train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
+    if not args.ddpg_recovery:
+        train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
 
 
 # If use task demos, add them to memory and train agent
@@ -360,13 +356,8 @@ for i_episode in itertools.count(1):
     state = env.reset()
     if args.env_name == 'reacher':
         recorder = VideoRecorder(env, osp.join(logdir, 'video_{}.mp4'.format(i_episode)))
-    # TODO; cleanup for now this is hard-coded for maze
-    if args.cnn and 'maze' in args.env_name:
-        im_state = process_obs(env._get_obs(images=True), args.env_name)
-    elif args.cnn and 'shelf' in args.env_name:
-        im_state = process_obs(env.render(), args.env_name)
-    else:
-        im_state = None
+    if args.cnn:
+        state = process_obs(state, args.env_name)
 
     train_rollouts.append([])
     ep_states = [state]
@@ -396,12 +387,8 @@ for i_episode in itertools.count(1):
         next_state, reward, done, info = env.step(real_action) # Step
         info['recovery'] = recovery_used
 
-
-        # TODO; cleanup for now this is hard-coded for maze
-        if args.cnn and 'maze' in args.env_name:
-            im_next_state = process_obs(env._get_obs(images=True), args.env_name)
-        elif args.cnn and 'shelf' in args.env_name:
-            im_next_state = process_obs(env.render(), args.env_name)
+        if args.cnn:
+            next_state = process_obs(next_state, args.env_name)
 
         train_rollouts[-1].append(info)
         episode_steps += 1
@@ -417,18 +404,11 @@ for i_episode in itertools.count(1):
 
         mask = float(not done)
         done = done or episode_steps == env._max_episode_steps
-        # TODO; cleanup for now this is hard-coded for maze
-        if args.cnn and ('maze' in args.env_name or 'shelf' in args.env_name):
-            memory.push(im_state, action, reward, im_next_state, mask)
-        else:
-            memory.push(state, action, reward, next_state, mask) # Append transition to memory
+        memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
         if args.use_recovery:
             recovery_memory.push(state, action, info['constraint'], next_state, mask)
         state = next_state
-        if args.cnn and ('maze' in args.env_name or 'shelf' in args.env_name):
-            im_state = im_next_state
-
         ep_states.append(state)
         ep_actions.append(real_action)
         ep_constraints.append([info['constraint']])
@@ -439,7 +419,7 @@ for i_episode in itertools.count(1):
 
     if args.use_recovery and not args.disable_learned_recovery:
         all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
-        if i_episode % args.recovery_policy_update_freq == 0:
+        if i_episode % args.recovery_policy_update_freq == 0 and not args.ddpg_recovery:
             train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
             all_ep_data = []
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
@@ -469,10 +449,9 @@ for i_episode in itertools.count(1):
                 im_list = [env._get_obs(images=True)]
             elif 'shelf' in args.env_name:
                 im_list = [env.render().squeeze()]
-            if args.cnn and 'maze' in args.env_name:
-                im_state = process_obs(env._get_obs(images=True), args.env_name)
-            elif args.cnn and 'shelf' in args.env_name:
-                im_state = process_obs(env.render(), args.env_name)
+
+            if args.cnn:
+                state = process_obs(state, args.env_name)
 
             episode_reward = 0
             episode_steps = 0
@@ -488,18 +467,14 @@ for i_episode in itertools.count(1):
                     im_list.append(env._get_obs(images=True))
                 elif 'shelf' in args.env_name:
                     im_list.append(env.render().squeeze())
-                if args.cnn and 'maze' in args.env_name:
-                    im_next_state = process_obs(env._get_obs(images=True), args.env_name)
-                elif args.cnn and 'shelf' in args.env_name:
-                    im_next_state = process_obs(env.render(), args.env_name)
+
+                if args.cnn:
+                    next_state = process_obs(next_state, args.env_name)
 
                 test_rollouts[-1].append(info)
                 episode_reward += reward
                 episode_steps += 1
                 state = next_state
-
-                if args.cnn and ('maze' in args.env_name or 'shelf' in args.env_name):
-                    im_state = im_next_state
 
             print_episode_info(test_rollouts[-1])
             avg_reward += episode_reward

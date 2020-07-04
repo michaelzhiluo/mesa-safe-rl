@@ -8,7 +8,7 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from utils import soft_update, hard_update
-from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN, QNetworkConstraint
+from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN, QNetworkConstraint, QNetworkConstraintCNN, DeterministicPolicyCNN
 from dotmap import DotMap
 from constraint import ValueFunction, QFunction
 
@@ -25,7 +25,7 @@ class QSafeWrapper:
             self.safety_critic = QNetworkConstraint(obs_space.shape[0], ac_dim, hidden_size).to(device=self.device)
             self.safety_critic_target = QNetworkConstraint(obs_space.shape[0], ac_dim, args.hidden_size).to(device=self.device)
         else:
-            self.safety_critic = QNetworkConstraintCNN(obs_space, ac_dim,.hidden_size, args.env_name).to(self.device)
+            self.safety_critic = QNetworkConstraintCNN(obs_space, ac_dim, hidden_size, args.env_name).to(self.device)
             self.safety_critic_target = QNetworkConstraintCNN(obs_space, ac_dim, hidden_size, args.env_name).to(self.device)
 
         self.lr = 1e-3 if self.env_name == "maze" else args.lr
@@ -167,16 +167,17 @@ class SAC(object):
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
-        self.V_safe = ValueFunction(DotMap(gamma_safe=self.gamma_safe,
-                device=self.device,
-                state_dim=observation_space.shape[0],
-                hidden_size=200,
-                tau_safe = args.tau_safe,
-                use_target = args.use_target_safe,
-                logdir=logdir,
-                env_name=args.env_name,
-                opt=args.opt_value,
-                pred_time=args.pred_time))
+        if not args.cnn:
+            self.V_safe = ValueFunction(DotMap(gamma_safe=self.gamma_safe,
+                    device=self.device,
+                    state_dim=observation_space.shape[0],
+                    hidden_size=200,
+                    tau_safe = args.tau_safe,
+                    use_target = args.use_target_safe,
+                    logdir=logdir,
+                    env_name=args.env_name,
+                    opt=args.opt_value,
+                    pred_time=args.pred_time))
         # self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, 
         #                                device=self.device, 
         #                                state_dim=observation_space.shape[0], 
