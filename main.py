@@ -150,7 +150,20 @@ def get_constraint_demos(env, args):
             constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
-            constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
+            if not args.cnn:
+                constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
+            else:
+                constraint_demo_data = []
+                data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
+                obs_seqs = data['obs'][:args.num_constraint_transitions//25]
+                ac_seqs = data['ac'][:args.num_constraint_transitions//25]
+                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
+                print("ACS SHAPE", ac_seqs.shape)
+                print("OBS SHAPE", obs_seqs.shape)
+                print("CONSTRAINT SHAPE", constraint_seqs.shape)
+                for i in range(obs_seqs.shape[0]):
+                    for j in range(obs_seqs.shape[1]-1):
+                        constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
         else:
             constraint_demo_data = env.transition_function(args.num_constraint_transitions)
     else:
@@ -162,9 +175,20 @@ def get_constraint_demos(env, args):
             folder_name = args.env_name.split('_env')[0]
             if args.cnn:
                 task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos_images.pkl"), "rb"))
+                constraint_demo_data = []
+                data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
+                obs_seqs = data['obs'][:args.num_constraint_transitions//25]
+                ac_seqs = data['ac'][:args.num_constraint_transitions//25]
+                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
+                print("ACS SHAPE", ac_seqs.shape)
+                print("OBS SHAPE", obs_seqs.shape)
+                print("CONSTRAINT SHAPE", constraint_seqs.shape)
+                for i in range(obs_seqs.shape[0]):
+                    for j in range(obs_seqs.shape[1]-1):
+                        constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
             else:
                 task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos.pkl"), "rb"))
-            constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
+                constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
             # constraint_demo_data = None # TODO: temp fix later
         else:
             constraint_demo_data, task_demo_data = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos)
@@ -323,6 +347,8 @@ if args.use_recovery and not args.disable_learned_recovery:
         plot = False
     if args.use_qvalue:
         for i in range(args.critic_safe_pretraining_steps):
+            if i % 100 == 0:
+                print("CRITIC SAFE UPDATE STEP: ", i)
             agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
