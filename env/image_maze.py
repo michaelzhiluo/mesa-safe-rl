@@ -52,8 +52,8 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
 
         constraint = info['constraint']
 
-        rollouts[-1].append((state, action, constraint, next_state, done))
-        transitions.append((state, action, constraint, next_state, done))
+        rollouts[-1].append((state, action, constraint, next_state, not done))
+        transitions.append((state, action, constraint, next_state, not done))
 
         total += 1
         num_constraints += int(constraint)
@@ -82,8 +82,8 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             
         constraint = info['constraint']
 
-        rollouts[-1].append((state, action, constraint, next_state, done))
-        transitions.append((state, action, constraint, next_state, done))
+        rollouts[-1].append((state, action, constraint, next_state, not done))
+        transitions.append((state, action, constraint, next_state, not done))
 
         total += 1
         num_constraints += int(constraint)
