@@ -48,14 +48,25 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             im_next_state = process_obs(im_next_state)
         constraint = info['constraint']
 
-        rollouts[-1].append((state, action, constraint, next_state, done))
-        transitions.append((state, action, constraint, next_state, done))
+        rollouts[-1].append((state, action, constraint, next_state, not done))
+        transitions.append((state, action, constraint, next_state, not done))
 
         total += 1
         num_constraints += int(constraint)
         state = next_state
         if images:
             im_state = im_next_state
+
+        # if done:
+        #     sample = np.random.uniform(0, 1, 1)[0]
+        #     if sample < 0.2: # maybe make 0.2 to 0.3
+        #         mode = 'e'
+        #     elif sample < 0.4:
+        #         mode = 'm'
+        #     else:
+        #         mode = 'h'
+        #     state = env.reset(mode, check_constraint=False)
+        #     rollouts.append([])
 
     for i in range(1*num_transitions//2):
         if i % 20 == 0:
@@ -79,14 +90,26 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             im_next_state = process_obs(im_next_state)
         constraint = info['constraint']
 
-        rollouts[-1].append((state, action, constraint, next_state, done))
-        transitions.append((state, action, constraint, next_state, done))
+        rollouts[-1].append((state, action, constraint, next_state, not done))
+        transitions.append((state, action, constraint, next_state, not done))
 
         total += 1
         num_constraints += int(constraint)
         state = next_state
         if images:
             im_state = im_next_state
+
+        # if done:
+        #     sample = np.random.uniform(0, 1, 1)[0]
+        #     if sample < 0.2: # maybe make 0.2 to 0.3
+        #         mode = 'e'
+        #     elif sample < 0.4:
+        #         mode = 'm'
+        #     else:
+        #         mode = 'h'
+        #     state = env.reset(mode, check_constraint=False)
+        #     rollouts.append([])
+
 
     print("data dist", total, num_constraints)
     if save_rollouts:
