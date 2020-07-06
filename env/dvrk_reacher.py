@@ -60,13 +60,14 @@ class DVRK_Reacher(Env, utils.EzPickle):
         self.dvrk = dvrkMotionBridgeP()
         self.zivid = ZividCapture(initialize=True)
 
+        self.pointbot_dynamics = False
+
     def step(self, a):
         a = process_action(self.state, a)
-        old_state = self._state
+        old_state = np.copy(self.state)
         next_state = self._execute_action(a)
         cur_cost = self.step_cost(self.state, a)
         self.cost.append(cur_cost)
-        self.state = next_state
         self.time += 1
         self.hist.append(self.state)
         self.done = cur_cost > -0.01
@@ -80,15 +81,16 @@ class DVRK_Reacher(Env, utils.EzPickle):
                 "action": a}
 
     def reset(self):
-        # self.dvrk.set_joint(joint1=joint, jaw1=jaw)
-        pos = [0.07, 0.07, -0.13]   # position in (m)
-        rot = [0.0, 0.0, 0.0]   # Euler angles
-        jaw = [0*np.pi/180.]    # jaw angle in (rad)
-        quat = U.euler_to_quaternion(rot, unit='deg')   # convert Euler angles to quaternion
-        self.dvrk.set_pose(pos1=pos, rot1=quat, jaw1=jaw)
-        time.sleep(0.5)
-
-        self.state = self._state
+        if self.pointbot_dynamics:
+            self.state = np.array(START_STATE)
+        else:
+            pos = START_STATE   # position in (m)
+            rot = [0.0, 0.0, 0.0]   # Euler angles
+            jaw = [0*np.pi/180.]    # jaw angle in (rad)
+            quat = U.euler_to_quaternion(rot, unit='deg')   # convert Euler angles to quaternion
+            self.dvrk.set_pose(pos1=pos, rot1=quat, jaw1=jaw)
+            time.sleep(0.5)
+            self.state = self._state
         self.time = 0
         self.cost = []
         self.done = False
@@ -96,11 +98,15 @@ class DVRK_Reacher(Env, utils.EzPickle):
         return self.state
 
     def _execute_action(self, a):
+        if self.pointbot_dynamics:
+            self.state = self.state + a
+            return self.state
         target_pos = self._state + a
         quat = U.euler_to_quaternion([0, 0, 0], unit='deg')   # convert Euler angles to quaternion
         jaw = [0*np.pi/180.]    # jaw angle in (rad)
         self.dvrk.set_pose(pos1=target_pos, rot1=quat, jaw1=jaw)
         time.sleep(0.5)
+        self.state = self._state
         return self._state
 
     @property
