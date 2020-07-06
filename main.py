@@ -59,7 +59,7 @@ def recovery_config_setup(args):
     return cfg
 
 def experiment_setup(logdir, args):
-    if args.use_recovery and not args.disable_learned_recovery and not args.ddpg_recovery:
+    if args.use_recovery and not args.disable_learned_recovery and not (args.ddpg_recovery or args.Q_sampling_recovery):
         cfg = recovery_config_setup(args)
         recovery_policy = MPC(cfg.ctrl_cfg)
         env = cfg.ctrl_cfg.env
@@ -68,7 +68,7 @@ def experiment_setup(logdir, args):
         env = gym.make(ENV_ID[args.env_name])
     set_seed(args.seed, env)
     agent = agent_setup(env, logdir, args)
-    if args.use_recovery and not args.disable_learned_recovery and not args.ddpg_recovery:
+    if args.use_recovery and not args.disable_learned_recovery and not (args.ddpg_recovery or args.Q_sampling_recovery):
         if args.use_value:
             recovery_policy.update_value_func(agent.V_safe)
         elif args.use_qvalue: 
@@ -109,7 +109,7 @@ def get_action(state, env, agent, recovery_policy, args, train=True):
     if recovery_thresh(state, action, agent, recovery_policy, args):
         recovery = True
         if not args.disable_learned_recovery:
-            if args.ddpg_recovery:
+            if args.ddpg_recovery or args.Q_sampling_recovery:
                 real_action = agent.safety_critic.select_action(state)
             else:
                 real_action = recovery_policy.act(state, 0)
@@ -275,6 +275,7 @@ parser.add_argument('--use_target_safe', action="store_true")
 parser.add_argument('--disable_learned_recovery', action="store_true")
 parser.add_argument('--use_recovery', action="store_true")
 parser.add_argument('--ddpg_recovery', action="store_true")
+parser.add_argument('--Q_sampling_recovery', action="store_true")
 parser.add_argument('--reachability_test', action="store_true")
 parser.add_argument('--lookahead_test', action="store_true")
 parser.add_argument('--SAC_recovery', action="store_true")
@@ -353,7 +354,7 @@ if args.use_recovery and not args.disable_learned_recovery:
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
         agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
-    if not args.ddpg_recovery:
+    if not (args.ddpg_recovery or args.Q_sampling_recovery):
         train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
 
 
@@ -447,7 +448,7 @@ for i_episode in itertools.count(1):
 
     if args.use_recovery and not args.disable_learned_recovery:
         all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
-        if i_episode % args.recovery_policy_update_freq == 0 and not args.ddpg_recovery:
+        if i_episode % args.recovery_policy_update_freq == 0 and not (args.ddpg_recovery or args.Q_sampling_recovery):
             train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
             all_ep_data = []
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
