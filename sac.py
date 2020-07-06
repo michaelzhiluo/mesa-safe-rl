@@ -197,6 +197,7 @@ class SAC(object):
         self.policy_type = args.policy
         self.target_update_interval = args.target_update_interval
         self.automatic_entropy_tuning = args.automatic_entropy_tuning
+        self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
 
         self.device = torch.device("cuda" if args.cuda else "cpu")
         if not args.cnn:
@@ -266,6 +267,34 @@ class SAC(object):
         else:
             self.Q_safe = QSafeWrapper(observation_space, action_space, args.hidden_size, logdir, action_space, args, tmp_env=tmp_env)
             self.safety_critic = self.Q_safe
+
+    def plot(self, ep, action, suffix):
+        if self.env_name == 'reacher':
+            x_bounds = [0.03, 0.13]
+            y_bounds = [0.03, 0.13]
+
+            states = []
+            x_pts = 100
+            y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
+            for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
+                for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
+                    states.append([x, y, -0.13])
+
+        num_states = len(states)
+        states = self.torchify(np.array(states))
+        actions = self.torchify(np.tile(action, (len(states), 1)))
+        # if ep > 0:
+        #     actions = pi(states)
+        # else:
+        #     actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
+
+        qf1, qf2 = self.critic(states, actions)
+        max_qf = torch.max(qf1, qf2)
+
+        grid = max_qf.detach().cpu().numpy()
+        grid = grid.reshape(y_pts, x_pts)
+        plt.imshow(grid.T)
+        plt.savefig("qvalue_" + str(ep) + suffix)
 
     def select_action(self, state, eval=False):
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
@@ -341,6 +370,12 @@ class SAC(object):
 
         if updates % self.target_update_interval == 0:
             soft_update(self.critic_target, self.critic, self.tau)
+
+        if args.env_name == 'reacher' and updates % 50 == 0:
+            self.plot(updates, [0.005, 0, 0], "right")
+            self.plot(updates, [-0.005, 0, 0], "left")
+            self.plot(updates, [0, 0.005, 0], "up")
+            self.plot(updates, [0, -0.005, 0], "down")
 
         return qf1_loss.item(), qf2_loss.item(), policy_loss.item(), alpha_loss.item(), alpha_tlogs.item()
 

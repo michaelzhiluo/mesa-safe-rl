@@ -76,15 +76,15 @@ def experiment_setup(logdir, args):
     return agent, recovery_policy, env
 
 def agent_setup(env, logdir, args):
-    agent = SAC(env.observation_space, env.action_space, args, logdir, tmp_env=gym.make(ENV_ID[args.env_name]))
+    agent = SAC(env.observation_space, env.action_space, args, logdir, tmp_env=gym.make(ENV_ID[args.env_name]) if args.env_name != "reacher" else None)
     return agent
 
 
 def get_action(state, env, agent, recovery_policy, args, train=True):
     def recovery_thresh(state, action, agent, recovery_policy, args):
-        critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)) # TODO: make sure this is exactly equal to reachability_hor=1
         if not args.use_recovery:
             return False
+        critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)) # TODO: make sure this is exactly equal to reachability_hor=1
         if args.reachability_test: # reachability test combined with safety check
             return not recovery_policy.reachability_test(state, action, args.eps_safe)
         if args.lookahead_test:
@@ -131,7 +131,7 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'shelf_dynamic_env': 'ShelfDynamic-v0',
           'shelf_reach_env': 'ShelfReach-v0',
           'cliffpusher': 'CliffPusher-v0',
-          'reacher': 'Reacher-v0',
+          'reacher': 'DVRKReacher-v0',
           'car': 'Car-v0'
           }
 
