@@ -76,7 +76,7 @@ def experiment_setup(logdir, args):
     return agent, recovery_policy, env
 
 def agent_setup(env, logdir, args):
-    agent = SAC(env.observation_space, env.action_space, args, logdir)
+    agent = SAC(env.observation_space, env.action_space, args, logdir, tmp_env=gym.make(ENV_ID[args.env_name]))
     return agent
 
 
@@ -180,6 +180,17 @@ def get_constraint_demos(env, args):
                 obs_seqs = data['obs'][:args.num_constraint_transitions//25]
                 ac_seqs = data['ac'][:args.num_constraint_transitions//25]
                 constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
+                # TODO: need to clean up, only needed for dynamic shelf due to error in data gen
+                for i in range(len(ac_seqs)):
+                    ac_seqs[i] = np.array(ac_seqs[i])
+                for i in range(len(obs_seqs)):
+                    obs_seqs[i] = np.array(obs_seqs[i])
+                for i in range(len(constraint_seqs)):
+                    constraint_seqs[i] = np.array(constraint_seqs[i])
+                ac_seqs = np.array(ac_seqs)
+                obs_seqs = np.array(obs_seqs)
+                constraint_seqs = np.array(constraint_seqs)
+                # Done TODO: need to clean up, only needed for dynamic shelf due to error in data gen
                 print("ACS SHAPE", ac_seqs.shape)
                 print("OBS SHAPE", obs_seqs.shape)
                 print("CONSTRAINT SHAPE", constraint_seqs.shape)
@@ -404,7 +415,7 @@ for i_episode in itertools.count(1):
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
                 if args.use_qvalue:
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
-                            batch_size=args.batch_size)
+                            batch_size=args.batch_size, plot=0)
                 writer.add_scalar('loss/critic_1', critic_1_loss, updates)
                 writer.add_scalar('loss/critic_2', critic_2_loss, updates)
                 writer.add_scalar('loss/policy', policy_loss, updates)

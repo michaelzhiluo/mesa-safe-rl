@@ -175,12 +175,16 @@ class MazeImageNavigation(Env, utils.EzPickle):
         ims = cv2.resize(self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64], (64, 64), interpolation=cv2.INTER_AREA)
         return ims/255
 
-    def reset(self, difficulty='m', check_constraint=True):
-        if difficulty == 'e':
-          self.sim.data.qpos[0] = np.random.uniform(0.15, 0.22)
-        elif difficulty == 'm':
-            self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
-        self.sim.data.qpos[1] = np.random.uniform(0, 0.22)
+    def reset(self, difficulty='m', check_constraint=True, pos=()):
+        if len(pos):
+            self.sim.data.qpos[0] = pos[0]
+            self.sim.data.qpos[1] = pos[1]
+        else:
+            if difficulty == 'e':
+              self.sim.data.qpos[0] = np.random.uniform(0.15, 0.22)
+            elif difficulty == 'm':
+              self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
+            self.sim.data.qpos[1] = np.random.uniform(0.0, 0.22)
         self.steps = 0
 
         # self.sim.data.qpos[0] = 0.25
@@ -211,7 +215,8 @@ class MazeImageNavigation(Env, utils.EzPickle):
         # print("RESET!", self._get_obs())
         constraint = int(self.sim.data.ncon > 3)
         if constraint and check_constraint:
-            self.reset(difficulty)
+            if not len(pos):
+                self.reset(difficulty, pos=pos)
         #     # self.render()
         #     im = self.sim.render(64, 64, camera_name= "cam0")
         #     print('aaa',self.sim.data.ncon, self.sim.data.qpos, im.sum())

@@ -12,10 +12,13 @@ from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, Ga
 from dotmap import DotMap
 from constraint import ValueFunction, QFunction
 
+def process_obs(obs):
+    im = np.transpose(obs, (2, 0, 1))
+    return im
 
 class QSafeWrapper:
 
-    def __init__(self, obs_space, ac_space, hidden_size, logdir, action_space, args):
+    def __init__(self, obs_space, ac_space, hidden_size, logdir, action_space, args, tmp_env):
         self.env_name = args.env_name
         self.logdir = logdir
         self.device = torch.device("cuda" if args.cuda else "cpu")
@@ -46,7 +49,7 @@ class QSafeWrapper:
         self.pos_fraction = args.pos_fraction if args.pos_fraction >= 0 else None
         self.ddpg_recovery = args.ddpg_recovery
         self.Q_sampling_recovery = args.Q_sampling_recovery
-
+        self.tmp_env = tmp_env
 
     def update_parameters(self, ep=None, memory=None, policy=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
@@ -88,7 +91,10 @@ class QSafeWrapper:
             soft_update(self.safety_critic_target, self.safety_critic, self.tau)
         self.updates += 1
 
-        if plot and self.updates % 1000 == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+        plot_interval = 1000
+        if self.env_name == 'image_maze':
+            plot_interval = 29000
+        if plot and self.updates % plot_interval == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
             self.plot(policy, self.updates, [1, 0], "right")
             self.plot(policy, self.updates, [-1, 0], "left")
             self.plot(policy, self.updates, [0, 1], "up")
@@ -124,6 +130,7 @@ class QSafeWrapper:
             assert False
 
     def plot(self, pi, ep, action=None, suffix="", critic=None):
+        env = self.tmp_env
         if self.env_name == 'maze':
             x_bounds = [-0.3, 0.3]
             y_bounds = [-0.3, 0.3]
@@ -133,6 +140,9 @@ class QSafeWrapper:
         elif self.env_name == 'simplepointbot1':
             x_bounds = [-75, 25]
             y_bounds = [-75, 25]
+        elif self.env_name == 'image_maze':
+            x_bounds = [-0.05, 0.25]
+            y_bounds = [-0.05, 0.25]
         else:
             raise NotImplementedError("Plotting unsupported for this env")
 
@@ -141,7 +151,12 @@ class QSafeWrapper:
         y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
         for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
             for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
-                states.append([x, y])
+                if self.env_name == 'image_maze':
+                    env.reset(pos=(x, y))
+                    obs = process_obs(env._get_obs(images=True))
+                    states.append(obs)
+                else:
+                    states.append([x, y])
 
         num_states = len(states)
         states = self.torchify(np.array(states))
@@ -170,7 +185,7 @@ class QSafeWrapper:
 
 
 class SAC(object):
-    def __init__(self, observation_space, action_space, args, logdir, im_shape=None):
+    def __init__(self, observation_space, action_space, args, logdir, im_shape=None, tmp_env=None):
         self.gamma = args.gamma
         self.tau = args.tau
         self.alpha = args.alpha
@@ -246,7 +261,7 @@ class SAC(object):
         if args.use_value:
             self.safety_critic = self.V_safe
         else:
-            self.Q_safe = QSafeWrapper(observation_space, action_space, args.hidden_size, logdir, action_space, args)
+            self.Q_safe = QSafeWrapper(observation_space, action_space, args.hidden_size, logdir, action_space, args, tmp_env=tmp_env)
             self.safety_critic = self.Q_safe
 
     def select_action(self, state, eval=False):
