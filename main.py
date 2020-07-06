@@ -146,8 +146,8 @@ def get_constraint_demos(env, args):
     if not args.task_demos:
         if args.env_name == 'reacher':
             constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
-        elif args.env_name == 'maze':
-            constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
+        # elif args.env_name == 'maze':
+        #     constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
             if not args.cnn:
@@ -479,7 +479,7 @@ for i_episode in itertools.count(1):
 
     if i_episode % 10 == 0 and args.eval is True:
         avg_reward = 0.
-        episodes = 5
+        episodes = 1
         for j in range(episodes):
             test_rollouts.append([])
             state = env.reset()

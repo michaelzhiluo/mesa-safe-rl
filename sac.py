@@ -66,6 +66,7 @@ class QSafeWrapper:
             min_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
             next_q_value = constraint_batch + mask_batch * self.gamma_safe * (min_qf_next_target)
 
+        # qf1, qf2 = self.safety_critic(state_batch, policy.sample(state_batch)[0])  # Two Q-functions to mitigate positive bias in the policy improvement step
         qf1, qf2 = self.safety_critic(state_batch, action_batch)  # Two Q-functions to mitigate positive bias in the policy improvement step
         qf1_loss = F.mse_loss(qf1, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
         qf2_loss = F.mse_loss(qf2, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
@@ -99,6 +100,11 @@ class QSafeWrapper:
             self.plot(policy, self.updates, [-1, 0], "left")
             self.plot(policy, self.updates, [0, 1], "up")
             self.plot(policy, self.updates, [0, -1], "down")
+        if plot and self.updates % 1000 == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+            self.plot(policy, self.updates, [.1, 0], "right")
+            self.plot(policy, self.updates, [-.1, 0], "left")
+            self.plot(policy, self.updates, [0, .1], "up")
+            self.plot(policy, self.updates, [0, -.1], "down")
             # if self.updates % 2000 == 0 and self.updates > 5000:
             #     plt.show()
 
@@ -160,10 +166,7 @@ class QSafeWrapper:
 
         num_states = len(states)
         states = self.torchify(np.array(states))
-        if action is None:
-            actions = pi(states)
-        else:
-            actions = self.torchify(np.tile(action, (len(states), 1)))
+        actions = self.torchify(np.tile(action, (len(states), 1)))
         # if ep > 0:
         #     actions = pi(states)
         # else:
