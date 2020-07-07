@@ -26,7 +26,7 @@ BOUNDSZ = [-0.17, -0.09]
 
 def process_action(s, a):
     a_proc = np.clip(a, -MAX_FORCE, MAX_FORCE)
-    a_proc[2] = 0
+    # a_proc[2] = 0
     if s[0] < BOUNDSX[0]:
         a_proc[0] = MAX_FORCE
     elif s[0] > BOUNDSX[1]:
@@ -61,6 +61,8 @@ class DVRK_Reacher(Env, utils.EzPickle):
         self.zivid = ZividCapture(initialize=True)
 
         self.pointbot_dynamics = False
+
+        self.image_obs = False
 
     def step(self, a):
         a = process_action(self.state, a)
@@ -111,10 +113,16 @@ class DVRK_Reacher(Env, utils.EzPickle):
 
     @property
     def _state(self):
+        if self.image_obs:
+            img_color, img_depth, img_point = self.zivid.capture_3Dimage(color='RGB')    # 7~10 fps
+            return img_color
+            # zivid.display_rgb(img_color)
+            # zivid.display_depthmap(img_point)
+            # zivid.display_pointcloud(img_point, img_color)
         return np.array(self.dvrk.get_pose()[0])
 
     def step_cost(self, s, a):
-        return -np.linalg.norm(np.subtract(GOAL_STATE, s)) * 1000
+        return -np.linalg.norm(np.subtract(GOAL_STATE, s))
 
     def values(self):
         return np.cumsum(np.array(self.cost)[::-1])[::-1]

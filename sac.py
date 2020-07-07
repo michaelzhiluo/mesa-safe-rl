@@ -371,7 +371,7 @@ class SAC(object):
         if updates % self.target_update_interval == 0:
             soft_update(self.critic_target, self.critic, self.tau)
 
-        if args.env_name == 'reacher' and updates % 50 == 0:
+        if self.env_name == 'reacher' and updates % 50 == 0:
             self.plot(updates, [0.005, 0, 0], "right")
             self.plot(updates, [-0.005, 0, 0], "left")
             self.plot(updates, [0, 0.005, 0], "up")
