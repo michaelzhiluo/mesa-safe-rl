@@ -85,6 +85,7 @@ def get_action(state, env, agent, recovery_policy, args, train=True):
         if not args.use_recovery:
             return False
         critic_val = agent.safety_critic.get_value(torchify(state).unsqueeze(0), torchify(action).unsqueeze(0)) # TODO: make sure this is exactly equal to reachability_hor=1
+
         if args.reachability_test: # reachability test combined with safety check
             return not recovery_policy.reachability_test(state, action, args.eps_safe)
         if args.lookahead_test:
@@ -145,7 +146,11 @@ def get_constraint_demos(env, args):
     task_demo_data = None
     if not args.task_demos:
         if args.env_name == 'reacher':
-            constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
+            constraint_demo_data = pickle.load(open(osp.join("demos", "dvrk_reach", "constraint_demos.pkl"), "rb"))
+            if args.cnn:
+                constraint_demo_data = constraint_demo_data['images']
+            else:
+                constraint_demo_data = constraint_demo_data['lowdim']
         # elif args.env_name == 'maze':
         #     constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
         elif 'shelf' in args.env_name:
