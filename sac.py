@@ -193,6 +193,7 @@ class SAC(object):
         self.tau = args.tau
         self.alpha = args.alpha
         self.env_name = args.env_name
+        self.logdir = logdir
         self.gamma_safe = args.gamma_safe
         self.policy_type = args.policy
         self.target_update_interval = args.target_update_interval
@@ -211,6 +212,8 @@ class SAC(object):
                     env_name=args.env_name,
                     opt=args.opt_value,
                     pred_time=args.pred_time))
+
+        self.cnn = args.cnn
         # self.Q_safe = QFunction(DotMap(gamma_safe=self.gamma_safe, 
         #                                device=self.device, 
         #                                state_dim=observation_space.shape[0], 
@@ -270,15 +273,15 @@ class SAC(object):
 
     def plot(self, ep, action, suffix):
         if self.env_name == 'reacher':
-            x_bounds = [0.03, 0.13]
-            y_bounds = [0.03, 0.13]
+            x_bounds = np.array([0.03, 0.13]) * 100
+            y_bounds = np.array([0.03, 0.13]) * 100
 
             states = []
             x_pts = 100
             y_pts = int(x_pts*(x_bounds[1] - x_bounds[0])/(y_bounds[1] - y_bounds[0]) )
             for x in np.linspace(x_bounds[0], x_bounds[1], y_pts):
                 for y in np.linspace(y_bounds[0], y_bounds[1], x_pts):
-                    states.append([x, y, -0.13])
+                    states.append([x, y, -0.13 * 100])
 
         num_states = len(states)
         states = self.torchify(np.array(states))
@@ -289,12 +292,12 @@ class SAC(object):
         #     actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
 
         qf1, qf2 = self.critic(states, actions)
-        max_qf = torch.max(qf1, qf2)
+        max_qf = torch.min(qf1, qf2)
 
         grid = max_qf.detach().cpu().numpy()
         grid = grid.reshape(y_pts, x_pts)
         plt.imshow(grid.T)
-        plt.savefig("qvalue_" + str(ep) + suffix)
+        plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix))
 
     def select_action(self, state, eval=False):
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
@@ -371,7 +374,7 @@ class SAC(object):
         if updates % self.target_update_interval == 0:
             soft_update(self.critic_target, self.critic, self.tau)
 
-        if self.env_name == 'reacher' and updates % 50 == 0:
+        if self.env_name == 'reacher' and updates % 50 == 0 and not self.cnn:
             self.plot(updates, [0.005, 0, 0], "right")
             self.plot(updates, [-0.005, 0, 0], "left")
             self.plot(updates, [0, 0.005, 0], "up")

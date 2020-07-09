@@ -118,6 +118,8 @@ class QNetworkConstraintCNN(nn.Module):
             self.final_linear_size = 768
         elif 'maze' in env_name:
             self.final_linear_size = 1024
+        elif "reach" in env_name:
+            self.final_linear_size = 640
         else:
             assert(False)
 
@@ -193,8 +195,10 @@ class QNetworkCNN(nn.Module):
             self.final_linear_size = 768
         elif 'maze' in env_name:
             self.final_linear_size = 1024
+        elif "reach" in env_name:
+            self.final_linear_size = 640
         else:
-            assert(False)
+            assert(False, env_name)
 
         self.final_linear = nn.Linear(self.final_linear_size, hidden_dim)
 
@@ -268,6 +272,8 @@ class GaussianPolicyCNN(nn.Module):
             self.linear_dim = 768
         elif 'maze' in env_name:
             self.linear_dim = 1024
+        elif "reach" in env_name:
+            self.linear_dim = 640
         else:
             assert(False)
 
@@ -396,6 +402,8 @@ class DeterministicPolicyCNN(nn.Module):
             self.linear_dim = 768
         elif 'maze' in env_name:
             self.linear_dim = 1024
+        elif "reach" in env_name:
+            self.linear_dim = 640
         else:
             assert(False)
 
