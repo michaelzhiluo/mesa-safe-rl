@@ -31,7 +31,7 @@ class QSafeWrapper:
             self.safety_critic = QNetworkConstraintCNN(obs_space, ac_space.shape[0], hidden_size, args.env_name).to(self.device)
             self.safety_critic_target = QNetworkConstraintCNN(obs_space, ac_space.shape[0], hidden_size, args.env_name).to(self.device)
 
-        self.lr = 1e-3 if self.env_name == "maze" else args.lr
+        self.lr = args.lr
         self.safety_critic_optim = Adam(self.safety_critic.parameters(), lr=args.lr)
         hard_update(self.safety_critic_target, self.safety_critic)
 

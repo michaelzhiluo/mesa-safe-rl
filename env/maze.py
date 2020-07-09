@@ -29,13 +29,13 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
     for i in range(1*num_transitions//2):
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
-            if sample < 0.2: # maybe make 0.2 to 0.3
+            if sample < 0.3: # maybe make 0.2 to 0.3
                 mode = 'e'
-            elif sample < 0.4:
+            elif sample < 0.6:
                 mode = 'm'
             else:
                 mode = 'h'
-            state = env.reset(mode, check_constraint=False)
+            state = env.reset(mode, check_constraint=False, demos=True)
             rollouts.append([])
 
             if images:
@@ -71,13 +71,13 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
     for i in range(1*num_transitions//2):
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
-            if sample < 0.2: # maybe make 0.2 to 0.3
+            if sample < 0.3: # maybe make 0.2 to 0.3
                 mode = 'e'
             elif sample < 0.6:
                 mode = 'm'
             else:
                 mode = 'h'
-            state = env.reset(mode, check_constraint=False)
+            state = env.reset(mode, check_constraint=False, demos=True)
             rollouts.append([])
 
             if images:
@@ -195,7 +195,7 @@ class MazeNavigation(Env, utils.EzPickle):
         ims = self.sim.render(64, 64, camera_name= "cam0")
         return ims/255
 
-    def reset(self, difficulty='h', check_constraint=True):
+    def reset(self, difficulty='h', check_constraint=True, demos=False):
         if difficulty is None:
           self.sim.data.qpos[0] = np.random.uniform(-0.27, 0.27)
         elif difficulty == 'e':
@@ -205,6 +205,7 @@ class MazeNavigation(Env, utils.EzPickle):
         elif difficulty == 'h':
           self.sim.data.qpos[0] = np.random.uniform(-0.22, -0.13)
         self.sim.data.qpos[1] = np.random.uniform(-0.22, 0.22)
+
         self.steps = 0
 
         # self.sim.data.qpos[0] = 0.25
@@ -214,11 +215,11 @@ class MazeNavigation(Env, utils.EzPickle):
         # assert(False)
 
         # Randomize wal positions
-        w1 = -0.08#np.random.uniform(-0.2, 0.2)
+        w1 = -0.08 #np.random.uniform(-0.2, 0.2)
         w2 = 0.08 #np.random.uniform(-0.2, 0.2)
     #     print(self.sim.model.geom_pos[:])
     #     print(self.sim.model.geom_pos[:].shape)
-        self.sim.model.geom_pos[5, 1] = 0.4 + w1
+        self.sim.model.geom_pos[5, 1] = 0.5 + w1
         self.sim.model.geom_pos[7, 1] = -0.25 + w1
         self.sim.model.geom_pos[6, 1] = 0.4 + w2
         self.sim.model.geom_pos[8, 1] = -0.25 + w2

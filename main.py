@@ -146,28 +146,17 @@ def get_constraint_demos(env, args):
     if not args.task_demos:
         if args.env_name == 'reacher':
             constraint_demo_data = pickle.load(open(osp.join("demos", "reacher", "data.pkl"), "rb"))
-        # elif args.env_name == 'maze':
-        #     constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
+        if args.env_name == 'maze':
+            constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
             if not args.cnn:
                 constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
             else:
-                constraint_demo_data = []
-                data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
-                obs_seqs = data['obs'][:args.num_constraint_transitions//25]
-                ac_seqs = data['ac'][:args.num_constraint_transitions//25]
-                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
-                print("ACS SHAPE", ac_seqs.shape)
-                print("OBS SHAPE", obs_seqs.shape)
-                print("CONSTRAINT SHAPE", constraint_seqs.shape)
-                for i in range(obs_seqs.shape[0]):
-                    for j in range(obs_seqs.shape[1]-1):
-                        constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
+                constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images.pkl"), "rb"))
         else:
             constraint_demo_data = env.transition_function(args.num_constraint_transitions)
     else:
-        # TODO: cleanup, for now this is hard-coded for maze
         if args.cnn and args.env_name == 'maze':
             constraint_demo_data, task_demo_data_images = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos, images=True)
             constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
@@ -175,32 +164,10 @@ def get_constraint_demos(env, args):
             folder_name = args.env_name.split('_env')[0]
             if args.cnn:
                 task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos_images.pkl"), "rb"))
-                constraint_demo_data = []
-                data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
-                obs_seqs = data['obs'][:args.num_constraint_transitions//25]
-                ac_seqs = data['ac'][:args.num_constraint_transitions//25]
-                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
-                # TODO: need to clean up, only needed for dynamic shelf due to error in data gen
-                for i in range(len(ac_seqs)):
-                    ac_seqs[i] = np.array(ac_seqs[i])
-                for i in range(len(obs_seqs)):
-                    obs_seqs[i] = np.array(obs_seqs[i])
-                for i in range(len(constraint_seqs)):
-                    constraint_seqs[i] = np.array(constraint_seqs[i])
-                ac_seqs = np.array(ac_seqs)
-                obs_seqs = np.array(obs_seqs)
-                constraint_seqs = np.array(constraint_seqs)
-                # Done TODO: need to clean up, only needed for dynamic shelf due to error in data gen
-                print("ACS SHAPE", ac_seqs.shape)
-                print("OBS SHAPE", obs_seqs.shape)
-                print("CONSTRAINT SHAPE", constraint_seqs.shape)
-                for i in range(obs_seqs.shape[0]):
-                    for j in range(obs_seqs.shape[1]-1):
-                        constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
+                constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images.pkl"), "rb"))
             else:
                 task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos.pkl"), "rb"))
                 constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
-            # constraint_demo_data = None # TODO: temp fix later
         else:
             constraint_demo_data, task_demo_data = env.transition_function(args.num_constraint_transitions, task_demos=args.task_demos)
     return constraint_demo_data, task_demo_data
@@ -312,7 +279,7 @@ parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
 args = parser.parse_args()
 
 # TODO: clean this up later
-if 'shelf' in args.env_name:
+if 'shelf' in args.env_name and args.num_constraint_transitions == 10000:
     args.num_constraint_transitions = 20000
 
 if not os.path.exists(args.logdir):
@@ -337,6 +304,9 @@ updates = 0
 task_demos = args.task_demos
 
 constraint_demo_data, task_demo_data = get_constraint_demos(env, args)
+# Save constraint demos
+# import pickle
+# pickle.dump(constraint_demo_data, open("demos/maze/constraint_demos.pkl", "wb") )
 
 # Train recovery policy and associated value function on demos
 if args.use_recovery and not args.disable_learned_recovery:

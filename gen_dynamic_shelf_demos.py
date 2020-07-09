@@ -10,6 +10,7 @@ import os
 import moviepy.editor as mpy
 from env.shelf_dynamic_env import ShelfDynamicEnv
 import pickle
+import time
 
 HYPERPARAMS = {
     'T': 25, # length of each episode
@@ -81,6 +82,7 @@ updates = 0
 demo_transitions = []
 demo_rollouts = []
 i_demos = 0
+start = time.time()
 while i_demos < args.num_demos:
     if i_demos % 50 == 0:
         print("Demo #: ", i_demos)
@@ -131,22 +133,25 @@ while i_demos < args.num_demos:
             next_state = process_obs(next_state)
 
         if args.constraint_demos:
-            if constraint:
-                demo_transitions.append( (state, action, constraint, next_state, mask) )
-                demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
-            else:
-                if np.random.random() < 0.1:
-                    demo_transitions.append( (state, action, constraint, next_state, mask) )
-                    demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
+            # if constraint:
+            demo_transitions.append( (state, action, constraint, next_state, mask) )
+            demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
+            # else:
+            #     if np.random.random() < 0.1:
+            #         demo_transitions.append( (state, action, constraint, next_state, mask) )
+            #         demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
         else:
             demo_transitions.append( (state, action, reward, next_state, mask) )
             demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
 
         state = next_state
         t += 1
-    print("DEMO EPISODE REWARD", episode_reward)
-    print("DEMO EPISODE CONSTRAINTS", episode_constraints)
-    print("DEMO EPISODE STEPS", episode_steps)
+
+    if i_demos % 100 == 0:
+        print("TIME: ", time.time() - start)
+        print("DEMO EPISODE REWARD", episode_reward)
+        print("DEMO EPISODE CONSTRAINTS", episode_constraints)
+        print("DEMO EPISODE STEPS", episode_steps)
 
     if not args.constraint_demos: 
         if episode_reward > 0 and episode_constraints == 0:
