@@ -84,8 +84,6 @@ demo_rollouts = []
 i_demos = 0
 start = time.time()
 while i_demos < args.num_demos:
-    if i_demos % 50 == 0:
-        print("Demo #: ", i_demos)
     state = env.reset()
     demo_rollouts.append([])
     if not args.gt_state:
@@ -114,9 +112,9 @@ while i_demos < args.num_demos:
         if episode_steps == env._max_episode_steps:
             done = True
 
-        if done and reward > 0:
-            reward = 5
-            info['reward'] = 5
+        # if done and reward > 0:
+        #     reward = 5
+        #     info['reward'] = 5
 
         constraint = info['constraint']
         if args.use_constraint_penalty and constraint:
@@ -147,14 +145,15 @@ while i_demos < args.num_demos:
         state = next_state
         t += 1
 
-    if i_demos % 100 == 0:
-        print("TIME: ", time.time() - start)
-        print("DEMO EPISODE REWARD", episode_reward)
-        print("DEMO EPISODE CONSTRAINTS", episode_constraints)
-        print("DEMO EPISODE STEPS", episode_steps)
+    # if i_demos % 100 == 0:
+    print("Demo #: ", i_demos)
+    print("TIME: ", time.time() - start)
+    print("DEMO EPISODE REWARD", episode_reward)
+    print("DEMO EPISODE CONSTRAINTS", episode_constraints)
+    print("DEMO EPISODE STEPS", episode_steps)
 
     if not args.constraint_demos: 
-        if episode_reward > 0 and episode_constraints == 0:
+        if episode_reward > -25 and episode_constraints == 0:
             # npy_to_gif(im_list, "out_{}".format(i_demos))
             i_demos += 1
         else:

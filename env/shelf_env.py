@@ -100,12 +100,12 @@ class ShelfEnv(BaseMujocoEnv):
         reward = self.reward_fn()
 
         if EARLY_TERMINATION:
-            done = (constraint > 0) or (reward > 0)
+            done = (constraint > 0) or (reward > -0.5)
         else:
             done = False
 
-        if done and reward > 0:
-            reward = 5
+        # if done and reward > 0:
+        #     reward = 5
 
         info = {"constraint": constraint,
                 "reward": reward,
@@ -167,21 +167,21 @@ class ShelfEnv(BaseMujocoEnv):
         return action + np.random.randn(self._adim) * noise_std
 
     def reward_fn(self):
-        if not self.dense_reward:
-            return (self.target_object_height > self.target_height_thresh).astype(float)
-        else:
-            lift_reward = (self.target_object_height > self.target_height_thresh).astype(float)
-            # if lift_reward == 1:
-            #     print("lifted")
-            cur_pos = self.position[:2]
-            cur_pos[1] += 0.05 # compensate for length of jaws
-            target_obj_pos = self.object_poses[1][:2]
-            action = np.zeros(self._adim)
-            delta = target_obj_pos - cur_pos
-            ee_reward = -np.linalg.norm(delta)
-            if ee_reward > -0.03:
-                ee_reward = 0.
-            return lift_reward + 0.1 * ee_reward
+        # if not self.dense_reward:
+        return -(self.target_object_height < self.target_height_thresh).astype(float)
+        # else:
+        #     lift_reward = (self.target_object_height > self.target_height_thresh).astype(float)
+        #     # if lift_reward == 1:
+        #     #     print("lifted")
+        #     cur_pos = self.position[:2]
+        #     cur_pos[1] += 0.05 # compensate for length of jaws
+        #     target_obj_pos = self.object_poses[1][:2]
+        #     action = np.zeros(self._adim)
+        #     delta = target_obj_pos - cur_pos
+        #     ee_reward = -np.linalg.norm(delta)
+        #     if ee_reward > -0.03:
+        #         ee_reward = 0.
+        #     return lift_reward + 0.1 * ee_reward
 
     def object_reset_poses(self):
         new_poses = np.zeros((3, 7))

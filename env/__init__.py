@@ -64,6 +64,11 @@ register(
     entry_point='env.dvrk_reacher:DVRK_Reacher'
 )
 
+register(
+    id='Minitaur-v0',
+    entry_point='env.minitaur:MinitaurGoalVelocityEnv'
+)
+
 # register(
 #     id='MBRLPusherSparse-v0',
 #     entry_point='dmbrl.env.pushersparse:PusherSparseEnv'

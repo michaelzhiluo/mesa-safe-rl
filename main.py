@@ -133,7 +133,8 @@ ENV_ID = {'simplepointbot0': 'SimplePointBot-v0',
           'shelf_reach_env': 'ShelfReach-v0',
           'cliffpusher': 'CliffPusher-v0',
           'reacher': 'DVRKReacher-v0',
-          'car': 'Car-v0'
+          'car': 'Car-v0',
+          'minitaur': 'Minitaur-v0'
           }
 
 def npy_to_gif(im_list, filename, fps=4):
@@ -151,8 +152,25 @@ def get_constraint_demos(env, args):
                 constraint_demo_data = constraint_demo_data['images']
             else:
                 constraint_demo_data = constraint_demo_data['lowdim']
-        if args.env_name == 'maze':
-            constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
+        elif args.env_name == 'maze':
+            constraint_demo_data = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos.pkl"), "rb"))
+        elif args.env_name == 'minitaur':
+            constraint_demo_data = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos.pkl"), "rb"))
+            constraint_demo_data_random = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos_random.pkl"), "rb"))
+            constraint_demo_data_kinda_random = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos_kinda_random.pkl"), "rb"))
+            constraint_demo_data_total = constraint_demo_data + constraint_demo_data_random + constraint_demo_data_kinda_random
+            constraint_demo_data_list_safe = []
+            constraint_demo_data_list_viol = []
+            for i in range(len(constraint_demo_data_total)):
+                if constraint_demo_data_total[i][2] == 1:
+                    constraint_demo_data_list_viol.append(constraint_demo_data_total[i])
+            for i in range(len(constraint_demo_data_total)):
+                if constraint_demo_data_total[i][2] == 0:
+                    constraint_demo_data_list_safe.append(constraint_demo_data_total[i])
+
+            import random
+            random.shuffle(constraint_demo_data_list_safe)
+            constraint_demo_data = constraint_demo_data_list_viol + constraint_demo_data_list_safe
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
             if not args.cnn:
