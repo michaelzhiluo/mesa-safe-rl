@@ -2,7 +2,8 @@
 for i in {1..3}
 do
 	echo "Recovery Run $i"
-	python -m main --cuda --env-name maze --use_recovery --use_qvalue --recovery_policy_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --seed 1 --pos_fraction 0.15 --logdir maze --logdir_suffix recovery --num_eps 1000 --seed $i
+	python -m main --cuda --env-name maze --use_recovery --use_qvalue --recovery_policy_update_freq 5 --gamma_safe 0.5 --eps_safe 0.1 --num_eps 2000 --seed $i --ddpg_recovery --logdir maze --logdir_suffix recovery
+	# python -m main --cuda --env-name maze --use_recovery --use_qvalue --recovery_policy_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --seed 1 --pos_fraction 0.15 --logdir maze --logdir_suffix recovery --num_eps 1000 --seed $i
 	# python -m main --cuda --env-name maze --use_recovery --use_value --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.85 --eps_safe 0.05  --logdir maze --logdir_suffix recovery --num_eps 2000 --seed $i
 done
 

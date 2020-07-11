@@ -2,8 +2,14 @@
 for i in {1..3}
 do
 	echo "Recovery Run $i"
-	python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.8 --eps_safe 0.1 --use_qvalue --logdir pointbot1 --logdir_suffix recovery_fast --num_eps 300 --seed $i --tau_safe 0.001 --pos_fraction 0.1
+	python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --logdir pointbot1 --logdir_suffix recovery_fast --num_eps 300 --seed $i --tau_safe 0.001 --pos_fraction 0.1
 done
+
+# for i in {1..3}
+# do
+# 	echo "Recovery Run $i"
+# 	python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --logdir pointbot1 --logdir_suffix recovery_ddpg --num_eps 300 --seed $i --tau_safe 0.001 --pos_fraction 0.1 --ddpg_recovery
+# done
 
 # for i in {1..3}
 # do
