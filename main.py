@@ -295,6 +295,13 @@ parser.add_argument('--num_task_transitions', type=int, default=10000000)
 parser.add_argument('--num_constraint_transitions', type=int, default=10000) # Make this 20K+ for original shelf env stuff, trying with fewer rn
 parser.add_argument('--reachability_hor', type=int, default=2)
 
+
+parser.add_argument('--DGD_constraints', action="store_true") 
+parser.add_argument('--nu', type=float, default=0.01, metavar='G',
+                    help='Penalty parameter α determines the relative importance of the constraint\
+                            term against the reward (default: 0.01)') # TODO: needs some tuning
+parser.add_argument('--update_nu', action="store_true")
+
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
 parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
@@ -332,7 +339,7 @@ constraint_demo_data, task_demo_data = get_constraint_demos(env, args)
 # pickle.dump(constraint_demo_data, open("demos/maze/constraint_demos.pkl", "wb") )
 
 # Train recovery policy and associated value function on demos
-if args.use_recovery and not args.disable_learned_recovery:
+if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints:
     demo_data_states = np.array([d[0] for d in constraint_demo_data])
     demo_data_actions = np.array([d[1] for d in constraint_demo_data])
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
@@ -358,7 +365,7 @@ if args.use_recovery and not args.disable_learned_recovery:
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
         agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
-    if not (args.ddpg_recovery or args.Q_sampling_recovery):
+    if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints):
         train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
 
 
@@ -457,7 +464,7 @@ for i_episode in itertools.count(1):
 
     if args.use_recovery and not args.disable_learned_recovery:
         all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
-        if i_episode % args.recovery_policy_update_freq == 0 and not (args.ddpg_recovery or args.Q_sampling_recovery):
+        if i_episode % args.recovery_policy_update_freq == 0 and not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints):
             train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
             all_ep_data = []
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:

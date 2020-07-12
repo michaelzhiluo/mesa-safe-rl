@@ -186,6 +186,10 @@ class QSafeWrapper:
         plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix))
 
 
+    def __call__(self, states, actions):
+        return self.safety_critic(states, actions)
+
+
 
 class SAC(object):
     def __init__(self, observation_space, action_space, args, logdir, im_shape=None, tmp_env=None):
@@ -240,6 +244,15 @@ class SAC(object):
             self.critic_target = QNetworkCNN(observation_space, action_space.shape[0], args.hidden_size, args.env_name).to(device=self.device)
         else:
             self.critic_target = QNetwork(observation_space.shape[0], action_space.shape[0], args.hidden_size).to(device=self.device)
+
+
+        self.DGD_constraints = args.DGD_constraints
+        self.nu = args.nu
+        self.update_nu = args.nu
+        self.cnn = args.cnn
+        self.eps_safe = args.eps_safe
+        self.log_nu = torch.tensor(np.log(self.nu), requires_grad=True, device=self.device)
+        self.nu_optim = Adam([self.log_nu], lr=0.1*args.lr)
 
 
         hard_update(self.critic_target, self.critic)
@@ -323,7 +336,9 @@ class SAC(object):
             q1, q2 = self.critic(states, actions)
             return torch.max(q1, q2).detach().cpu().numpy()
 
-    def update_parameters(self, memory, batch_size, updates):
+    def update_parameters(self, memory, batch_size, updates, nu=None):
+        if nu is None:
+            nu = self.nu
         # Sample a batch from memory
         state_batch, action_batch, reward_batch, next_state_batch, mask_batch = memory.sample(batch_size=batch_size)
 
@@ -347,7 +362,14 @@ class SAC(object):
         qf1_pi, qf2_pi = self.critic(state_batch, pi)
         min_qf_pi = torch.min(qf1_pi, qf2_pi)
 
-        policy_loss = ((self.alpha * log_pi) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
+
+        sqf1_pi, sqf2_pi = self.safety_critic(state_batch, pi)
+        max_sqf_pi = torch.max(sqf1_pi, sqf2_pi)
+
+        if self.DGD_constraints:
+            policy_loss = ((self.alpha * log_pi) + nu * (max_sqf_pi - self.eps_safe) - 1. * min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
+        else:
+            policy_loss = ((self.alpha * log_pi) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
 
         self.critic_optim.zero_grad()
         (qf1_loss + qf2_loss).backward()
@@ -369,6 +391,15 @@ class SAC(object):
         else:
             alpha_loss = torch.tensor(0.).to(self.device)
             alpha_tlogs = torch.tensor(self.alpha) # For TensorboardX logs
+
+
+        # Optimize nu
+        if self.update_nu:
+            nu_loss = (self.log_nu * (self.eps_safe - max_sqf_pi).detach()).mean() # TODO: used log trick here too, just like alpha case, need to understand why this is done.
+            self.nu_optim.zero_grad()
+            nu_loss.backward()
+            self.nu_optim.step()
+            self.nu = self.log_nu.exp()
 
 
         if updates % self.target_update_interval == 0:
