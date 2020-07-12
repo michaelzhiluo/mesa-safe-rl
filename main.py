@@ -383,6 +383,7 @@ train_rollouts = []
 all_ep_data = []
 
 num_viols = 0
+num_successes = 0
 viol_and_recovery = 0
 viol_and_no_recovery = 0
 
@@ -461,6 +462,9 @@ for i_episode in itertools.count(1):
         else:
             viol_and_no_recovery += 1
 
+    if "shelf" in args.env_name and info['reward'] > -0.5:
+        num_successes += 1
+
     if args.use_recovery and not args.disable_learned_recovery:
         all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
         if i_episode % args.recovery_policy_update_freq == 0 and not (args.ddpg_recovery or args.Q_sampling_recovery):
@@ -480,6 +484,8 @@ for i_episode in itertools.count(1):
     print("Num Violations So Far: %d"%num_viols)
     print("Violations with Recovery: %d"%viol_and_recovery)
     print("Violations with No Recovery: %d"%viol_and_no_recovery)
+    if "shelf" in args.env_name:
+        print("Num Successes So Far: %d"%num_successes)
 
     if total_numsteps > args.num_steps or i_episode > args.num_eps:
         break
