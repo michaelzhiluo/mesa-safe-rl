@@ -382,6 +382,8 @@ test_rollouts = []
 train_rollouts = []
 all_ep_data = []
 
+num_viols = 0
+
 for i_episode in itertools.count(1):
     episode_reward = 0
     episode_steps = 0
@@ -450,6 +452,9 @@ for i_episode in itertools.count(1):
         recorder.capture_frame()
         recorder.close()
 
+    if info['constraint']:
+        num_viols += 1
+
     if args.use_recovery and not args.disable_learned_recovery:
         all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
         if i_episode % args.recovery_policy_update_freq == 0 and not (args.ddpg_recovery or args.Q_sampling_recovery):
@@ -466,6 +471,7 @@ for i_episode in itertools.count(1):
     writer.add_scalar('reward/train', episode_reward, i_episode)
     print("Episode: {}, total numsteps: {}, episode steps: {}, reward: {}".format(i_episode, total_numsteps, episode_steps, round(episode_reward, 2)))
     print_episode_info(train_rollouts[-1])
+    print("Num Violations So Far: %d"%num_viols)
 
     if total_numsteps > args.num_steps or i_episode > args.num_eps:
         break
