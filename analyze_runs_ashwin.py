@@ -77,34 +77,19 @@ experiment_map = {
             "sac_norecovery": ["2020-05-07_20-54-58_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-14_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-33_SAC_shelf_env_Gaussian_"],
             # "recovery": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"], # eps_safe 0.4, 20k
             # "recovery": ["2020-07-04_08-31-09_SAC_shelf_env_Gaussian_", "2020-07-04_22-09-47_SAC_shelf_env_Gaussian_", "2020-07-04_22-09-25_SAC_shelf_env_Gaussian_"], # DDPG recovery, eps_safe = 0.5, gamma_safe = 0.85
-            "recovery": [],                                                                                                                                              # DDPG recovery, eps_safe = 0.5, gamma_safe = 0.85 (new reward)
+            "recovery": ["2020-07-12_02-38-09_SAC_shelf_env_Gaussian_", "2020-07-12_02-38-27_SAC_shelf_env_Gaussian_", "2020-07-12_02-38-42_SAC_shelf_env_Gaussian_"],   # DDPG recovery, eps_safe = 0.5, gamma_safe = 0.85 (new reward)
             # 'recovery': ["2020-07-04_08-30-44_SAC_shelf_env_Gaussian_"], # DDPG recovery, eps_safe = 0.4
             # 'recovery': ["2020-07-04_08-30-53_SAC_shelf_env_Gaussian_"] # DDPG recovery, eps_safe = 0.3
 
+            "sac_penalty3": ["2020-07-12_02-53-56_SAC_shelf_env_Gaussian_", "2020-07-12_02-53-28_SAC_shelf_env_Gaussian_", "2020-07-12_02-53-41_SAC_shelf_env_Gaussian_"], # (new reward)
+            "sac_penalty15": ["2020-07-12_02-48-41_SAC_shelf_env_Gaussian_", "2020-07-12_02-56-44_SAC_shelf_env_Gaussian_", "2020-07-12_02-43-32_SAC_shelf_env_Gaussian_"], # (new reward)
 
-            # "recovery_0.4_20k_gamma0.9": ["2020-05-18_01-27-18_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-28_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-38_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.4_5k": ["2020-05-09_04-36-14_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-20_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-27_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.8_images": ["2020-05-10_05-37-07_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-50_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-34_SAC_shelf_env_Gaussian_"],
-            # "sac_penalty3_images": ["2020-05-11_04-30-15_SAC_shelf_env_Gaussian_", "2020-05-11_04-30-28_SAC_shelf_env_Gaussian_", "2020-05-11_04-30-36_SAC_shelf_env_Gaussian_"],
-            # "sac_penalty10_images": ["2020-05-11_04-31-11_SAC_shelf_env_Gaussian_", "2020-05-11_04-31-22_SAC_shelf_env_Gaussian_", "2020-05-11_04-31-32_SAC_shelf_env_Gaussian_"],
-            # "sac_norecovery_images": ["2020-05-17_05-25-13_SAC_shelf_env_Gaussian_", "2020-05-17_05-25-29_SAC_shelf_env_Gaussian_", "2020-05-17_05-25-43_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.6_gamma0.5_penalty3": ["2020-05-17_05-57-36_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-43_SAC_shelf_env_Gaussian_", "2020-05-17_05-57-54_SAC_shelf_env_Gaussian_"]
-            "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
-            "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
+
+            # "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
+            # "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
             "RCPO": ["2020-06-15_19-49-04_SAC_shelf_env_Gaussian_", "2020-06-15_19-49-23_SAC_shelf_env_Gaussian_", "2020-06-15_19-49-39_SAC_shelf_env_Gaussian_"],
             "sac_lagrangian": ["2020-06-15_09-50-15_SAC_shelf_env_Gaussian_", "2020-06-15_09-50-45_SAC_shelf_env_Gaussian_", "2020-06-15_09-51-01_SAC_shelf_env_Gaussian_"], # nu = 1
             "sac_lagrangian_update": ["2020-06-16_02-30-16_SAC_shelf_env_Gaussian_", "2020-06-16_00-10-45_SAC_shelf_env_Gaussian_", "2020-06-16_00-10-57_SAC_shelf_env_Gaussian_"] 
-            # "sac_lagrangian": ["2020-06-15_09-52-16_SAC_shelf_env_Gaussian_", "2020-06-15_09-52-43_SAC_shelf_env_Gaussian_"] # nu = 10
-            # "sac_lagrangian": ["2020-06-15_09-53-42_SAC_shelf_env_Gaussian_", "2020-06-15_09-53-53_SAC_shelf_env_Gaussian_", "2020-06-15_09-54-06_SAC_shelf_env_Gaussian_"] # nu = 100
-            # "recovery_0.4_20k_gamma0.5": ["2020-05-17_05-48-29_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-23_SAC_shelf_env_Gaussian_", "2020-05-17_05-50-14_SAC_shelf_env_Gaussian_"]
-            # "recovery_0.6_dense_gamma0.3": ["2020-05-15_23-16-25_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-30_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-34_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.6_dense_gamma0.4": ["2020-05-15_23-15-53_SAC_shelf_env_Gaussian_", "2020-05-15_23-15-57_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-02_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.6_dense_gamma0.5": ["2020-05-15_23-16-07_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-12_SAC_shelf_env_Gaussian_", "2020-05-15_23-16-20_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.6_dense_gamma0.65": ["2020-05-14_00-00-17_SAC_shelf_env_Gaussian_", "2020-05-14_00-00-26_SAC_shelf_env_Gaussian_", "2020-05-14_00-00-36_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.6_dense_gamma0.75": ["2020-05-13_23-59-02_SAC_shelf_env_Gaussian_", "2020-05-13_23-59-25_SAC_shelf_env_Gaussian_", "2020-05-13_23-59-43_SAC_shelf_env_Gaussian_"],
-            # "recovery_0.6_dense_gamma0.85": ["2020-05-13_23-56-30_SAC_shelf_env_Gaussian_", "2020-05-13_21-30-48_SAC_shelf_env_Gaussian_", "2020-05-13_21-30-54_SAC_shelf_env_Gaussian_"]
-            # "unconstrained_images": [],
-            # "recovery_0.6_dense_gamma0.5_constraint_penalty0.3": []
         },
         "outfile": "shelf.png"
     },
@@ -195,6 +180,7 @@ names = {
     "sac_penalty3": "SAC (penalty 3)",
     "sac_penalty5": "SAC (penalty 5)",
     "sac_penalty10": "SAC (penalty 10)",
+    "sac_penalty15": "SAC (penalty 15)",
     "sac_penalty25": "SAC (penalty 25)",
     # "recovery_0.8_images": "SAC + Recovery (eps=0.8, images)",
     # "sac_penalty3_images": "SAC (penalty 3, images)",
@@ -234,6 +220,7 @@ colors = {
     "sac_penalty3": "blue",
     "sac_penalty5": "yellow",
     "sac_penalty10": "orange",
+    "sac_penalty15": "orange",
     "RCPO": 'magenta'
     # "sac_penalty25": "magenta",
 
@@ -257,7 +244,7 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=4000): # 3000 for normal shelf..., 4000 for image shelf
+def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf..., 4000 for image shelf
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
@@ -365,7 +352,10 @@ def plot_experiment(experiment, max_eps=4000): # 3000 for normal shelf..., 4000 
             if 'maze' in experiment:
                 task_successes = (-last_rewards < 0.03).astype(int)
             elif 'shelf' in experiment:
-                task_successes = (last_rewards > 4.5).astype(int)
+                if alg == "recovery" or "penalty" in alg:
+                    task_successes = (last_rewards > -0.5).astype(int)
+                else:
+                    task_successes = (last_rewards > 4.5).astype(int)
             else:
                 assert False
 
@@ -438,8 +428,8 @@ def plot_experiment(experiment, max_eps=4000): # 3000 for normal shelf..., 4000 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
     # experiment = "image_maze"
-    # experiment = "shelf"
-    experiment = "image_shelf"
+    experiment = "shelf"
+    # experiment = "image_shelf"
     # experiment = "maze"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
