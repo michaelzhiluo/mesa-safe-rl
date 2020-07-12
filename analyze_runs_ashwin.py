@@ -7,7 +7,8 @@ from scipy.interpolate import make_interp_spline, BSpline
 experiment_map = {
     "maze": {
         "algs": {
-            "recovery": ["2020-04-22_00-28-46_SAC_maze_Gaussian_", "2020-04-22_03-19-56_SAC_maze_Gaussian_", "2020-04-22_07-59-58_SAC_maze_Gaussian_"],
+            # "recovery": ["2020-04-22_00-28-46_SAC_maze_Gaussian_", "2020-04-22_03-19-56_SAC_maze_Gaussian_", "2020-04-22_07-59-58_SAC_maze_Gaussian_"],
+            "recovery": ["2020-07-09_19-08-08_SAC_maze_Gaussian_", "2020-07-09_19-18-44_SAC_maze_Gaussian_", "2020-07-09_19-18-37_SAC_maze_Gaussian_"], # DDPG recovery, gamma_safe=0.5, eps_safe=0.15, pos_fraction=0.3
             # "recovery": ["2020-06-01_06-12-07_SAC_maze_Gaussian_", "2020-06-01_06-12-31_SAC_maze_Gaussian_", "2020-06-01_06-12-41_SAC_maze_Gaussian_"], # Latest run on master...not *quite* as good, maybe need to look into it still?
             # "recovery_reachability" : ["2020-06-01_10-17-26_SAC_maze_Gaussian_", "2020-06-01_10-17-37_SAC_maze_Gaussian_", "2020-06-01_10-17-50_SAC_maze_Gaussian_"], # reachability stuff barely gives a win so not using it for now
             "sac_norecovery": ["2020-04-22_00-50-15_SAC_maze_Gaussian_", "2020-04-22_09-54-41_SAC_maze_Gaussian_", "2020-04-22_09-56-59_SAC_maze_Gaussian_"],
@@ -23,7 +24,8 @@ experiment_map = {
     },
     "image_maze": {
         "algs": {
-            "recovery": ["2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
+            # "recovery": ["2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
+            "recovery": ["2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "2020-07-07_05-10-41_SAC_image_maze_Gaussian_"], # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
             "sac_norecovery": ["2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
             # "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
             "sac_penalty20": ["2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
@@ -73,7 +75,13 @@ experiment_map = {
     "shelf": { # Sparse reward instead... (all up to 2800)
         "algs": {
             "sac_norecovery": ["2020-05-07_20-54-58_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-14_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-33_SAC_shelf_env_Gaussian_"],
-            "recovery": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"], # eps_safe 0.4, 20k
+            # "recovery": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"], # eps_safe 0.4, 20k
+            # "recovery": ["2020-07-04_08-31-09_SAC_shelf_env_Gaussian_", "2020-07-04_22-09-47_SAC_shelf_env_Gaussian_", "2020-07-04_22-09-25_SAC_shelf_env_Gaussian_"], # DDPG recovery, eps_safe = 0.5, gamma_safe = 0.85
+            "recovery": [],                                                                                                                                              # DDPG recovery, eps_safe = 0.5, gamma_safe = 0.85 (new reward)
+            # 'recovery': ["2020-07-04_08-30-44_SAC_shelf_env_Gaussian_"], # DDPG recovery, eps_safe = 0.4
+            # 'recovery': ["2020-07-04_08-30-53_SAC_shelf_env_Gaussian_"] # DDPG recovery, eps_safe = 0.3
+
+
             # "recovery_0.4_20k_gamma0.9": ["2020-05-18_01-27-18_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-28_SAC_shelf_env_Gaussian_", "2020-05-18_01-27-38_SAC_shelf_env_Gaussian_"],
             # "recovery_0.4_5k": ["2020-05-09_04-36-14_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-20_SAC_shelf_env_Gaussian_", "2020-05-09_04-36-27_SAC_shelf_env_Gaussian_"],
             # "recovery_0.8_images": ["2020-05-10_05-37-07_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-50_SAC_shelf_env_Gaussian_", "2020-05-10_05-36-34_SAC_shelf_env_Gaussian_"],
@@ -106,7 +114,9 @@ experiment_map = {
             "sac_penalty3": ["2020-05-24_09-05-16_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_10-26-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-28_SAC_shelf_dynamic_env_Gaussian_"],
             "sac_penalty10": ["2020-05-25_09-48-06_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-47-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-48-15_SAC_shelf_dynamic_env_Gaussian_"],
             # "recovery_0.2": ["2020-05-25_09-41-29_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-42-02_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_20-21-35_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery": ["2020-05-26_03-32-21_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-30_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-37_SAC_shelf_dynamic_env_Gaussian_"], # eps_safe=0.25
+            # "recovery": ["2020-05-26_03-32-21_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-30_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-37_SAC_shelf_dynamic_env_Gaussian_"], # eps_safe=0.25
+            # "recovery": ["2020-07-06_08-28-11_SAC_shelf_dynamic_env_Gaussian_", "2020-07-06_23-45-04_SAC_shelf_dynamic_env_Gaussian_", "2020-07-06_23-45-08_SAC_shelf_dynamic_env_Gaussian_"], # 0.35, gamma_safe=0.9, ddpg recovery
+            "recovery": ["2020-07-11_22-41-30_SAC_shelf_dynamic_env_Gaussian_", "2020-07-11_22-41-13_SAC_shelf_dynamic_env_Gaussian_", "2020-07-11_22-40-57_SAC_shelf_dynamic_env_Gaussian_"], # eps_safe=0.2, gamma_safe=0.8, ddpg recovery (NEW REWARD)
             "RCPO": ["2020-06-15_19-47-45_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-48-05_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-48-19_SAC_shelf_dynamic_env_Gaussian_"],
             "sac_lagrangian": ["2020-06-04_04-31-13_SAC_shelf_dynamic_env_Gaussian_", "2020-06-03_23-56-14_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-41-22_SAC_shelf_dynamic_env_Gaussian_"], # nu = 1 (tried nu=1, 10, 100 this was best)
             "sac_lagrangian_update": ["2020-06-16_00-02-34_SAC_shelf_dynamic_env_Gaussian_", "2020-06-16_00-03-21_SAC_shelf_dynamic_env_Gaussian_", "2020-06-16_00-03-30_SAC_shelf_dynamic_env_Gaussian_"] 
@@ -122,16 +132,25 @@ experiment_map = {
             # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-02-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.2
             # "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
             # 'recovery': ["2020-06-28_21-58-25_SAC_shelf_env_Gaussian_", "2020-06-28_21-59-18_SAC_shelf_env_Gaussian_", "2020-06-28_21-59-31_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
-            'recovery': ["2020-06-29_08-00-13_SAC_shelf_env_Gaussian_", "2020-06-29_08-00-23_SAC_shelf_env_Gaussian_", "2020-06-29_08-01-04_SAC_shelf_env_Gaussian_"], # update model only...
-                                                                                                                                                                       # batch balancing...
-                                                                                                                                                                       # Vsafe update with new trained model (replay one)
+            # 'recovery': ["2020-06-29_08-00-13_SAC_shelf_env_Gaussian_", "2020-06-29_08-00-23_SAC_shelf_env_Gaussian_", "2020-06-29_08-01-04_SAC_shelf_env_Gaussian_"], # update model only...
+            # 'recovery': ["2020-06-29_19-26-58_SAC_shelf_env_Gaussian_", "2020-06-29_19-27-14_SAC_shelf_env_Gaussian_", "2020-06-29_19-27-26_SAC_shelf_env_Gaussian_"], # batch balancing
+            # 'recovery': ["2020-06-30_21-57-03_SAC_shelf_env_Gaussian_", "2020-06-30_21-57-10_SAC_shelf_env_Gaussian_", "2020-06-30_21-57-48_SAC_shelf_env_Gaussian_"],   # continuous updating, eps 0.25, gamma=0.75, hor=10
+            # 'recovery': ["2020-07-09_10-03-33_SAC_shelf_env_Gaussian_", "2020-07-09_17-23-47_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.25
+            # 'recovery': ["2020-07-09_17-23-53_SAC_shelf_env_Gaussian_"], # gamma_safe=0.55, eps_safe=0.25
+            'recovery': ["2020-07-09_17-24-50_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.2
+            # 'recovery': ["2020-07-09_17-47-14_SAC_shelf_env_Gaussian_"], # gamma_safe=0.5, eps_safe=0.25
+            # 'recovery': ["2020-07-09_17-47-27_SAC_shelf_env_Gaussian_"], # gamma_safe=0.5, eps_safe=0.2
+            # 'recovery': ["2020-07-09_17-47-40_SAC_shelf_env_Gaussian_"], # gamma_safe=0.4, eps_safe=0.25
+            # 'recovery': ["2020-07-10_02-37-46_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.4
+            # 'recovery': ["2020-07-10_02-37-27_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.3
+            # 'recovery': ["2020-07-10_02-37-35_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.35
+            # 'recovery': ["2020-07-09_22-21-16_SAC_shelf_env_Gaussian_"], #gamma_safe=0.55, eps_safe=0.15
+            # 'recovery': ["2020-07-10_02-37-55_SAC_shelf_env_Gaussian_"], 
 
-            # "recovery" : ["2020-06-28_03-37-12_SAC_shelf_env_Gaussian_", "2020-06-28_03-36-47_SAC_shelf_env_Gaussian_", "2020-06-28_03-37-37_SAC_shelf_env_Gaussian_"],
-            # "recovery": ["2020-06-28_02-24-00_SAC_shelf_env_Gaussian_", "2020-06-28_02-24-18_SAC_shelf_env_Gaussian_", "2020-06-28_02-24-26_SAC_shelf_env_Gaussian_"],
 
-            # "recovery": ["2020-06-21_23-02-02_SAC_shelf_env_Gaussian_", "2020-06-21_23-05-33_SAC_shelf_env_Gaussian_", "2020-06-21_23-06-37_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3 low data
-            # "recovery": ["2020-06-20_05-54-22_SAC_shelf_env_Gaussian_", "2020-06-19_17-56-06_SAC_shelf_env_Gaussian_"], # eps_safe = 0.15
-            # "recovery": ["2020-06-19_03-00-51_SAC_shelf_env_Gaussian_", "2020-06-19_17-39-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.1
+            # 'recovery': ["2020-07-01_06-52-20_SAC_shelf_env_Gaussian_", "2020-07-01_06-52-28_SAC_shelf_env_Gaussian_", "2020-07-01_06-52-40_SAC_shelf_env_Gaussian_"], # continuous updating, eps 0.2, gamma=0.85, hor=5
+            # 'recovery': ["2020-07-01_23-51-15_SAC_shelf_env_Gaussian_", "2020-07-01_19-30-27_SAC_shelf_env_Gaussian_", "2020-07-01_19-30-35_SAC_shelf_env_Gaussian_"],    # continuous updating, eps 0.2, gamma_safe 0.75, hor=?
+
             "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_", "2020-06-27_01-29-00_SAC_shelf_env_Gaussian_"],
             "sac_penalty3": ["2020-06-22_22-24-29_SAC_shelf_env_Gaussian_", "2020-06-25_23-35-20_SAC_shelf_env_Gaussian_", "2020-06-27_01-32-00_SAC_shelf_env_Gaussian_"]
         },
@@ -238,12 +257,12 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf..., 4000 for image shelf
+def plot_experiment(experiment, max_eps=4000): # 3000 for normal shelf..., 4000 for image shelf
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
     axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-    axs[0].set_ylim(-0.1, int(0.8*max_eps) + 1)
+    axs[0].set_ylim(-0.1, int(0.3*max_eps) + 1)
     axs[0].set_xlabel("Episode", fontsize=16)
     axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
     axs[0].tick_params(axis='both', which='major', labelsize=14)
@@ -421,6 +440,7 @@ if __name__ == '__main__':
     # experiment = "image_maze"
     # experiment = "shelf"
     experiment = "image_shelf"
+    # experiment = "maze"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 
