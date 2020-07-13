@@ -457,7 +457,7 @@ for i_episode in itertools.count(1):
         done = done or episode_steps == env._max_episode_steps
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
-        if args.use_recovery:
+        if args.use_recovery or args.DGD_constraints:
             recovery_memory.push(state, real_action, info['constraint'], next_state, mask)
             # if recovery_used:
             #     memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
