@@ -340,6 +340,22 @@ constraint_demo_data, task_demo_data = get_constraint_demos(env, args)
 # import pickle
 # pickle.dump(constraint_demo_data, open("demos/maze/constraint_demos.pkl", "wb") )
 
+
+# If use task demos, add them to memory and train agent
+if task_demos:
+    num_task_transitions = 0
+    for transition in task_demo_data:
+        memory.push(*transition)
+        num_task_transitions += 1
+        if num_task_transitions == args.num_task_transitions:
+            break
+    print("Number of Task Transitions: ", num_task_transitions)
+    for i in range(args.critic_pretraining_steps):
+        if i % 100 == 0:
+            print("Update: ", i)
+        agent.update_parameters(memory, min(args.batch_size, num_task_transitions), updates)
+        updates += 1
+
 # Train recovery policy and associated value function on demos
 if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints:
     demo_data_states = np.array([d[0] for d in constraint_demo_data])
@@ -371,20 +387,7 @@ if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constra
         train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
 
 
-# If use task demos, add them to memory and train agent
-if task_demos:
-    num_task_transitions = 0
-    for transition in task_demo_data:
-        memory.push(*transition)
-        num_task_transitions += 1
-        if num_task_transitions == args.num_task_transitions:
-            break
-    print("Number of Task Transitions: ", num_task_transitions)
-    for i in range(args.critic_pretraining_steps):
-        if i % 100 == 0:
-            print("Update: ", i)
-        agent.update_parameters(memory, min(args.batch_size, num_task_transitions), updates)
-        updates += 1
+
 
 
 test_rollouts = []
