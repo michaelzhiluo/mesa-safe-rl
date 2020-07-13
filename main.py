@@ -361,7 +361,7 @@ if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constra
         for i in range(args.critic_safe_pretraining_steps):
             if i % 100 == 0:
                 print("CRITIC SAFE UPDATE STEP: ", i)
-            agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
+            agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.safety_critic
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
         agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
@@ -419,7 +419,7 @@ for i_episode in itertools.count(1):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
                 if args.use_qvalue:
-                    agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy,
+                    agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic
                             batch_size=args.batch_size, plot=0)
                 writer.add_scalar('loss/critic_1', critic_1_loss, updates)
                 writer.add_scalar('loss/critic_2', critic_2_loss, updates)

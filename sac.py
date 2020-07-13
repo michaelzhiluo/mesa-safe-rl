@@ -51,7 +51,11 @@ class QSafeWrapper:
         self.Q_sampling_recovery = args.Q_sampling_recovery
         self.tmp_env = tmp_env
 
-    def update_parameters(self, ep=None, memory=None, policy=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
+        self.lagrangian_recovery = args.lagrangian_recovery
+        self.recovery_lambda = args.recovery_lambda
+        self.eps_safe = args.eps_safe
+
+    def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
         state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(batch_size=batch_size, pos_fraction=self.pos_fraction)
         state_batch = torch.FloatTensor(state_batch).to(self.device)
@@ -80,9 +84,19 @@ class QSafeWrapper:
             pi, log_pi, _ = self.policy.sample(state_batch)
 
             qf1_pi, qf2_pi = self.safety_critic(state_batch, pi)
-            max_qf_pi = torch.max(qf1_pi, qf2_pi)
+            max_sqf_pi = torch.max(qf1_pi, qf2_pi)
 
-            policy_loss = max_qf_pi.mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
+
+            if self.lagrangian_recovery:
+                assert critic is not None
+                pi, log_pi, _ = policy.sample(state_batch)
+                qf1_pi, qf2_pi = critic(state_batch, pi)
+                min_qf_pi = torch.min(qf1_pi, qf2_pi)
+                policy_loss = ((self.alpha * log_pi) + self.recovery_lambda * (max_sqf_pi - self.eps_safe) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
+
+            else:
+                policy_loss = max_sqf_pi.mean()
+
 
             self.policy_optim.zero_grad()
             policy_loss.backward()
