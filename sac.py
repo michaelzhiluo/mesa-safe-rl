@@ -92,7 +92,7 @@ class QSafeWrapper:
                 pi, log_pi, _ = policy.sample(state_batch)
                 qf1_pi, qf2_pi = critic(state_batch, pi)
                 min_qf_pi = torch.min(qf1_pi, qf2_pi)
-                policy_loss = ((self.alpha * log_pi) + self.recovery_lambda * (max_sqf_pi - self.eps_safe) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
+                policy_loss = (self.recovery_lambda * (max_sqf_pi - self.eps_safe) - min_qf_pi).mean() # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
 
             else:
                 policy_loss = max_sqf_pi.mean()
