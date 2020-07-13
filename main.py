@@ -432,6 +432,7 @@ for i_episode in itertools.count(1):
         next_state, reward, done, info = env.step(real_action) # Step
         info['recovery'] = recovery_used
 
+
         if args.cnn:
             next_state = process_obs(next_state, args.env_name)
 
@@ -453,6 +454,9 @@ for i_episode in itertools.count(1):
 
         if args.use_recovery:
             recovery_memory.push(state, action, info['constraint'], next_state, mask)
+            if recovery_used:
+                memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
+
         state = next_state
         ep_states.append(state)
         ep_actions.append(real_action)
