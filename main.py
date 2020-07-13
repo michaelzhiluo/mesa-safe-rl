@@ -458,9 +458,9 @@ for i_episode in itertools.count(1):
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
         if args.use_recovery:
-            recovery_memory.push(state, action, info['constraint'], next_state, mask)
-            if recovery_used:
-                memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
+            recovery_memory.push(state, real_action, info['constraint'], next_state, mask)
+            # if recovery_used:
+            #     memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
 
         state = next_state
         ep_states.append(state)

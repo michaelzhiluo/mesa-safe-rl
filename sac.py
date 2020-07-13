@@ -41,6 +41,7 @@ class QSafeWrapper:
         self.target_update_interval = args.target_update_interval
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
         if not self.images:
+            # self.policy = GaussianPolicy(obs_space.shape[0], ac_space.shape[0], args.hidden_size, action_space).to(self.device)
             self.policy = DeterministicPolicy(obs_space.shape[0], ac_space.shape[0], hidden_size, action_space).to(self.device)
         else:
             self.policy = DeterministicPolicyCNN(obs_space, ac_space.shape[0], hidden_size, args.env_name, action_space).to(self.device)
@@ -54,6 +55,7 @@ class QSafeWrapper:
         self.lagrangian_recovery = args.lagrangian_recovery
         self.recovery_lambda = args.recovery_lambda
         self.eps_safe = args.eps_safe
+        self.alpha = args.alpha
 
     def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
