@@ -291,6 +291,9 @@ parser.add_argument('--use_value', action="store_true")
 parser.add_argument('--use_qvalue', action="store_true")
 parser.add_argument('--pred_time', action="store_true")
 parser.add_argument('--opt_value', action="store_true")
+parser.add_argument('--lagrangian_recovery', action="store_true")
+parser.add_argument('--recovery_lambda', type=float, default=0.01, metavar='G',
+                    help='todo') # TODO: needs some tuning
 parser.add_argument('--num_task_transitions', type=int, default=10000000)
 parser.add_argument('--num_constraint_transitions', type=int, default=10000) # Make this 20K+ for original shelf env stuff, trying with fewer rn
 parser.add_argument('--reachability_hor', type=int, default=2)
@@ -298,8 +301,7 @@ parser.add_argument('--reachability_hor', type=int, default=2)
 
 parser.add_argument('--DGD_constraints', action="store_true") 
 parser.add_argument('--nu', type=float, default=0.01, metavar='G',
-                    help='Penalty parameter α determines the relative importance of the constraint\
-                            term against the reward (default: 0.01)') # TODO: needs some tuning
+                    help='todo') # TODO: needs some tuning
 parser.add_argument('--update_nu', action="store_true")
 
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
