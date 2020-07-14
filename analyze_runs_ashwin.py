@@ -5,27 +5,40 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline, BSpline
 
 experiment_map = {
+    # "maze": {
+    #     "algs": {
+    #         # "recovery": ["2020-04-22_00-28-46_SAC_maze_Gaussian_", "2020-04-22_03-19-56_SAC_maze_Gaussian_", "2020-04-22_07-59-58_SAC_maze_Gaussian_"],
+    #         "recovery": ["2020-07-09_19-08-08_SAC_maze_Gaussian_", "2020-07-09_19-18-44_SAC_maze_Gaussian_", "2020-07-09_19-18-37_SAC_maze_Gaussian_"], # DDPG recovery, gamma_safe=0.5, eps_safe=0.15, pos_fraction=0.3
+    #         # "recovery": ["2020-06-01_06-12-07_SAC_maze_Gaussian_", "2020-06-01_06-12-31_SAC_maze_Gaussian_", "2020-06-01_06-12-41_SAC_maze_Gaussian_"], # Latest run on master...not *quite* as good, maybe need to look into it still?
+    #         # "recovery_reachability" : ["2020-06-01_10-17-26_SAC_maze_Gaussian_", "2020-06-01_10-17-37_SAC_maze_Gaussian_", "2020-06-01_10-17-50_SAC_maze_Gaussian_"], # reachability stuff barely gives a win so not using it for now
+    #         "sac_norecovery": ["2020-04-22_00-50-15_SAC_maze_Gaussian_", "2020-04-22_09-54-41_SAC_maze_Gaussian_", "2020-04-22_09-56-59_SAC_maze_Gaussian_"],
+    #         # "sac_penalty5": ["2020-04-22_05-55-55_SAC_maze_Gaussian_", "2020-04-22_09-54-56_SAC_maze_Gaussian_", "2020-04-22_09-58-36_SAC_maze_Gaussian_"],
+    #         # "sac_penalty10": ["2020-04-22_05-56-18_SAC_maze_Gaussian_", "2020-04-22_09-55-06_SAC_maze_Gaussian_", "2020-04-22_10-09-11_SAC_maze_Gaussian_"],
+    #         "sac_penalty20": ["2020-04-22_05-56-33_SAC_maze_Gaussian_", "2020-04-22_09-55-13_SAC_maze_Gaussian_", "2020-04-22_10-43-14_SAC_maze_Gaussian_"],
+    #         "sac_penalty50": ["2020-04-27_09-20-34_SAC_maze_Gaussian_", "2020-04-27_09-20-54_SAC_maze_Gaussian_", "2020-04-27_09-21-14_SAC_maze_Gaussian_"],
+    #         "sac_penalty75": ["2020-04-27_09-25-19_SAC_maze_Gaussian_", "2020-04-27_09-25-35_SAC_maze_Gaussian_", "2020-04-27_09-25-48_SAC_maze_Gaussian_"],
+    #         "sac_penalty100": ["2020-04-27_09-23-49_SAC_maze_Gaussian_", "2020-04-27_09-24-03_SAC_maze_Gaussian_", "2020-04-27_09-24-15_SAC_maze_Gaussian_"],
+    #         "sac_lagrangian": ["2020-04-30_09-42-50_SAC_maze_Gaussian_", "2020-04-30_09-42-55_SAC_maze_Gaussian_", "2020-04-30_10-16-13_SAC_maze_Gaussian_"]
+    #     },
+    #     "outfile": "maze_plot.png"
+    # },
     "maze": {
         "algs": {
-            # "recovery": ["2020-04-22_00-28-46_SAC_maze_Gaussian_", "2020-04-22_03-19-56_SAC_maze_Gaussian_", "2020-04-22_07-59-58_SAC_maze_Gaussian_"],
-            "recovery": ["2020-07-09_19-08-08_SAC_maze_Gaussian_", "2020-07-09_19-18-44_SAC_maze_Gaussian_", "2020-07-09_19-18-37_SAC_maze_Gaussian_"], # DDPG recovery, gamma_safe=0.5, eps_safe=0.15, pos_fraction=0.3
-            # "recovery": ["2020-06-01_06-12-07_SAC_maze_Gaussian_", "2020-06-01_06-12-31_SAC_maze_Gaussian_", "2020-06-01_06-12-41_SAC_maze_Gaussian_"], # Latest run on master...not *quite* as good, maybe need to look into it still?
-            # "recovery_reachability" : ["2020-06-01_10-17-26_SAC_maze_Gaussian_", "2020-06-01_10-17-37_SAC_maze_Gaussian_", "2020-06-01_10-17-50_SAC_maze_Gaussian_"], # reachability stuff barely gives a win so not using it for now
-            "sac_norecovery": ["2020-04-22_00-50-15_SAC_maze_Gaussian_", "2020-04-22_09-54-41_SAC_maze_Gaussian_", "2020-04-22_09-56-59_SAC_maze_Gaussian_"],
-            # "sac_penalty5": ["2020-04-22_05-55-55_SAC_maze_Gaussian_", "2020-04-22_09-54-56_SAC_maze_Gaussian_", "2020-04-22_09-58-36_SAC_maze_Gaussian_"],
-            # "sac_penalty10": ["2020-04-22_05-56-18_SAC_maze_Gaussian_", "2020-04-22_09-55-06_SAC_maze_Gaussian_", "2020-04-22_10-09-11_SAC_maze_Gaussian_"],
-            "sac_penalty20": ["2020-04-22_05-56-33_SAC_maze_Gaussian_", "2020-04-22_09-55-13_SAC_maze_Gaussian_", "2020-04-22_10-43-14_SAC_maze_Gaussian_"],
-            "sac_penalty50": ["2020-04-27_09-20-34_SAC_maze_Gaussian_", "2020-04-27_09-20-54_SAC_maze_Gaussian_", "2020-04-27_09-21-14_SAC_maze_Gaussian_"],
-            "sac_penalty75": ["2020-04-27_09-25-19_SAC_maze_Gaussian_", "2020-04-27_09-25-35_SAC_maze_Gaussian_", "2020-04-27_09-25-48_SAC_maze_Gaussian_"],
-            "sac_penalty100": ["2020-04-27_09-23-49_SAC_maze_Gaussian_", "2020-04-27_09-24-03_SAC_maze_Gaussian_", "2020-04-27_09-24-15_SAC_maze_Gaussian_"],
-            "sac_lagrangian": ["2020-04-30_09-42-50_SAC_maze_Gaussian_", "2020-04-30_09-42-55_SAC_maze_Gaussian_", "2020-04-30_10-16-13_SAC_maze_Gaussian_"]
+            "recovery": ["2020-07-14_07-46-28_SAC_maze_Gaussian_recovery", "2020-07-14_10-38-39_SAC_maze_Gaussian_recovery", "2020-07-14_09-13-40_SAC_maze_Gaussian_recovery"],
+            "ddpg_recovery": ["2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"],
+            "sac_norecovery": ["2020-07-14_07-53-24_SAC_maze_Gaussian_vanilla", "2020-07-14_07-56-18_SAC_maze_Gaussian_vanilla", "2020-07-14_07-59-01_SAC_maze_Gaussian_vanilla"],
+            # "sac_penalty10": ["2020-07-14_09-18-41_SAC_maze_Gaussian_reward_10", "2020-07-14_09-25-31_SAC_maze_Gaussian_reward_10", "2020-07-14_09-31-38_SAC_maze_Gaussian_reward_10"],
+            "sac_penalty50": ["2020-07-14_08-01-37_SAC_maze_Gaussian_reward_50", "2020-07-14_08-22-14_SAC_maze_Gaussian_reward_50", "2020-07-14_08-50-58_SAC_maze_Gaussian_reward_50"],
+            # "sac_penalty100": ["2020-07-14_09-38-04_SAC_maze_Gaussian_reward_100", "2020-07-14_10-08-58_SAC_maze_Gaussian_reward_100", "2020-07-14_10-31-51_SAC_maze_Gaussian_reward_100"],
+            "sac_lagrangian": ["2020-07-14_10-15-18_SAC_maze_Gaussian_nu_100", "2020-07-14_10-47-36_SAC_maze_Gaussian_nu_100", "2020-07-14_11-36-36_SAC_maze_Gaussian_nu_100"],
+            "RCPO": ["2020-07-14_08-02-41_SAC_maze_Gaussian_lambda_50", "2020-07-14_08-46-35_SAC_maze_Gaussian_lambda_50", "2020-07-14_09-31-38_SAC_maze_Gaussian_lambda_50"],
         },
         "outfile": "maze_plot.png"
     },
     "image_maze": {
         "algs": {
-            # "recovery": ["2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
-            "recovery": ["2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "2020-07-07_05-10-41_SAC_image_maze_Gaussian_"], # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
+            "recovery": ["2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
+            "ddpg_recovery": ["2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "2020-07-07_05-10-41_SAC_image_maze_Gaussian_"], # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
             "sac_norecovery": ["2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
             # "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
             "sac_penalty20": ["2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
@@ -159,7 +172,8 @@ names = {
     "sac_penalty50": "SAC (penalty 50)",
     "sac_penalty75": "SAC (penalty 75)",
     "sac_penalty100": "SAC (penalty 100)",
-    "recovery": "SAC + Recovery",
+    "recovery": "SAC + Model-Based Recovery",
+    "ddpg_recovery": "SAC + Model-Free Recovery",
     "recovery_reachability": "SAC + Recovery + Reachablity",
     "sac_lagrangian" : "SAC + Lagrangian",
     "sac_lagrangian_update": "SAC + Lagrangian Update",
@@ -199,11 +213,12 @@ names = {
 
 colors = {
     "sac_norecovery": "g",
-    "sac_penalty20": "blue",
+    "sac_penalty20": "orange",
     "sac_penalty50": "orange",
     "sac_penalty75": "purple",
     "sac_penalty100": "black",
     "recovery": "red",
+    "ddpg_recovery": "blue",
     "recovery_reachability": "cyan",
     "sac_lagrangian": "pink",
     "sac_lagrangian_update": "teal",
@@ -244,12 +259,12 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf..., 4000 for image shelf
+def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf..., 4000 for image shelf
 
     fig, axs = plt.subplots(4, figsize=(16, 27))
 
     axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-    axs[0].set_ylim(-0.1, int(0.3*max_eps) + 1)
+    axs[0].set_ylim(-0.1, int(0.5*max_eps) + 1)
     axs[0].set_xlabel("Episode", fontsize=16)
     axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
     axs[0].tick_params(axis='both', which='major', labelsize=14)
@@ -294,6 +309,8 @@ def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf..., 4000 
         alg_names_new += ['RCPO']
     if 'recovery' in alg_names:
         alg_names_new += ['recovery']
+    if 'ddpg_recovery' in alg_names:
+        alg_names_new += ['ddpg_recovery']
 
     print("ALG NAMES NEW: ", alg_names_new)
     for alg in alg_names_new:
@@ -427,8 +444,8 @@ def plot_experiment(experiment, max_eps=3000): # 3000 for normal shelf..., 4000 
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    # experiment = "image_maze"
-    experiment = "shelf"
+    experiment = "image_maze"
+    # experiment = "shelf"
     # experiment = "image_shelf"
     # experiment = "maze"
     # experiment = "image_shelf_dynamic"

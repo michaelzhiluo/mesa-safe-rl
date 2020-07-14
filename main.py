@@ -21,6 +21,9 @@ import cv2
 
 torchify = lambda x: torch.FloatTensor(x).to('cuda')
 
+def linear_schedule(startval, endval, endtime):
+    return lambda t: startval + t/endtime * (endval - startval) if t < endtime else endval
+
 def set_seed(seed, env):
     torch.manual_seed(args.seed)
     np.random.seed(args.seed)
@@ -304,6 +307,10 @@ parser.add_argument('--nu', type=float, default=0.01, metavar='G',
                     help='todo') # TODO: needs some tuning
 parser.add_argument('--update_nu', action="store_true")
 
+parser.add_argument('--nu_schedule', action="store_true")
+parser.add_argument('--nu_start', type=float, default=1e3, metavar='G', help='start value for nu (high)')
+parser.add_argument('--nu_end', type=float, default=0, metavar='G', help='end value for nu (low)')
+
 parser.add_argument('--RCPO', action="store_true") 
 parser.add_argument('--lambda_RCPO', type=float, default=0.01, metavar='G',
                     help='todo') # TODO: needs some tuning
@@ -313,6 +320,11 @@ parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
 parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
                     help='Override default parameters, see https://github.com/kchua/handful-of-trials#overrides')
 args = parser.parse_args()
+
+if args.nu_schedule:
+    nu_schedule = linear_schedule(args.nu_start, args.nu_end, args.num_eps)
+else:
+    nu_schedule = linear_schedule(args.nu, args.nu, 0)
 
 # TODO: clean this up later
 if 'shelf' in args.env_name and args.num_constraint_transitions == 10000:
@@ -426,7 +438,7 @@ for i_episode in itertools.count(1):
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
-                critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, min(args.batch_size, len(memory)), updates, safety_critic=agent.safety_critic)
+                critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, min(args.batch_size, len(memory)), updates, safety_critic=agent.safety_critic, nu=nu_schedule(i_episode))
                 if args.use_qvalue:
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
                             batch_size=args.batch_size, plot=0)
