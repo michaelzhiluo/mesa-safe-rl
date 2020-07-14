@@ -38,7 +38,11 @@ python main.py --env-name simplepointbot1 --cuda --eps_safe 0.1 --gamma_safe 0.9
 
 # --- MAZE ENV --- 
 # Recovery RL (Master)
-python -m main --cuda --env-name maze --use_recovery --use_value --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.85 --eps_safe 0.05
+# python -m main --cuda --env-name maze --use_recovery --use_value --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.85 --eps_safe 0.05
+python -m main --cuda --env-name maze --use_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3
+
+# Recovery RL DDPG Recovery (fast-update)
+python -m main --cuda --env-name maze --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3
 
 # Unconstrained (Master)
 python -m main --cuda --env-name maze
@@ -63,6 +67,9 @@ python -m main --cuda --env-name maze --eps_safe 0.05 --gamma_safe 0.85 --RCPO -
 
 # Recovery RL (Master)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --use_recovery --critic_safe_update_freq 20 --recovery_policy_update_freq 20 --gamma_safe 0.85 --eps_safe 0.4 --use_value
+
+# Recovery RL DDPG Recovery (fast-update)
+python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --use_recovery --critic_safe_update_freq 20 --recovery_policy_update_freq 20 --gamma_safe 0.85 --eps_safe 0.5 --use_qvalue --ddpg_recovery
 
 # Unconstrained (Master)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000
@@ -89,6 +96,9 @@ python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.000
 # Recovery RL (Master)
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --use_recovery --critic_safe_update_freq 20 --recovery_policy_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_value
 
+# Recovery RL DDPG Recovery (fast-update)
+python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --use_recovery --critic_safe_update_freq 20 --recovery_policy_update_freq 20 --gamma_safe 0.95 --eps_safe 0.3 --use_qvalue --ddpg_recovery --num_eps 2000
+
 # Unconstrained (Master)
 python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000
 
@@ -106,6 +116,9 @@ python -m main --cuda --env-name shelf_dynamic_env --task_demos --alpha 0.05 --t
 
 # Recovery RL (vismpc-recovery)
 python -m main --cuda --env-name image_maze --use_recovery --use_value --critic_safe_update_freq 200000 --recovery_policy_update_freq 200000 --gamma_safe 0.8 --eps_safe 0.05 --cnn --vismpc_recovery --num_constraint_transitions 10000 --model_fname model2_lowdata --beta 10 --kappa 10000 --load_vismpc
+
+# Recovery RL DDPG Recovery (fast-update)
+python -m main --cuda --env-name image_maze --use_recovery --use_qvalue --ddpg_recovery --critic_safe_update_freq 200000 --recovery_policy_update_freq 200000 --gamma_safe 0.65 --eps_safe 0.1 --cnn  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --num_eps 500
 
 # Unconstrained (Master)
 python -m main --cuda --env-name image_maze --cnn
