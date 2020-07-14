@@ -304,6 +304,10 @@ parser.add_argument('--nu', type=float, default=0.01, metavar='G',
                     help='todo') # TODO: needs some tuning
 parser.add_argument('--update_nu', action="store_true")
 
+parser.add_argument('--RCPO', action="store_true") 
+parser.add_argument('--lambda_RCPO', type=float, default=0.01, metavar='G',
+                    help='todo') # TODO: needs some tuning
+
 parser.add_argument('-ca', '--ctrl_arg', action='append', nargs=2, default=[],
                     help='Controller arguments, see https://github.com/kchua/handful-of-trials#controller-arguments')
 parser.add_argument('-o', '--override', action='append', nargs=2, default=[],
@@ -353,11 +357,11 @@ if task_demos:
     for i in range(args.critic_pretraining_steps):
         if i % 100 == 0:
             print("Update: ", i)
-        agent.update_parameters(memory, min(args.batch_size, num_task_transitions), updates)
+        agent.update_parameters(memory, min(args.batch_size, num_task_transitions), updates, safety_critic=agent.safety_critic)
         updates += 1
 
 # Train recovery policy and associated value function on demos
-if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints:
+if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints or args.RCPO:
     demo_data_states = np.array([d[0] for d in constraint_demo_data])
     demo_data_actions = np.array([d[1] for d in constraint_demo_data])
     demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
@@ -383,7 +387,7 @@ if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constra
                     batch_size=min(args.batch_size, len(constraint_demo_data)))
     else:
         agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
-    if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints):
+    if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints or args.RCPO):
         train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
 
 
@@ -422,7 +426,7 @@ for i_episode in itertools.count(1):
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
-                critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, args.batch_size, updates)
+                critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, min(args.batch_size, len(memory)), updates, safety_critic=agent.safety_critic)
                 if args.use_qvalue:
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
                             batch_size=args.batch_size, plot=0)
@@ -457,7 +461,7 @@ for i_episode in itertools.count(1):
         done = done or episode_steps == env._max_episode_steps
         memory.push(state, action, reward, next_state, mask) # Append transition to memory
 
-        if args.use_recovery or args.DGD_constraints:
+        if args.use_recovery or args.DGD_constraints or args.RCPO:
             recovery_memory.push(state, real_action, info['constraint'], next_state, mask)
             # if recovery_used:
             #     memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
@@ -481,7 +485,7 @@ for i_episode in itertools.count(1):
     if "shelf" in args.env_name and info['reward'] > -0.5:
         num_successes += 1
 
-    if args.use_recovery and not args.disable_learned_recovery:
+    if (args.use_recovery and not args.disable_learned_recovery):
         all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
         if i_episode % args.recovery_policy_update_freq == 0 and not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints):
             train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])

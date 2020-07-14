@@ -59,7 +59,7 @@ class QSafeWrapper:
 
     def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
-        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(batch_size=batch_size, pos_fraction=self.pos_fraction)
+        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(batch_size=min(batch_size, len(memory)), pos_fraction=self.pos_fraction)
         state_batch = torch.FloatTensor(state_batch).to(self.device)
         next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
         action_batch = torch.FloatTensor(action_batch).to(self.device)
@@ -270,6 +270,10 @@ class SAC(object):
         self.log_nu = torch.tensor(np.log(self.nu), requires_grad=True, device=self.device)
         self.nu_optim = Adam([self.log_nu], lr=0.1*args.lr)
 
+        self.RCPO = args.RCPO
+        self.lambda_RCPO = args.lambda_RCPO
+        self.log_lambda_RCPO = torch.tensor(np.log(self.lambda_RCPO), requires_grad=True, device=self.device)
+        self.lambda_RCPO_optim = Adam([self.log_lambda_RCPO], lr=0.1*args.lr) # Make lambda updated slower than other things
 
         hard_update(self.critic_target, self.critic)
 
@@ -352,7 +356,7 @@ class SAC(object):
             q1, q2 = self.critic(states, actions)
             return torch.max(q1, q2).detach().cpu().numpy()
 
-    def update_parameters(self, memory, batch_size, updates, nu=None):
+    def update_parameters(self, memory, batch_size, updates, nu=None, safety_critic=None):
         if nu is None:
             nu = self.nu
         # Sample a batch from memory
@@ -369,6 +373,10 @@ class SAC(object):
             qf1_next_target, qf2_next_target = self.critic_target(next_state_batch, next_state_action)
             min_qf_next_target = torch.min(qf1_next_target, qf2_next_target) - self.alpha * next_state_log_pi
             next_q_value = reward_batch + mask_batch * self.gamma * (min_qf_next_target)
+            if self.RCPO:
+                qsafe_batch = torch.max(*safety_critic(state_batch, action_batch))
+                assert safety_critic is not None
+                next_q_value -= self.lambda_RCPO * qsafe_batch
         qf1, qf2 = self.critic(state_batch, action_batch)  # Two Q-functions to mitigate positive bias in the policy improvement step
         qf1_loss = F.mse_loss(qf1, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
         qf2_loss = F.mse_loss(qf2, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
@@ -416,6 +424,14 @@ class SAC(object):
             nu_loss.backward()
             self.nu_optim.step()
             self.nu = self.log_nu.exp()
+
+        # Optimize lambda
+        if self.RCPO:
+            lambda_RCPO_loss = (self.log_lambda_RCPO * (self.eps_safe - qsafe_batch).detach()).mean() # TODO: used log trick here too, just like alpha case, need to understand why this is done.
+            self.lambda_RCPO_optim.zero_grad()
+            lambda_RCPO_loss.backward()
+            self.lambda_RCPO_optim.step()
+            self.lambda_RCPO = self.log_lambda_RCPO.exp()
 
 
         if updates % self.target_update_interval == 0:

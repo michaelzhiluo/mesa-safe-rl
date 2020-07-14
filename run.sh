@@ -15,6 +15,10 @@ python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints 
 # RCPO (RCPO)
 python main.py --env-name simplepointbot0 --cuda --eps_safe 0.1 --gamma_safe 0.8 --RCPO --lamda {} --use_value
 
+
+# RCPO (fast_update)
+python main.py --env-name simplepointbot0 --cuda --gamma_safe 0.5 --eps_safe 0.2 --use_qvalue --RCPO --lambda_RCPO 1000
+
 # --- POINTBOT 1 ENV ---
 # Recovery RL (Master)
 python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.9 --eps_safe 0.1 --use_value
