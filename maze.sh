@@ -46,18 +46,18 @@ done
 # for i in {1..3}
 # do
 # 	echo "Lagrangian Nu 1 Run $i"
-# 	python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu 1 --gamma_safe 0.8 --logdir maze --logdir_suffix nu_1 --num_eps 2000 --seed $i
+# 	python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu 1 --gamma_safe 0.8 --eps_safe 0.05 --logdir maze --logdir_suffix nu_1 --num_eps 2000 --seed $i
 # done
 
 # for i in {1..3}
 # do
 # 	echo "Lagrangian Nu 10 Run $i"
-# 	python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu 10 --gamma_safe 0.8 --logdir maze --logdir_suffix nu_10 --num_eps 2000 --seed $i
+# 	python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu 10 --gamma_safe 0.8 --eps_safe 0.05 --logdir maze --logdir_suffix nu_10 --num_eps 2000 --seed $i
 # done
 
 # for i in {1..3}
 # do
 # 	echo "Lagrangian Nu 100 Run $i"
-# 	python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu 100 --gamma_safe 0.8 --logdir maze --logdir_suffix nu_100 --num_eps 2000 --seed $i
+# 	python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu 100 --gamma_safe 0.8 --eps_safe 0.05 --logdir maze --logdir_suffix nu_100 --num_eps 2000 --seed $i
 # done
 

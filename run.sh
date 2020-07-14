@@ -42,6 +42,9 @@ python -m main --cuda --env-name maze
 # Reward Penalty (Master)
 python -m main --cuda --env-name maze --constraint_reward_penalty 50
 
+# Lagrangian (fast_update)
+python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --update_nu --nu {} --gamma_safe 0.85 --eps_safe 0.05
+
 # Lagrangian (saclagrangian-new)
 python main.py --env-name maze --cuda --use_qvalue --DGD_constraints --nu {} --eps_safe 0.05
 
@@ -65,6 +68,9 @@ python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.000
 
 # Lagrangian (saclagrangian-new)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --gamma_safe 0.85 --eps_safe 0.4 --critic_safe_update_freq 20 --use_qvalue --DGD_constraints --nu 1
+
+# Lagrangian (fast_update)
+python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --DGD_constraints --update_nu --nu 10 --gamma_safe 0.85 --eps_safe 0.4 --use_qvalue --num_task_transitions 500
 
 # RCPO (RCPO)
 python -m main --cuda --env-name shelf_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --RCPO --lamda {} --eps_safe 0.4 --gamma_safe 0.85 --critic_safe_update_freq 20 --use_value
