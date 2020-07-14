@@ -264,7 +264,7 @@ class SAC(object):
 
         self.DGD_constraints = args.DGD_constraints
         self.nu = args.nu
-        self.update_nu = args.nu
+        self.update_nu = args.update_nu
         self.cnn = args.cnn
         self.eps_safe = args.eps_safe
         self.log_nu = torch.tensor(np.log(self.nu), requires_grad=True, device=self.device)
