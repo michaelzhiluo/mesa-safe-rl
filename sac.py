@@ -24,12 +24,17 @@ class QSafeWrapper:
         self.device = torch.device("cuda" if args.cuda else "cpu")
         self.ac_space = ac_space
         self.images = args.cnn
+        self.encoding = args.vismpc_recovery
         if not self.images:
             self.safety_critic = QNetworkConstraint(obs_space.shape[0], ac_space.shape[0], hidden_size).to(device=self.device)
             self.safety_critic_target = QNetworkConstraint(obs_space.shape[0], ac_space.shape[0], args.hidden_size).to(device=self.device)
         else:
-            self.safety_critic = QNetworkConstraintCNN(obs_space, ac_space.shape[0], hidden_size, args.env_name).to(self.device)
-            self.safety_critic_target = QNetworkConstraintCNN(obs_space, ac_space.shape[0], hidden_size, args.env_name).to(self.device)
+            if self.encoding:
+                self.safety_critic = QNetworkConstraint(hidden_size, ac_space.shape[0], hidden_size).to(device=self.device)
+                self.safety_critic_target = QNetworkConstraint(hidden_size, ac_space.shape[0], args.hidden_size).to(device=self.device)
+            else:
+                self.safety_critic = QNetworkConstraintCNN(obs_space, ac_space.shape[0], hidden_size, args.env_name).to(self.device)
+                self.safety_critic_target = QNetworkConstraintCNN(obs_space, ac_space.shape[0], hidden_size, args.env_name).to(self.device)
 
         self.lr = args.lr
         self.safety_critic_optim = Adam(self.safety_critic.parameters(), lr=args.lr)
@@ -57,7 +62,7 @@ class QSafeWrapper:
         self.eps_safe = args.eps_safe
         self.alpha = args.alpha
 
-    def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
+    def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=0):
         # TODO: cleanup this is hardcoded for maze
         state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(batch_size=min(batch_size, len(memory)), pos_fraction=self.pos_fraction)
         state_batch = torch.FloatTensor(state_batch).to(self.device)
@@ -66,14 +71,24 @@ class QSafeWrapper:
         mask_batch = torch.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
         constraint_batch = torch.FloatTensor(constraint_batch).to(self.device).unsqueeze(1)
 
+        if self.encoding:
+            state_batch_enc = self.encoder(state_batch)
+            next_state_batch_enc = self.encoder(next_state_batch)
+
         with torch.no_grad():
             next_state_action, next_state_log_pi, _ = policy.sample(next_state_batch)
-            qf1_next_target, qf2_next_target = self.safety_critic_target(next_state_batch, next_state_action)
+            if self.encoding:
+                qf1_next_target, qf2_next_target = self.safety_critic_target(next_state_batch_enc, next_state_action)
+            else:
+                qf1_next_target, qf2_next_target = self.safety_critic_target(next_state_batch, next_state_action)
             min_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
             next_q_value = constraint_batch + mask_batch * self.gamma_safe * (min_qf_next_target)
 
         # qf1, qf2 = self.safety_critic(state_batch, policy.sample(state_batch)[0])  # Two Q-functions to mitigate positive bias in the policy improvement step
-        qf1, qf2 = self.safety_critic(state_batch, action_batch)  # Two Q-functions to mitigate positive bias in the policy improvement step
+        if self.encoding:
+            qf1, qf2 = self.safety_critic(state_batch_enc, action_batch)  # Two Q-functions to mitigate positive bias in the policy improvement step
+        else:
+            qf1, qf2 = self.safety_critic(state_batch, action_batch)  # Two Q-functions to mitigate positive bias in the policy improvement step
         qf1_loss = F.mse_loss(qf1, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
         qf2_loss = F.mse_loss(qf2, next_q_value)  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
 
@@ -125,9 +140,12 @@ class QSafeWrapper:
             #     plt.show()
 
 
-    def get_value(self, states, actions):
+    def get_value(self, states, actions, encoded=False):
         with torch.no_grad():
-            q1, q2 = self.safety_critic(states, actions)
+            if self.encoding and not encoded:
+                q1, q2 = self.safety_critic(self.encoder(states), actions)
+            else:
+                q1, q2 = self.safety_critic(states, actions)
             return torch.max(q1, q2)
 
     def select_action(self, state, eval=False):
@@ -189,7 +207,10 @@ class QSafeWrapper:
         #     actions = self.torchify(np.array([self.action_space.sample() for _ in range(num_states)]))
 
         if critic is None:
-            qf1, qf2 = self.safety_critic(states, actions)
+            if self.encoding:
+                qf1, qf2 = self.safety_critic(self.encoding(states), actions)
+            else:
+                qf1, qf2 = self.safety_critic(states, actions)
             max_qf = torch.max(qf1, qf2)
 
         grid = max_qf.detach().cpu().numpy()
@@ -203,7 +224,10 @@ class QSafeWrapper:
 
 
     def __call__(self, states, actions):
-        return self.safety_critic(states, actions)
+        if self.encoding:
+            return self.safety_critic(self.encoder(states), actions)
+        else:
+            return self.safety_critic(states, actions)
 
 
 

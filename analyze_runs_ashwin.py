@@ -24,31 +24,26 @@ experiment_map = {
     # },
     "maze": {
         "algs": {
-            "recovery": ["2020-07-14_07-46-28_SAC_maze_Gaussian_recovery", "2020-07-14_10-38-39_SAC_maze_Gaussian_recovery", "2020-07-14_09-13-40_SAC_maze_Gaussian_recovery"],
-            "ddpg_recovery": ["2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"],
-            "sac_norecovery": ["2020-07-14_07-53-24_SAC_maze_Gaussian_vanilla", "2020-07-14_07-56-18_SAC_maze_Gaussian_vanilla", "2020-07-14_07-59-01_SAC_maze_Gaussian_vanilla"],
+            "recovery": ["maze/2020-07-14_07-46-28_SAC_maze_Gaussian_recovery", "maze/2020-07-14_10-38-39_SAC_maze_Gaussian_recovery", "maze/2020-07-14_09-13-40_SAC_maze_Gaussian_recovery"],
+            "ddpg_recovery": ["maze/2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"],
+            "sac_norecovery": ["maze/2020-07-14_07-53-24_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-56-18_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-59-01_SAC_maze_Gaussian_vanilla"],
             # "sac_penalty10": ["2020-07-14_09-18-41_SAC_maze_Gaussian_reward_10", "2020-07-14_09-25-31_SAC_maze_Gaussian_reward_10", "2020-07-14_09-31-38_SAC_maze_Gaussian_reward_10"],
-            "sac_penalty50": ["2020-07-14_08-01-37_SAC_maze_Gaussian_reward_50", "2020-07-14_08-22-14_SAC_maze_Gaussian_reward_50", "2020-07-14_08-50-58_SAC_maze_Gaussian_reward_50"],
+            "sac_penalty50": ["maze/2020-07-14_08-01-37_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-22-14_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-50-58_SAC_maze_Gaussian_reward_50"],
             # "sac_penalty100": ["2020-07-14_09-38-04_SAC_maze_Gaussian_reward_100", "2020-07-14_10-08-58_SAC_maze_Gaussian_reward_100", "2020-07-14_10-31-51_SAC_maze_Gaussian_reward_100"],
-            "sac_lagrangian": ["2020-07-14_10-15-18_SAC_maze_Gaussian_nu_100", "2020-07-14_10-47-36_SAC_maze_Gaussian_nu_100", "2020-07-14_11-36-36_SAC_maze_Gaussian_nu_100"],
-            "RCPO": ["2020-07-14_08-02-41_SAC_maze_Gaussian_lambda_50", "2020-07-14_08-46-35_SAC_maze_Gaussian_lambda_50", "2020-07-14_09-31-38_SAC_maze_Gaussian_lambda_50"],
+            "sac_lagrangian": ["maze/2020-07-14_10-15-18_SAC_maze_Gaussian_nu_100", "maze/2020-07-14_10-47-36_SAC_maze_Gaussian_nu_100", "maze/2020-07-14_11-36-36_SAC_maze_Gaussian_nu_100"],
+            "RCPO": ["maze/2020-07-14_08-02-41_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_08-46-35_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_09-31-38_SAC_maze_Gaussian_lambda_50"],
+            "RSPO": ["maze/2020-07-14_21-23-48_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_20-45-50_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_19-47-31_SAC_maze_Gaussian_RSPO"]
         },
         "outfile": "maze_plot.png"
     },
     "image_maze": {
         "algs": {
-            "recovery": ["2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
-            "ddpg_recovery": ["2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "2020-07-07_05-10-41_SAC_image_maze_Gaussian_"], # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
-            "sac_norecovery": ["2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
+            "recovery": ["runs/2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
+            "ddpg_recovery": ["runs/2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-41_SAC_image_maze_Gaussian_"], # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
+            "sac_norecovery": ["runs/2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
             # "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
-            "sac_penalty20": ["2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
-            # "sac_penalty5": ["2020-06-15_02-22-21_SAC_image_maze_Gaussian_", "2020-06-15_02-22-29_SAC_image_maze_Gaussian_", "2020-06-15_02-22-36_SAC_image_maze_Gaussian_"],
-            "RCPO": ["2020-06-15_08-34-02_SAC_image_maze_Gaussian_", "2020-06-15_08-36-06_SAC_image_maze_Gaussian_", "2020-06-15_08-47-25_SAC_image_maze_Gaussian_"],
-            "sac_lagrangian": ["2020-06-15_19-53-56_SAC_image_maze_Gaussian_", "2020-06-15_20-48-22_SAC_image_maze_Gaussian_", "2020-06-15_19-54-24_SAC_image_maze_Gaussian_"], # nu = 1
-            "sac_lagrangian_update": ["2020-06-16_00-11-54_SAC_image_maze_Gaussian_", "2020-06-16_00-12-06_SAC_image_maze_Gaussian_", "2020-06-16_00-12-27_SAC_image_maze_Gaussian_"] 
-            # "sac_lagrangian": ["2020-06-15_07-58-23_SAC_image_maze_Gaussian_", "2020-06-15_07-58-28_SAC_image_maze_Gaussian_", "2020-06-15_07-58-34_SAC_image_maze_Gaussian_"], # nu = 10
-            # "sac_lagrangian": ["2020-06-15_02-58-01_SAC_image_maze_Gaussian_", "2020-06-15_02-58-09_SAC_image_maze_Gaussian_", "2020-06-15_02-58-18_SAC_image_maze_Gaussian_"], # nu = 50
-            # "sac_lagrangian": ["2020-06-15_04-21-43_SAC_image_maze_Gaussian_", "2020-06-15_04-21-52_SAC_image_maze_Gaussian_", "2020-06-15_04-21-59_SAC_image_maze_Gaussian_"], # nu = 200
+            "sac_penalty20": ["runs/2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
+            "sac_lagrangian": ["image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10"],
         },
         "outfile": "image_maze_plot.png"
     },
@@ -184,6 +179,7 @@ names = {
     "recovery_0.4": "SAC + Recovery (eps=0.4)",
     "recovery_0.4_20k": "SAC + Recovery",
     "RCPO": "RCPO",
+    "RSPO": "RSPO",
     # "recovery_0.4_20k_gamma0.9": "SAC + Recovery (eps=0.4), 20k transitions, gamma=0.9",
     # "recovery_0.4_5k": "SAC + Recovery (eps=0.4)",
     "recovery_0.5": "SAC + Recovery (eps=0.5)",
@@ -236,7 +232,8 @@ colors = {
     "sac_penalty5": "yellow",
     "sac_penalty10": "orange",
     "sac_penalty15": "orange",
-    "RCPO": 'magenta'
+    "RCPO": 'magenta',
+    'RSPO': 'cyan'
     # "sac_penalty25": "magenta",
 
     # "recovery_0.8_images": "purple",
@@ -307,6 +304,8 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf..., 4000 f
         alg_names_new += ['sac_lagrangian_update']
     if 'RCPO' in alg_names:
         alg_names_new += ['RCPO']
+    if "RSPO" in alg_names:
+        alg_names_new += ['RSPO']
     if 'recovery' in alg_names:
         alg_names_new += ['recovery']
     if 'ddpg_recovery' in alg_names:
@@ -315,7 +314,7 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf..., 4000 f
     print("ALG NAMES NEW: ", alg_names_new)
     for alg in alg_names_new:
         exp_dirs = experiment_map[experiment]["algs"][alg]
-        fnames = [osp.join("runs", exp_dir, "run_stats.pkl") for exp_dir in exp_dirs]
+        fnames = [osp.join(exp_dir, "run_stats.pkl") for exp_dir in exp_dirs]
 
         task_successes_list = []
         train_rewards_list = []
@@ -444,10 +443,10 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf..., 4000 f
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    experiment = "image_maze"
+    # experiment = "image_maze"
     # experiment = "shelf"
     # experiment = "image_shelf"
-    # experiment = "maze"
+    experiment = "maze"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 

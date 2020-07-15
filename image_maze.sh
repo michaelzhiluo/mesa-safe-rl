@@ -6,7 +6,7 @@
 # 	python -m main --cuda --env-name image_maze --use_recovery --use_qvalue --ddpg_recovery --critic_safe_update_freq 200000 --recovery_policy_update_freq 200000 --gamma_safe 0.65 --eps_safe 0.1 --cnn  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --num_eps 500 --seed $i --logdir image_maze --logdir_suffix ddpg_recovery
 # done
 
-# SAC Lagrangian Nu=1
+# # SAC Lagrangian Nu=1
 # for i in {1..3}
 # do
 # 	echo "Lagrangian Nu 1 Run $i"
@@ -20,27 +20,26 @@
 # 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu 10  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix nu_10 --num_eps 500 --seed $i
 # done
 
-# # SAC Lagrangian Nu=100
+# # SAC Lagrangian Nu=100      
 # for i in {1..3}
 # do
 # 	echo "Lagrangian Nu 100 Run $i"
 # 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu 100  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix nu_100 --num_eps 500 --seed $i
 # done
 
-# TODO: maybe will want to update the nu and nu_start below...
-# SAC Lagrangian Nu=100 (update nu)
-for i in {1..3}
-do
-	echo "Lagrangian Nu 100 Update Nu Run $i"
-	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu 100  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix update_nu_100 --num_eps 500 --seed $i
-done
+# # SAC Lagrangian Nu=10 (update nu)
+# for i in {1..3}
+# do
+# 	echo "Lagrangian Nu 10 Update Nu Run $i"
+# 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu 10 --update_nu  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix update_nu_10 --num_eps 500 --seed $i
+# done
 
-# SAC Lagrangian RSPO
-for i in {1..3}
-do
-	echo "Lagrangian RSPO Run $i"
-	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu_schedule --nu_start 200  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix RSPO --num_eps 500 --seed $i
-done
+# # SAC Lagrangian RSPO
+# for i in {1..3}
+# do
+# 	echo "Lagrangian RSPO Run $i"
+# 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu_schedule --nu_start 200  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix RSPO --num_eps 500 --seed $i
+# done
 
 # # RCPO Lambda=5
 # for i in {1..3}
@@ -50,9 +49,9 @@ done
 # done
 
 # # RCPO Lambda=20
-# for i in {1..3}
+# for i in {1..1}
 # do
-# 	echo "RCPO Lambda 10 Run $i"
+# 	echo "RCPO Lambda 20 Run $i"
 # 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --RCPO --lambda 20  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix lambda_20 --num_eps 500 --seed $i
 # done
 
@@ -63,18 +62,5 @@ done
 # 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --RCPO --lambda 100  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix lambda_100 --num_eps 500 --seed $i
 # done
 
-# # SAC Lagrangian Nu=100
-# for i in {1..3}
-# do
-# 	echo "Lagrangian Nu 100 Run $i"
-# 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu 100  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix nu_100 --num_eps 500 --seed $i
-# done
-
-# # SAC Lagrangian Nu=100
-# for i in {1..3}
-# do
-# 	echo "Lagrangian Nu 100 Run $i"
-# 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu 100  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix nu_100 --num_eps 500 --seed $i
-# done
 
 # Note: Reward Penalty and Model Based Runs are already done... can include for now, but need to calibrate model based run later... (right now it uses value function)
