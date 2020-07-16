@@ -30,7 +30,7 @@ experiment_map = {
             # "sac_penalty10": ["2020-07-14_09-18-41_SAC_maze_Gaussian_reward_10", "2020-07-14_09-25-31_SAC_maze_Gaussian_reward_10", "2020-07-14_09-31-38_SAC_maze_Gaussian_reward_10"],
             "sac_penalty50": ["maze/2020-07-14_08-01-37_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-22-14_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-50-58_SAC_maze_Gaussian_reward_50"],
             # "sac_penalty100": ["2020-07-14_09-38-04_SAC_maze_Gaussian_reward_100", "2020-07-14_10-08-58_SAC_maze_Gaussian_reward_100", "2020-07-14_10-31-51_SAC_maze_Gaussian_reward_100"],
-            "sac_lagrangian": ["maze/2020-07-14_10-15-18_SAC_maze_Gaussian_nu_100", "maze/2020-07-14_10-47-36_SAC_maze_Gaussian_nu_100", "maze/2020-07-14_11-36-36_SAC_maze_Gaussian_nu_100"],
+            "sac_lagrangian": ["maze/2020-07-14_17-56-02_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_18-58-07_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_19-58-31_SAC_maze_Gaussian_update_nu_100"],
             "RCPO": ["maze/2020-07-14_08-02-41_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_08-46-35_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_09-31-38_SAC_maze_Gaussian_lambda_50"],
             "RSPO": ["maze/2020-07-14_21-23-48_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_20-45-50_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_19-47-31_SAC_maze_Gaussian_RSPO"]
         },
@@ -44,6 +44,8 @@ experiment_map = {
             # "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
             "sac_penalty20": ["runs/2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
             "sac_lagrangian": ["image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10"],
+            "RCPO": ["image_maze/2020-07-15_05-15-11_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_16-09-59_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_13-22-01_SAC_image_maze_Gaussian_lambda_20"],
+            "RSPO": ["image_maze/2020-07-15_19-31-11_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_21-02-14_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_22-31-30_SAC_image_maze_Gaussian_RSPO"],
         },
         "outfile": "image_maze_plot.png"
     },
@@ -443,10 +445,10 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf..., 4000 f
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    # experiment = "image_maze"
+    experiment = "image_maze"
     # experiment = "shelf"
     # experiment = "image_shelf"
-    experiment = "maze"
+    # experiment = "maze"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 

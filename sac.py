@@ -62,7 +62,7 @@ class QSafeWrapper:
         self.eps_safe = args.eps_safe
         self.alpha = args.alpha
 
-    def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=0):
+    def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
         state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(batch_size=min(batch_size, len(memory)), pos_fraction=self.pos_fraction)
         state_batch = torch.FloatTensor(state_batch).to(self.device)
@@ -208,7 +208,7 @@ class QSafeWrapper:
 
         if critic is None:
             if self.encoding:
-                qf1, qf2 = self.safety_critic(self.encoding(states), actions)
+                qf1, qf2 = self.safety_critic(self.encoder(states), actions)
             else:
                 qf1, qf2 = self.safety_critic(states, actions)
             max_qf = torch.max(qf1, qf2)
