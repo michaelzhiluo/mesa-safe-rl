@@ -77,8 +77,8 @@ def experiment_setup(logdir, args):
             residual_model = VisualReconModel(args.env_name, args.hidden_size).to(device=TORCH_DEVICE)
 
             dynamics_param_list = list(transition_model.parameters()) + list(residual_model.parameters()) + list(encoder.parameters())
-            dynamics_optimizer = optim.Adam(dynamics_param_list, lr=1e-3, eps=1e-4)
-            dynamics_finetune_optimizer = optim.Adam(transition_model.parameters(), lr=1e-3, eps=1e-4)
+            dynamics_optimizer = optim.Adam(dynamics_param_list, lr=3e-4, eps=1e-4)
+            dynamics_finetune_optimizer = optim.Adam(transition_model.parameters(), lr=3e-4, eps=1e-4)
 
             if args.load_vismpc:
                 if 'maze' in args.env_name:
@@ -198,8 +198,16 @@ def get_constraint_demos(env, args):
                 constraint_demo_data = constraint_demo_data['images']
             else:
                 constraint_demo_data = constraint_demo_data['lowdim']
-        elif args.env_name == 'maze':
-            constraint_demo_data = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos.pkl"), "rb"))
+        elif 'maze' in args.env_name:
+            if args.env_name == 'maze':
+                constraint_demo_data = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos.pkl"), "rb"))
+            else:
+                # constraint_demo_data, obs_seqs, ac_seqs, constraint_seqs = env.transition_function(args.num_constraint_transitions)
+                demo_data = pickle.load(open(osp.join("demos", args.env_name, "demos.pkl"), "rb"))
+                constraint_demo_data = demo_data['constraint_demo_data']
+                obs_seqs = demo_data['obs_seqs']
+                ac_seqs = demo_data['ac_seqs']
+                constraint_seqs = demo_data['constraint_seqs']
         elif args.env_name == 'minitaur':
             constraint_demo_data = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos.pkl"), "rb"))
             constraint_demo_data_random = pickle.load(open(osp.join("demos", args.env_name, "constraint_demos_random.pkl"), "rb"))
@@ -250,12 +258,14 @@ def get_constraint_demos(env, args):
             constraint_demo_data = pickle.load(open(osp.join("demos", "maze", "constraint_demos.pkl"), "rb"))
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
+            if args.cnn:
+                task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos_images.pkl"), "rb"))
+            else:
+                task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos.pkl"), "rb"))
             if not args.vismpc_recovery:
                 if args.cnn:
-                    task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos_images.pkl"), "rb"))
                     constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images.pkl"), "rb"))
                 else:
-                    task_demo_data = pickle.load(open(osp.join("demos", folder_name, "task_demos.pkl"), "rb"))
                     constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
             else:
                 constraint_demo_data = []
@@ -441,23 +451,13 @@ task_demos = args.task_demos
 constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_constraint_demos(env, args)
 # Save constraint demos
 # import pickle
-# pickle.dump(constraint_demo_data, open("demos/maze/constraint_demos.pkl", "wb") )
+# pickle.dump({"constraint_demo_data": constraint_demo_data, 
+#             "obs_seqs": obs_seqs,
+#             "ac_seqs": ac_seqs,
+#             "constraint_seqs": constraint_seqs},
+#      open("demos/image_maze/demos.pkl", "wb") )
+# assert(False)
 
-
-# If use task demos, add them to memory and train agent
-if task_demos:
-    num_task_transitions = 0
-    for transition in task_demo_data:
-        memory.push(*transition)
-        num_task_transitions += 1
-        if num_task_transitions == args.num_task_transitions:
-            break
-    print("Number of Task Transitions: ", num_task_transitions)
-    for i in range(args.critic_pretraining_steps):
-        if i % 100 == 0:
-            print("Update: ", i)
-        agent.update_parameters(memory, min(args.batch_size, num_task_transitions), updates, safety_critic=agent.safety_critic)
-        updates += 1
 
 # Train recovery policy and associated value function on demos
 if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints or args.RCPO:
@@ -515,6 +515,20 @@ if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constra
                 agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
                         batch_size=min(args.batch_size, len(constraint_demo_data)))
 
+# If use task demos, add them to memory and train agent
+if task_demos:
+    num_task_transitions = 0
+    for transition in task_demo_data:
+        memory.push(*transition)
+        num_task_transitions += 1
+        if num_task_transitions == args.num_task_transitions:
+            break
+    print("Number of Task Transitions: ", num_task_transitions)
+    for i in range(args.critic_pretraining_steps):
+        if i % 100 == 0:
+            print("Update: ", i)
+        agent.update_parameters(memory, min(args.batch_size, num_task_transitions), updates, safety_critic=agent.safety_critic)
+        updates += 1
 
 
 

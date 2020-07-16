@@ -29,6 +29,9 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
     num_constraints = 0
     total = 0
     rollouts = []
+    obs_seqs = []
+    ac_seqs = []
+    constraint_seqs = []
 
     for i in range(int(0.7*num_transitions)):
         if i % 500 == 0:
@@ -40,19 +43,25 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             else:
                 mode = 'm'
             state = env.reset(mode, check_constraint=False)
-            rollouts.append([])
-
             if not GT_STATE:
                 state = process_obs(state)
+            rollouts.append([])
+            obs_seqs.append([state])
+            ac_seqs.append([])
+            constraint_seqs.append([])
 
         action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
+
         if not GT_STATE:
             next_state = process_obs(next_state)
 
         constraint = info['constraint']
 
         rollouts[-1].append((state, action, constraint, next_state, not done))
+        obs_seqs[-1].append(next_state)
+        constraint_seqs[-1].append(constraint)
+        ac_seqs[-1].append(action)
         transitions.append((state, action, constraint, next_state, not done))
 
         total += 1
@@ -71,18 +80,25 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             else:
                 mode = 'm'
             state = env.reset(mode, check_constraint=False)
-            rollouts.append([])
-
             if not GT_STATE:
                 state = process_obs(state)
+            rollouts.append([])
+            obs_seqs.append([state])
+            ac_seqs.append([])
+            constraint_seqs.append([])
+
         action = env.expert_action()
         next_state, reward, done, info = env.step(action)
+
         if not GT_STATE:
             next_state = process_obs(next_state)
             
         constraint = info['constraint']
 
         rollouts[-1].append((state, action, constraint, next_state, not done))
+        obs_seqs[-1].append(next_state)
+        constraint_seqs[-1].append(constraint)
+        ac_seqs[-1].append(action)
         transitions.append((state, action, constraint, next_state, not done))
 
         total += 1
@@ -92,10 +108,25 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
             im_state = im_next_state
 
     print("data dist", total, num_constraints)
+    rollouts = np.array(rollouts)
+
+    for i in range(len(ac_seqs)):
+        ac_seqs[i] = np.array(ac_seqs[i])
+    for i in range(len(obs_seqs)):
+        obs_seqs[i] = np.array(obs_seqs[i])
+    for i in range(len(constraint_seqs)):
+        constraint_seqs[i] = np.array(constraint_seqs[i])
+    ac_seqs = np.array(ac_seqs)
+    obs_seqs = np.array(obs_seqs)
+    constraint_seqs = np.array(constraint_seqs)
+    print("ACS SHAPE", ac_seqs.shape)
+    print("OBS SHAPE", obs_seqs.shape)
+    print("CONSTRAINT SHAPE", constraint_seqs.shape)
+
     if save_rollouts:
         return rollouts
     else:
-        return transitions
+        return transitions, obs_seqs, ac_seqs, constraint_seqs
 
 
 class MazeImageNavigation(Env, utils.EzPickle):
@@ -173,7 +204,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
 
         #get images
         ims = cv2.resize(self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64], (64, 64), interpolation=cv2.INTER_AREA)
-        return ims/255
+        return ims
 
     def reset(self, difficulty='m', check_constraint=True, pos=()):
         if len(pos):

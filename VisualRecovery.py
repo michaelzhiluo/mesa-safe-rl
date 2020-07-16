@@ -200,10 +200,10 @@ class VisualRecovery(Controller):
             samples = torch.empty(mu.shape).normal_(mean=0,std=1).cuda()
             encoding = mu + std * samples
             klloss = 0.5 * torch.mean(mu**2 + std**2 - torch.log(std**2) - 1)
-            lossinc = min(curric_int-1, int(s / (num_dynamics_train_steps/curric_int)))
+            lossinc = min(curric_int-1, int(s / (num_train_steps/curric_int)))
             # lossinc = 0 # Temp for debugging only
 
-            if s < num_dynamics_train_steps or self.vismpc_joint_training:
+            if s < num_train_steps:
                 residuals = obs_batch
                 all_losses = []
                 # Pick random start frame for logging:

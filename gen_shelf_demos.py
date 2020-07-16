@@ -59,6 +59,7 @@ parser.add_argument('--constraint_penalty', type=int, default=1, metavar='N',
                     help='constraint penalty (default: 10)')
 parser.add_argument('--constraint_demos', action="store_true")
 parser.add_argument('--save_rollouts', action="store_true")
+parser.add_argument('--vismpc_train_data', action="store_true")
 
 args = parser.parse_args()
 
@@ -81,6 +82,9 @@ updates = 0
 
 demo_transitions = []
 demo_rollouts = []
+obs_seqs = []
+ac_seqs = []
+constraint_seqs = []
 i_demos = 0
 start = time.time()
 while i_demos < args.num_demos:
@@ -88,6 +92,10 @@ while i_demos < args.num_demos:
     demo_rollouts.append([])
     if not args.gt_state:
         state = process_obs(state)
+
+    obs_seqs.append([state])
+    ac_seqs.append([])
+    constraint_seqs.append([])
     episode_steps = 0
     episode_reward = 0
     episode_constraints = 0
@@ -95,10 +103,13 @@ while i_demos < args.num_demos:
 
     while not done: 
         if args.constraint_demos:
-            if episode_steps > 3:
-                action = env.expert_action(noise_std=0.25, demo_quality=args.demo_quality)
+            if args.vismpc_train_data:
+                action = env.expert_action(noise_std=0.05, demo_quality=args.demo_quality)
             else:
-                action = env.expert_action(noise_std=0.1, demo_quality=args.demo_quality)
+                if episode_steps > 3:
+                    action = env.expert_action(noise_std=0.25, demo_quality=args.demo_quality)
+                else:
+                    action = env.expert_action(noise_std=0.1, demo_quality=args.demo_quality)
         else:
             action = env.expert_action(noise_std=0.01, demo_quality=args.demo_quality)
 
@@ -106,6 +117,9 @@ while i_demos < args.num_demos:
 
         if episode_steps == env._max_episode_steps:
             done = True
+
+        if args.vismpc_train_data: # note this messes up the rewards, but that doesn't matter for constraint data anyway
+            done = (episode_steps == env._max_episode_steps-1)
 
         # if done and reward > 0:
         #     reward = 5
@@ -126,6 +140,10 @@ while i_demos < args.num_demos:
             next_state = process_obs(next_state)
 
         if args.constraint_demos:
+            if args.vismpc_train_data:
+                obs_seqs[-1].append(next_state)
+                ac_seqs[-1].append(action)
+                constraint_seqs[-1].append(constraint)
             # if constraint:
             demo_transitions.append( (state, action, constraint, next_state, mask) )
             demo_rollouts[-1].append(  (state, action, constraint, next_state, mask)  )
@@ -153,10 +171,16 @@ if args.constraint_demos:
         f_name += "_rollouts"
     if not args.gt_state:
         f_name += "_images"
+    if args.vismpc_train_data:
+        f_name += "_seqs"
     f_name += ".pkl"
 
     if not args.save_rollouts:
-        pickle.dump(demo_transitions, open(os.path.join("demos/shelf", f_name), "wb") )
+        if not args.vismpc_train_data:
+            pickle.dump(demo_transitions, open(os.path.join("demos/shelf", f_name), "wb") )
+        else:
+            pickle.dump({'obs': obs_seqs, 'ac': ac_seqs, 'constraint': constraint_seqs}, 
+                        open(os.path.join("demos/shelf", f_name), "wb") )
     else:
         pickle.dump(demo_rollouts, open(os.path.join("demos/shelf", f_name), "wb") )
 else:
