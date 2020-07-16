@@ -3,6 +3,7 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 from scipy.interpolate import make_interp_spline, BSpline
+from plotting_utils import get_color, get_legend_name
 
 experiment_map = {
     # "maze": {
@@ -24,28 +25,29 @@ experiment_map = {
     # },
     "maze": {
         "algs": {
-            "recovery": ["maze/2020-07-14_07-46-28_SAC_maze_Gaussian_recovery", "maze/2020-07-14_10-38-39_SAC_maze_Gaussian_recovery", "maze/2020-07-14_09-13-40_SAC_maze_Gaussian_recovery"],
-            "ddpg_recovery": ["maze/2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"],
-            "sac_norecovery": ["maze/2020-07-14_07-53-24_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-56-18_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-59-01_SAC_maze_Gaussian_vanilla"],
+            "sac_vanilla": ["maze/2020-07-14_07-53-24_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-56-18_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-59-01_SAC_maze_Gaussian_vanilla"],
             # "sac_penalty10": ["2020-07-14_09-18-41_SAC_maze_Gaussian_reward_10", "2020-07-14_09-25-31_SAC_maze_Gaussian_reward_10", "2020-07-14_09-31-38_SAC_maze_Gaussian_reward_10"],
-            "sac_penalty50": ["maze/2020-07-14_08-01-37_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-22-14_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-50-58_SAC_maze_Gaussian_reward_50"],
+            "sac_penalty": ["maze/2020-07-14_08-01-37_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-22-14_SAC_maze_Gaussian_reward_50", "maze/2020-07-14_08-50-58_SAC_maze_Gaussian_reward_50"],
             # "sac_penalty100": ["2020-07-14_09-38-04_SAC_maze_Gaussian_reward_100", "2020-07-14_10-08-58_SAC_maze_Gaussian_reward_100", "2020-07-14_10-31-51_SAC_maze_Gaussian_reward_100"],
+            "sac_rcpo": ["maze/2020-07-14_08-02-41_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_08-46-35_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_09-31-38_SAC_maze_Gaussian_lambda_50"],
             "sac_lagrangian": ["maze/2020-07-14_17-56-02_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_18-58-07_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_19-58-31_SAC_maze_Gaussian_update_nu_100"],
-            "RCPO": ["maze/2020-07-14_08-02-41_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_08-46-35_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_09-31-38_SAC_maze_Gaussian_lambda_50"],
-            "RSPO": ["maze/2020-07-14_21-23-48_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_20-45-50_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_19-47-31_SAC_maze_Gaussian_RSPO"]
+            "sac_rspo": ["maze/2020-07-14_21-23-48_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_20-45-50_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_19-47-31_SAC_maze_Gaussian_RSPO"],
+            "sac_recovery_pets": ["maze/2020-07-14_07-46-28_SAC_maze_Gaussian_recovery", "maze/2020-07-14_10-38-39_SAC_maze_Gaussian_recovery", "maze/2020-07-14_09-13-40_SAC_maze_Gaussian_recovery"],
+            "sac_recovery_ddpg": ["maze/2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"]
         },
         "outfile": "maze_plot.png"
     },
     "image_maze": {
         "algs": {
-            "recovery": ["runs/2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
-            "ddpg_recovery": ["runs/2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-41_SAC_image_maze_Gaussian_"], # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
-            "sac_norecovery": ["runs/2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
+            "sac_vanilla": ["runs/2020-06-15_01-19-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-20-48_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-21-01_SAC_image_maze_Gaussian_"],
             # "sac_penalty50": ["2020-06-15_01-35-41_SAC_image_maze_Gaussian_", "2020-06-15_01-35-51_SAC_image_maze_Gaussian_", "2020-06-15_01-36-00_SAC_image_maze_Gaussian_"],
-            "sac_penalty20": ["runs/2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
+            "sac_penalty": ["runs/2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
+            "sac_rcpo": ["image_maze/2020-07-15_05-15-11_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_16-09-59_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_13-22-01_SAC_image_maze_Gaussian_lambda_20"],
             "sac_lagrangian": ["image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10"],
-            "RCPO": ["image_maze/2020-07-15_05-15-11_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_16-09-59_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_13-22-01_SAC_image_maze_Gaussian_lambda_20"],
-            "RSPO": ["image_maze/2020-07-15_19-31-11_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_21-02-14_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_22-31-30_SAC_image_maze_Gaussian_RSPO"],
+            "sac_rspo": ["image_maze/2020-07-15_19-31-11_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_21-02-14_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_22-31-30_SAC_image_maze_Gaussian_RSPO"],
+            # "sac_recovery_pets": ["runs/2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
+            "sac_recovery_pets": ["runs/2020-07-16_19-49-53_SAC_image_maze_Gaussian_", "runs/2020-07-16_20-46-35_SAC_image_maze_Gaussian_", "runs/2020-07-16_21-12-01_SAC_image_maze_Gaussian_"],
+            "sac_recovery_ddpg": ["runs/2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-41_SAC_image_maze_Gaussian_"] # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
         },
         "outfile": "image_maze_plot.png"
     },
@@ -258,63 +260,56 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
-def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf..., 4000 for image shelf
+eps = {
+    "maze": 500,
+    "image_maze": 500,
+    "pointbot0": 300,
+    "pointbot1": 300,
+    "shelf": 4000,
+    "shelf_dynamic": 3000
+}
 
-    fig, axs = plt.subplots(4, figsize=(16, 27))
 
-    axs[0].set_title("Cumulative Constraint Violations vs. Episode", fontsize=20)
-    axs[0].set_ylim(-0.1, int(0.5*max_eps) + 1)
-    axs[0].set_xlabel("Episode", fontsize=16)
-    axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=16)
-    axs[0].tick_params(axis='both', which='major', labelsize=14)
+envname = {
+    "maze": "Maze",
+    "image_maze": "Image Maze",
+    "pointbot0": "Navigation 1",
+    "pointbot1": "Navigation 2",
+    "shelf": "Shelf",
+    "shelf_dynamic": "Dynamic Shelf"
+}
 
-    axs[1].set_title("Cumulative Task Successes vs. Episode", fontsize=20)
+
+yscaling = {
+    "maze": 0.25,
+    "image_maze": 0.25,
+    "pointbot0": 0.9,
+    "pointbot1": 0.4,
+    "shelf": 0.1,
+    "shelf_dynamic": 0.3
+}
+
+def plot_experiment(experiment):
+
+    max_eps = eps[experiment]
+    fig, axs = plt.subplots(2, figsize=(16, 16))
+
+    axs[0].set_title("%s: Cumulative Constraint Violations vs. Episode"%envname[experiment], fontsize=30)
+    axs[0].set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
+    axs[0].set_xlabel("Episode", fontsize=24)
+    axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=24)
+    axs[0].tick_params(axis='both', which='major', labelsize=21)
+
+    axs[1].set_title("%s: Cumulative Task Successes vs. Episode"%envname[experiment], fontsize=30)
     axs[1].set_ylim(0, int(max_eps)+1)
-    axs[1].set_xlabel("Episode", fontsize=16)
-    axs[1].set_ylabel("Cumulative Task Successes", fontsize=16)
-    axs[1].tick_params(axis='both', which='major', labelsize=14)
+    axs[1].set_xlabel("Episode", fontsize=24)
+    axs[1].set_ylabel("Cumulative Task Successes", fontsize=24)
+    axs[1].tick_params(axis='both', which='major', labelsize=21)
 
-    axs[2].set_title("Cumulative Recovery Calls vs. Episode", fontsize=20)
-    axs[2].set_ylim(-0.1, max_eps + 1)
-    axs[2].set_xlabel("Episode", fontsize=16)
-    axs[2].set_ylabel("Cumulative Recovery Calls", fontsize=16)
-    axs[2].tick_params(axis='both', which='major', labelsize=14)
+    plt.subplots_adjust(hspace=0.3)
 
-    axs[3].set_title("Cumulative Recovery Calls + Constraint Violated vs. Episode", fontsize=20)
-    axs[3].set_ylim(-0.1, max_eps + 1)
-    axs[3].set_xlabel("Episode", fontsize=16)
-    axs[3].set_ylabel("Cumulative Recovery Calls + Constraint Violated", fontsize=16)
-    axs[3].tick_params(axis='both', which='major', labelsize=14)
-
-    alg_names = experiment_map[experiment]["algs"].keys()
-    penalty_names = [name for name in alg_names if "penalty" in name]
-    for i in range(len(penalty_names)):
-        for j in range(len(penalty_names)):
-            if i > j and int(penalty_names[i].split("penalty")[1]) < int(penalty_names[j].split("penalty")[1]):
-                tmp = penalty_names[i]
-                penalty_names[i] = penalty_names[j]
-                penalty_names[j] = tmp
-
-    if 'sac_norecovery' in alg_names:
-        alg_names_new = ['sac_norecovery']
-    else:
-        alg_names_new = []
-    alg_names_new += penalty_names
-    if 'sac_lagrangian' in alg_names:
-        alg_names_new += ['sac_lagrangian']
-    if 'sac_lagrangian_update' in alg_names:
-        alg_names_new += ['sac_lagrangian_update']
-    if 'RCPO' in alg_names:
-        alg_names_new += ['RCPO']
-    if "RSPO" in alg_names:
-        alg_names_new += ['RSPO']
-    if 'recovery' in alg_names:
-        alg_names_new += ['recovery']
-    if 'ddpg_recovery' in alg_names:
-        alg_names_new += ['ddpg_recovery']
-
-    print("ALG NAMES NEW: ", alg_names_new)
-    for alg in alg_names_new:
+    for alg in experiment_map[experiment]["algs"]:
+        print(alg)
         exp_dirs = experiment_map[experiment]["algs"][alg]
         fnames = [osp.join(exp_dir, "run_stats.pkl") for exp_dir in exp_dirs]
 
@@ -362,84 +357,60 @@ def plot_experiment(experiment, max_eps=500): # 3000 for normal shelf..., 4000 f
             train_rewards = np.array(train_rewards)[:max_eps]
             last_rewards = np.array(last_rewards)[:max_eps]
 
-            for i in range(len(train_rewards)):
-                if ep_lengths[i] != 50:
-                    diff = 50 - ep_lengths[i]
-                    train_rewards[i] += diff * last_rewards[i]
-
             if 'maze' in experiment:
                 task_successes = (-last_rewards < 0.03).astype(int)
             elif 'shelf' in experiment:
-                if alg == "recovery" or "penalty" in alg:
-                    task_successes = (last_rewards > -0.5).astype(int)
-                else:
-                    task_successes = (last_rewards > 4.5).astype(int)
+                task_successes = (last_rewards == 0).astype(int)
+            elif "pointbot0" in experiment:
+                task_successes = (last_rewards > -4).astype(int)
             else:
-                assert False
+                task_successes = (last_rewards > -4).astype(int)
 
             task_successes = np.cumsum(task_successes)
             task_successes_list.append(task_successes)
-
-            # x = np.arange(len(last_rewards))
-            # xnew = np.linspace(x.min(), x.max(), 100)
-            # spl = make_interp_spline(x,last_rewards, k=3)
-            # last_rewards_smooth = spl(xnew)
-
-            # x = np.arange(len(train_rewards))
-            # xnew = np.linspace(x.min(), x.max(), 100)
-            # spl = make_interp_spline(x,train_rewards, k=3)
-            # train_rewards_smooth = spl(xnew)
-
-            # if experiment == 'maze' or 'shelf' in experiment:
-            #     train_rewards_list.append(last_rewards_smooth)
-            # else:
-            #     train_rewards_list.append(train_rewards_smooth)
 
             train_violations_list.append(train_violations)
             recovery_called_list.append(recovery_called)
             recovery_called_constraint_list.append(recovery_called_constraint)
 
         task_successes_list = np.array(task_successes_list)
-        # train_rewards_list = np.array(train_rewards_list)
         train_violations_list = np.array(train_violations_list)
         recovery_called_list = np.array(recovery_called_list)
         recovery_called_constraint_list = np.array(recovery_called_constraint_list)
 
         print("TASK SUCCESSES", task_successes_list.shape)
-        # print("TRAIN REWARDS", train_rewards_list.shape)
         print("TRAIN VIOLS", train_violations_list.shape)
         print("TRAIN RECOVERY", recovery_called_list.shape)
         print("TRAIN RECOVERY CONSTRAINT", recovery_called_constraint_list.shape)
 
         ts_mean, ts_lb, ts_ub = get_stats(task_successes_list)
-        # tr_mean, tr_lb, tr_ub = get_stats(train_rewards_list)
         tv_mean, tv_lb, tv_ub = get_stats(train_violations_list)
         trec_mean, trec_lb, trec_ub = get_stats(recovery_called_list)
         trec_constraint_mean, trec_constraint_lb, trec_constraint_ub = get_stats(recovery_called_constraint_list)
 
         axs[0].fill_between(range(tv_mean.shape[0]), tv_ub, tv_lb,
-                     color=colors[alg], alpha=.5, label=names[alg])
-        axs[0].plot(tv_mean, colors[alg])
+                     color=get_color(alg), alpha=.25, label=get_legend_name(alg))
+        axs[0].plot(tv_mean, get_color(alg))
         # axs[1].fill_between(xnew, tr_ub, tr_lb,
         #              color=colors[alg], alpha=.5, label=names[alg])
         # axs[1].plot(xnew, tr_mean, colors[alg])
         axs[1].fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
-                     color=colors[alg], alpha=.5)
-        axs[1].plot(ts_mean, colors[alg], label=names[alg])
+                     color=get_color(alg), alpha=.25)
+        axs[1].plot(ts_mean, get_color(alg), label=get_legend_name(alg))
         
-        axs[2].fill_between(range(trec_mean.shape[0]), trec_ub, trec_lb,
-                     color=colors[alg], alpha=.5, label=names[alg])
-        axs[2].plot(range(trec_mean.shape[0]), trec_mean, colors[alg])
+        # axs[2].fill_between(range(trec_mean.shape[0]), trec_ub, trec_lb,
+        #              color=get_color(alg), alpha=.25, label=get_legend_name(alg))
+        # axs[2].plot(range(trec_mean.shape[0]), trec_mean, get_color(alg))
 
-        axs[3].fill_between(range(trec_constraint_mean.shape[0]), trec_constraint_ub, trec_constraint_lb,
-                     color=colors[alg], alpha=.5)
-        axs[3].plot(trec_constraint_mean, colors[alg], label=names[alg])
+        # axs[3].fill_between(range(trec_constraint_mean.shape[0]), trec_constraint_ub, trec_constraint_lb,
+        #              color=get_color(alg), alpha=.25)
+        # axs[3].plot(trec_constraint_mean, get_color(alg), label=get_legend_name(alg))
 
-    axs[0].legend(loc="upper left")
-    axs[1].legend(loc="upper left")
-    axs[2].legend(loc="upper left")
-    axs[3].legend(loc="upper left")
-    plt.savefig(experiment_map[experiment]["outfile"])
+    axs[0].legend(loc="upper left", fontsize=20)
+    axs[1].legend(loc="upper left", fontsize=20)
+    # axs[2].legend(loc="upper left", fontsize=20)
+    # axs[3].legend(loc="upper left", fontsize=20)
+    plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
     plt.show()
 
 

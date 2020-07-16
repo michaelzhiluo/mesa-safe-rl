@@ -492,9 +492,8 @@ if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constra
     else:
         # Pre-train vis dynamics model if needed
         if not args.load_vismpc:
-            recovery_policy.train(obs_seqs, ac_seqs, constraint_seqs, recovery_memory, num_train_steps=20000 if "maze" in args.env_name else 250000)
+            recovery_policy.train(obs_seqs, ac_seqs, constraint_seqs, recovery_memory, num_train_steps=20000 if "maze" in args.env_name else 200000)
         # Process everything in recovery_memory to be encoded in order to train safety critic
-        # TODO: add some vis code at some point... for image maze value func
         num_constraint_transitions = 0
         num_viols = 0
         for transition in constraint_demo_data:
