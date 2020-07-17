@@ -1,4 +1,12 @@
 #!/bin/bash
+
+# # Recovery RL PLaNet Recovery
+# for i in {1..3}
+# do
+# 	echo "PlaNet Recovery Run $i"
+# 	python -m main --cuda --env-name image_maze --use_recovery --use_qvalue --critic_safe_update_freq 200000 --recovery_policy_update_freq 200000 --gamma_safe 0.6 --eps_safe 0.05 --cnn --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --model_fname modelq_lowdata --beta 10 --vismpc_recovery --load_vismpc --num_eps 500 --seed $i --logdir image_maze --logdir_suffix recovery
+# done
+
 # # Recovery RL DDPG Recovery
 # for i in {1..3}
 # do
