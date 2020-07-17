@@ -416,10 +416,10 @@ def plot_experiment(experiment):
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    experiment = "image_maze"
+    # experiment = "image_maze"
     # experiment = "shelf"
     # experiment = "image_shelf"
-    # experiment = "maze"
+    experiment = "maze"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 
