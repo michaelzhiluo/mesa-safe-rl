@@ -41,6 +41,16 @@ register(
 )
 
 register(
+    id='ShelfLong-v0',
+    entry_point='env.shelf_long_env:ShelfLongEnv'
+)
+
+register(
+    id='ShelfDynamicLong-v0',
+    entry_point='env.shelf_dynamic_long_env:ShelfDynamicEnv'
+)
+
+register(
     id='ShelfReach-v0',
     entry_point='env.shelf_reach_env:ShelfRotEnv'
 )
