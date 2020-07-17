@@ -112,19 +112,26 @@ experiment_map = {
     },
     "shelf_dynamic": { # Sparse reward instead... (all up to 2800)
         "algs": {
-            # "sac_vanilla": get_directory("shelf_dynamic", "vanilla"),
+            "sac_vanilla": get_directory("shelf_dynamic", "vanilla_2"),
+            # "sac_vanilla5": get_directory("shelf_dynamic", "vanilla_05"),
             # "sac_penalty3": get_directory("shelf_dynamic", "reward_3"),
             "sac_penalty": get_directory("shelf_dynamic", "reward_10"),
             # "sac_lagrangian_1": get_directory("shelf_dynamic", "nu_1_update"),
             # "sac_lagrangian_3": get_directory("shelf_dynamic", "nu_3_update"),
             # "sac_lagrangian_10": get_directory("shelf_dynamic", "nu_10_update"),
             # "sac_rcpo32": get_directory("shelf", "rcpo_3_alpha_2"),
-            "sac_rcpo": get_directory("shelf_dynamic", "rcpo_3_alpha_05"),
+            # "sac_rcpo": get_directory("shelf_dynamic", "rcpo_3_alpha_05"),
             # "recovery_ddpg_alpha_2_eps_25": get_directory("shelf_dynamic", "recovery_ddpg_alpha_2_eps_25"),
             "sac_recovery_pets": get_directory("shelf_dynamic", "recovery_pets_alpha_2_eps_25"),
             "sac_recovery_ddpg": get_directory("shelf_dynamic", "recovery_ddpg_alpha_05_eps_25"),
             # "sac_rcpo105": get_directory("shelf", "rcpo_10_alpha_05"),
             # "sac_rcpo102": get_directory("shelf", "rcpo_10_alpha_2"),
+            # "nu_3_alpha_2": get_directory("shelf_dynamic", "nu_3_alpha_2"),
+            # "rcpo_3_alpha_05": get_directory("shelf_dynamic", "rcpo_3_alpha_05"),
+            # "rcpo_3_alpha_2": get_directory("shelf_dynamic", "rcpo_3_alpha_2"),
+            "sac_lagrangian": get_directory("shelf_dynamic", "nu_10_alpha_2"),
+            "sac_rcpo": get_directory("shelf_dynamic", "rcpo_10_alpha_05"),
+            # "rcpo_10_alpha_2": get_directory("shelf_dynamic", "rcpo_10_alpha_2"),
             # "ddpg": get_directory("shelf_dynamic", "ddpg"),
         },
         "outfile": "shelf_dynamic.png"
@@ -245,6 +252,7 @@ def plot_experiment(experiment): # 3000 for normal shelf...
                 task_successes = (last_rewards > -4).astype(int)
 
             task_successes = np.cumsum(task_successes)
+            print("successes", task_successes[-1], train_violations[-1])
             task_successes_list.append(task_successes)
 
             train_violations_list.append(train_violations)
@@ -276,6 +284,6 @@ def plot_experiment(experiment): # 3000 for normal shelf...
 
 
 if __name__ == '__main__':
-    experiment = "shelf"
+    experiment = "shelf_dynamic"
     plot_experiment(experiment)
 
