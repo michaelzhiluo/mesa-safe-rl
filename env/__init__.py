@@ -47,7 +47,7 @@ register(
 
 register(
     id='ShelfDynamicLong-v0',
-    entry_point='env.shelf_dynamic_long_env:ShelfDynamicEnv'
+    entry_point='env.shelf_dynamic_long_env:ShelfDynamicLongEnv'
 )
 
 register(
