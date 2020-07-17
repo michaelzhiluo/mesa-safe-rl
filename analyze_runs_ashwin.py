@@ -281,8 +281,8 @@ envname = {
 
 
 yscaling = {
-    "maze": 0.25,
-    "image_maze": 0.25,
+    "maze": 0.45,
+    "image_maze": 0.45,
     "pointbot0": 0.9,
     "pointbot1": 0.4,
     "shelf": 0.1,
@@ -292,20 +292,13 @@ yscaling = {
 def plot_experiment(experiment):
 
     max_eps = eps[experiment]
-    fig, axs = plt.subplots(2, figsize=(16, 16))
+    fig, axs = plt.subplots(1, figsize=(16, 8))
 
-    axs[0].set_title("%s: Cumulative Constraint Violations vs. Episode"%envname[experiment], fontsize=30)
-    axs[0].set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
-    axs[0].set_xlabel("Episode", fontsize=24)
-    axs[0].set_ylabel("Cumulative Constraint Violations", fontsize=24)
-    axs[0].tick_params(axis='both', which='major', labelsize=21)
-
-    axs[1].set_title("%s: Cumulative Task Successes vs. Episode"%envname[experiment], fontsize=30)
-    axs[1].set_ylim(0, int(max_eps)+1)
-    axs[1].set_xlabel("Episode", fontsize=24)
-    axs[1].set_ylabel("Cumulative Task Successes", fontsize=24)
-    axs[1].tick_params(axis='both', which='major', labelsize=21)
-
+    axs.set_title("%s: Ratio of Successes/Violations"%envname[experiment], fontsize=30)
+    axs.set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
+    axs.set_xlabel("Episode", fontsize=24)
+    axs.set_ylabel("Ratio of Successes/Violations", fontsize=24)
+    axs.tick_params(axis='both', which='major', labelsize=21)
     plt.subplots_adjust(hspace=0.3)
 
     for alg in experiment_map[experiment]["algs"]:
@@ -383,43 +376,28 @@ def plot_experiment(experiment):
         print("TRAIN RECOVERY", recovery_called_list.shape)
         print("TRAIN RECOVERY CONSTRAINT", recovery_called_constraint_list.shape)
 
+        safe_ratios = (task_successes_list+1)/(train_violations_list+1)
+        safe_ratios_mean, safe_ratios_lb, safe_ratios_ub = get_stats(safe_ratios)
         ts_mean, ts_lb, ts_ub = get_stats(task_successes_list)
         tv_mean, tv_lb, tv_ub = get_stats(train_violations_list)
         trec_mean, trec_lb, trec_ub = get_stats(recovery_called_list)
         trec_constraint_mean, trec_constraint_lb, trec_constraint_ub = get_stats(recovery_called_constraint_list)
 
-        axs[0].fill_between(range(tv_mean.shape[0]), tv_ub, tv_lb,
+        axs.fill_between(range(safe_ratios_mean.shape[0]), safe_ratios_ub, safe_ratios_lb,
                      color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        axs[0].plot(tv_mean, get_color(alg))
-        # axs[1].fill_between(xnew, tr_ub, tr_lb,
-        #              color=colors[alg], alpha=.5, label=names[alg])
-        # axs[1].plot(xnew, tr_mean, colors[alg])
-        axs[1].fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
-                     color=get_color(alg), alpha=.25)
-        axs[1].plot(ts_mean, get_color(alg), label=get_legend_name(alg))
-        
-        # axs[2].fill_between(range(trec_mean.shape[0]), trec_ub, trec_lb,
-        #              color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        # axs[2].plot(range(trec_mean.shape[0]), trec_mean, get_color(alg))
+        axs.plot(safe_ratios_mean, get_color(alg))
 
-        # axs[3].fill_between(range(trec_constraint_mean.shape[0]), trec_constraint_ub, trec_constraint_lb,
-        #              color=get_color(alg), alpha=.25)
-        # axs[3].plot(trec_constraint_mean, get_color(alg), label=get_legend_name(alg))
-
-    axs[0].legend(loc="upper left", fontsize=20)
-    axs[1].legend(loc="upper left", fontsize=20)
-    # axs[2].legend(loc="upper left", fontsize=20)
-    # axs[3].legend(loc="upper left", fontsize=20)
+    axs.legend(loc="upper left", fontsize=20)
     plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
     plt.show()
 
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    # experiment = "image_maze"
+    experiment = "image_maze"
     # experiment = "shelf"
     # experiment = "image_shelf"
-    experiment = "maze"
+    # experiment = "maze"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 
