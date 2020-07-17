@@ -104,10 +104,10 @@ while i_demos < args.num_demos:
     while not done: 
         if args.constraint_demos:
             if args.vismpc_train_data:
-                if episode_steps < 6:
-                    action = env.expert_action(noise_std=0.01, demo_quality='high')
+                if episode_steps < 12:
+                    action = env.expert_action(noise_std=0.01, demo_quality='low')
                 else:
-                    action = env.expert_action(noise_std=0.2, demo_quality='high')
+                    action = env.expert_action(noise_std=0.2, demo_quality='low')
             else:
                 if episode_steps < 12:
                     action = env.expert_action(noise_std=0.01, demo_quality='low')
