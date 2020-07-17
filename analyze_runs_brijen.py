@@ -30,7 +30,7 @@ experiment_map = {
     },
     "pointbot0": {
         "algs": {
-            "sac_norecovery": get_directory("pointbot0", "vanilla"),
+            "sac_vanilla": get_directory("pointbot0", "vanilla"),
             # "sac_penalty1": get_directory("pointbot0", "reward_1"),
             # "sac_penalty10": get_directory("pointbot0", "reward_10"),
             # "sac_penalty100": get_directory("pointbot0", "reward_100"),
@@ -80,21 +80,29 @@ experiment_map = {
     },
     "shelf": { # Sparse reward instead... (all up to 2800)
         "algs": {
-            # "sac_norecovery": get_directory("shelf", "vanilla"),
-            # "sac_penalty3": get_directory("shelf", "reward_3"),
-            # "sac_penalty10": get_directory("shelf", "reward_10"),
+            "sac_vanilla": get_directory("shelf", "vanilla_alpha_05"),
+            # "sac_rcpo32": get_directory("shelf", "rcpo_3_alpha_2"),
+            "sac_rcpo": get_directory("shelf", "rcpo_3_alpha_05"),
+            # "sac_rcpo105": get_directory("shelf", "rcpo_10_alpha_05"),
+            # "sac_rcpo102": get_directory("shelf", "rcpo_10_alpha_2"),
+            # "sac_rcpo": get_directory("shelf", "rcpo_5000"),
+            # "sac_vanilla2": get_directory("shelf", "vanilla_alpha_2"),
+            # "sac_penalty3": get_directory("shelf", "reward_3_alpha_05"),
+            # "sac_penalty32": get_directory("shelf", "reward_3_alpha_2"),
+            # "sac_penalty10": get_directory("shelf", "reward_10_alpha_05"),
+            "sac_penalty": get_directory("shelf", "reward_10_alpha_2"),
             # "sac_lagrangian_3": get_directory("shelf", "nu_3_update"),
-            "sac_lagrangian_10_alpha_05": get_directory("shelf", "nu_10_update_alpha_05"),
+            "sac_lagrangian": get_directory("shelf", "nu_10_update_alpha_05"),
             # "sac_lagrangian_10_alpha_2": get_directory("shelf", "nu_10_update_alpha_2"),
             # "recovery_pets_alpha_05_eps_04": get_directory("shelf", "recovery_pets_alpha_05_eps_04"),
             # "recovery_pets_alpha_2_eps_5": get_directory("shelf", "recovery_pets_alpha_2_eps_5"),
             # "recovery_pets_alpha_2_eps_6": get_directory("shelf", "recovery_pets_alpha_2_eps_6"),
             # "recovery_ddpg_alpha_2_eps_6": get_directory("shelf", "recovery_ddpg_alpha_2_eps_6"),
             # "recovery_ddpg_alpha_2_eps_4": get_directory("shelf", "recovery_ddpg_alpha_2_eps_4"),
-            "recovery_pets_alpha_05_eps_6": get_directory("shelf", "recovery_pets_alpha_05_eps_6"),
+            "sac_recovery_pets": get_directory("shelf", "recovery_pets_alpha_05_eps_6"),
             # "recovery_pets_alpha_05_eps_5": get_directory("shelf", "recovery_pets_alpha_05_eps_5"),
             # "recovery_pets_alpha_2_eps_4": get_directory("shelf", "recovery_pets_alpha_2_eps_4"),
-            "recovery_ddpg_alpha_2_eps_5": get_directory("shelf", "recovery_ddpg_alpha_2_eps_5"),
+            "sac_recovery_ddpg": get_directory("shelf", "recovery_ddpg_alpha_2_eps_5"),
             # "recovery_ddpg_alpha_05_eps_5": get_directory("shelf", "recovery_ddpg_alpha_05_eps_5"),
             # "recovery_ddpg_alpha_05_eps_4": get_directory("shelf", "recovery_ddpg_alpha_05_eps_4"),
             # "recovery_ddpg_alpha_05_eps_6": get_directory("shelf", "recovery_ddpg_alpha_05_eps_6"),
@@ -104,13 +112,20 @@ experiment_map = {
     },
     "shelf_dynamic": { # Sparse reward instead... (all up to 2800)
         "algs": {
-            "sac_norecovery": get_directory("shelf_dynamic", "vanilla"),
+            # "sac_vanilla": get_directory("shelf_dynamic", "vanilla"),
             # "sac_penalty3": get_directory("shelf_dynamic", "reward_3"),
-            "sac_penalty10": get_directory("shelf_dynamic", "reward_10"),
+            "sac_penalty": get_directory("shelf_dynamic", "reward_10"),
             # "sac_lagrangian_1": get_directory("shelf_dynamic", "nu_1_update"),
-            "sac_lagrangian_3": get_directory("shelf_dynamic", "nu_3_update"),
+            # "sac_lagrangian_3": get_directory("shelf_dynamic", "nu_3_update"),
             # "sac_lagrangian_10": get_directory("shelf_dynamic", "nu_10_update"),
-            "ddpg": get_directory("shelf_dynamic", "ddpg"),
+            # "sac_rcpo32": get_directory("shelf", "rcpo_3_alpha_2"),
+            "sac_rcpo": get_directory("shelf_dynamic", "rcpo_3_alpha_05"),
+            # "recovery_ddpg_alpha_2_eps_25": get_directory("shelf_dynamic", "recovery_ddpg_alpha_2_eps_25"),
+            "sac_recovery_pets": get_directory("shelf_dynamic", "recovery_pets_alpha_2_eps_25"),
+            "sac_recovery_ddpg": get_directory("shelf_dynamic", "recovery_ddpg_alpha_05_eps_25"),
+            # "sac_rcpo105": get_directory("shelf", "rcpo_10_alpha_05"),
+            # "sac_rcpo102": get_directory("shelf", "rcpo_10_alpha_2"),
+            # "ddpg": get_directory("shelf_dynamic", "ddpg"),
         },
         "outfile": "shelf_dynamic.png"
     },
@@ -269,10 +284,10 @@ envname = {
 
 yscaling = {
     "maze": 0.25,
-    "pointbot0": 0.9,
-    "pointbot1": 0.4,
-    "shelf": 0.1,
-    "shelf_dynamic": 0.3
+    "pointbot0": 0.5,
+    "pointbot1": 0.3,
+    "shelf": 0.15,
+    "shelf_dynamic": 0.9
 }
 
 
@@ -368,13 +383,13 @@ def plot_experiment(experiment): # 3000 for normal shelf...
         tv_mean, tv_lb, tv_ub = get_stats(train_violations_list)
         trec_mean, trec_lb, trec_ub = get_stats(recovery_called_list)
         trec_constraint_mean, trec_constraint_lb, trec_constraint_ub = get_stats(recovery_called_constraint_list)
-
+        color = get_color(alg)
         axs[0].fill_between(range(tv_mean.shape[0]), tv_ub, tv_lb,
-                     color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        axs[0].plot(tv_mean, get_color(alg))
+                     color=color, alpha=.25, label=get_legend_name(alg))
+        axs[0].plot(tv_mean, color=color)
         axs[1].fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
-                     color=get_color(alg), alpha=.25)
-        axs[1].plot(ts_mean, get_color(alg), label=get_legend_name(alg))
+                     color=color, alpha=.25)
+        axs[1].plot(ts_mean, color=color, label=get_legend_name(alg))
         
 
     axs[0].legend(loc="upper left", fontsize=20)

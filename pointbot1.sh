@@ -1,15 +1,17 @@
 #!/bin/bash
-for i in {1..3}
-do
-	echo "Recovery Run $i"
-	python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --logdir pointbot1 --logdir_suffix recovery_fast --num_eps 300 --seed $i --tau_safe 0.001 --pos_fraction 0.1
-done
-
 # for i in {1..3}
 # do
 # 	echo "Recovery Run $i"
 # 	python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --logdir pointbot1 --logdir_suffix recovery_ddpg --num_eps 300 --seed $i --tau_safe 0.001 --pos_fraction 0.1 --ddpg_recovery
 # done
+
+
+for i in {1..3}
+do
+	echo "Recovery Run $i"
+	python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --logdir pointbot1 --logdir_suffix recovery_pets --num_eps 300 --seed $i --tau_safe 0.001 --pos_fraction 0.1
+done
+
 
 # for i in {1..3}
 # do
@@ -73,7 +75,11 @@ done
 
 # for i in {1..3}
 # do
-# 	echo "Lagrangian Nu 100 Run $i"
-# 	python main.py --env-name simplepointbot1 --cuda --use_qvalue --DGD_constraints --nu 100 --gamma_safe 0.75 --logdir pointbot1 --logdir_suffix nu_100 --num_eps 300 --seed $i
+# 	python main.py --env-name simplepointbot1 --cuda --use_qvalue --DGD_constraints --nu 1000 --gamma_safe 0.65 --eps_safe 0.1 --logdir pointbot1 --logdir_suffix nu_1000 --num_eps 300 --seed $i
 # done
+
+for i in {1..3}
+do
+	python main.py --env-name simplepointbot1 --cuda --use_qvalue --DGD_constraints --nu 5000 --gamma_safe 0.65 --eps_safe 0.1 --logdir pointbot1 --logdir_suffix nu_5000 --num_eps 300 --seed $i
+done
 

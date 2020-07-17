@@ -7,7 +7,7 @@ colors = {
     "sac_lagrangian": "black",
     "sac_rcpo": "purple",
     "sac_rspo": "orange",
-    "sac_vanilla": "magenta",
+    "sac_vanilla": "olive",
 }
 
 names = {
