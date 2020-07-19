@@ -34,11 +34,11 @@
 # SAC Lagrangian RSPO (Update nu) # Start at 2x best nu and decay
 # for i in {1..3}
 # do
-# 	python -m main --cuda --env-name shelf_long_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --num_eps 4000 --DGD_constraints --nu_schedule --nu_start 200 -logdir shelf_long_env --logdir_suffix RSPO --pos_fraction 0.3 --seed $i
+# 	python -m main --cuda --env-name shelf_long_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --num_eps 4000 --DGD_constraints --use_qvalue  --nu_schedule --nu_start 200 -logdir shelf_long_env --logdir_suffix RSPO --pos_fraction 0.3 --seed $i
 # done
 
 # RCPO Lambda 10
 # for i in {1..3}
 # do
-# 	python -m main --cuda --env-name shelf_long_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --num_eps 4000 --RCPO --lambda 10 -logdir shelf_long_env --logdir_suffix lambda_10 --pos_fraction 0.3 --seed $i
+# 	python -m main --cuda --env-name shelf_long_env --task_demos --alpha 0.05 --tau 0.0002 --replay_size 100000 --num_eps 4000 --RCPO --use_qvalue  --lambda 10 -logdir shelf_long_env --logdir_suffix lambda_10 --pos_fraction 0.3 --seed $i
 # done
