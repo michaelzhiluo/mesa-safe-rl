@@ -304,12 +304,6 @@ def get_constraint_demos(env, args):
 
 
 def train_recovery(states, actions, next_states=None, epochs=50):
-    print("STATES", states.shape)
-    print("ACTIONS", actions.shape)
-    print("NEXT STATES", next_states.shape)
-    states = states[:200]
-    actions = actions[:200]
-    next_states = next_states[:200]
     if next_states is not None:
         recovery_policy.train(states, actions, random=True, next_obs=next_states, epochs=epochs)
     else:
