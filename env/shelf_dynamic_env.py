@@ -209,7 +209,7 @@ class ShelfDynamicEnv(BaseMujocoEnv):
                 action[2] = 0.05
             else:
                 action[2] = 0.02
-        return action + np.random.randn(self._adim) * noise_std
+        return np.clip(action + np.random.randn(self._adim) * noise_std, self.ac_low, self.ac_high)
 
     def reward_fn(self):
         # if not self.dense_reward:

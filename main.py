@@ -239,7 +239,7 @@ def get_constraint_demos(env, args):
                 data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
                 obs_seqs = data['obs'][:args.num_constraint_transitions//25]
                 ac_seqs = data['ac'][:args.num_constraint_transitions//25]
-                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
+                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25] 
                 for i in range(len(ac_seqs)):
                     ac_seqs[i] = np.array(ac_seqs[i])
                 for i in range(len(obs_seqs)):
@@ -269,6 +269,17 @@ def get_constraint_demos(env, args):
                     constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images.pkl"), "rb"))
                 else:
                     constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
+
+                # Get all violations in front to get as many violations as possible
+                constraint_demo_data_list_safe = []
+                constraint_demo_data_list_viol = []
+                for i in range(len(constraint_demo_data)):
+                    if constraint_demo_data[i][2] == 1:
+                        constraint_demo_data_list_viol.append(constraint_demo_data[i])
+                    else:
+                        constraint_demo_data_list_safe.append(constraint_demo_data[i])
+                        
+                constraint_demo_data = constraint_demo_data_list_viol + constraint_demo_data_list_safe
             else:
                 constraint_demo_data = []
                 data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
@@ -293,6 +304,12 @@ def get_constraint_demos(env, args):
 
 
 def train_recovery(states, actions, next_states=None, epochs=50):
+    print("STATES", states.shape)
+    print("ACTIONS", actions.shape)
+    print("NEXT STATES", next_states.shape)
+    states = states[:200]
+    actions = actions[:200]
+    next_states = next_states[:200]
     if next_states is not None:
         recovery_policy.train(states, actions, random=True, next_obs=next_states, epochs=epochs)
     else:
@@ -464,9 +481,9 @@ constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_c
 # Train recovery policy and associated value function on demos
 if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints or args.RCPO:
     if not args.vismpc_recovery:
-        demo_data_states = np.array([d[0] for d in constraint_demo_data])
-        demo_data_actions = np.array([d[1] for d in constraint_demo_data])
-        demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
+        demo_data_states = np.array([d[0] for d in constraint_demo_data[:args.num_constraint_transitions]])
+        demo_data_actions = np.array([d[1] for d in constraint_demo_data[:args.num_constraint_transitions]])
+        demo_data_next_states = np.array([d[3] for d in constraint_demo_data[:args.num_constraint_transitions]])
         num_constraint_transitions = 0
         num_viols = 0
         for transition in constraint_demo_data:
@@ -634,7 +651,7 @@ for i_episode in itertools.count(1):
                 train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
                 all_ep_data = []
             else:
-                recovery_policy.train_dynamics(i_episode, recovery_memory)
+                recovery_policy.train_dynamics(i_episode, recovery_memory) # Tbh we could train this on everything collected, but are not right now
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
             if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
                 plot = True
