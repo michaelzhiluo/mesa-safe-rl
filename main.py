@@ -239,7 +239,7 @@ def get_constraint_demos(env, args):
                 data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
                 obs_seqs = data['obs'][:args.num_constraint_transitions//25]
                 ac_seqs = data['ac'][:args.num_constraint_transitions//25]
-                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
+                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25] 
                 for i in range(len(ac_seqs)):
                     ac_seqs[i] = np.array(ac_seqs[i])
                 for i in range(len(obs_seqs)):
@@ -269,6 +269,17 @@ def get_constraint_demos(env, args):
                     constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images.pkl"), "rb"))
                 else:
                     constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
+
+                # Get all violations in front to get as many violations as possible
+                constraint_demo_data_list_safe = []
+                constraint_demo_data_list_viol = []
+                for i in range(len(constraint_demo_data)):
+                    if constraint_demo_data[i][2] == 1:
+                        constraint_demo_data_list_viol.append(constraint_demo_data[i])
+                    else:
+                        constraint_demo_data_list_safe.append(constraint_demo_data[i])
+                        
+                constraint_demo_data = constraint_demo_data_list_viol + constraint_demo_data_list_safe
             else:
                 constraint_demo_data = []
                 data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
@@ -394,6 +405,12 @@ parser.add_argument('--num_task_transitions', type=int, default=10000000)
 parser.add_argument('--num_constraint_transitions', type=int, default=10000) # Make this 20K+ for original shelf env stuff, trying with fewer rn
 parser.add_argument('--reachability_hor', type=int, default=2)
 
+# Ablations
+parser.add_argument('--disable_offline_updates', action="store_true")
+parser.add_argument('--disable_online_updates', action="store_true")
+parser.add_argument('--disable_action_relabeling', action="store_true")
+parser.add_argument('--add_both_transitions', action="store_true")
+
 # Lagrangian, RSPO
 parser.add_argument('--DGD_constraints', action="store_true") 
 parser.add_argument('--nu', type=float, default=0.01, metavar='G',
@@ -462,59 +479,60 @@ constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_c
 
 
 # Train recovery policy and associated value function on demos
-if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints or args.RCPO:
-    if not args.vismpc_recovery:
-        demo_data_states = np.array([d[0] for d in constraint_demo_data])
-        demo_data_actions = np.array([d[1] for d in constraint_demo_data])
-        demo_data_next_states = np.array([d[3] for d in constraint_demo_data])
-        num_constraint_transitions = 0
-        num_viols = 0
-        for transition in constraint_demo_data:
-            recovery_memory.push(*transition)
-            num_viols += int(transition[2])
-            num_constraint_transitions += 1
-            if num_constraint_transitions == args.num_constraint_transitions:
-                break
-        print("Number of Constraint Transitions: ", num_constraint_transitions)
-        print("Number of Constraint Violations: ", num_viols)
-        if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
-            plot = True
+if not args.disable_offline_updates:
+    if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints or args.RCPO:
+        if not args.vismpc_recovery:
+            demo_data_states = np.array([d[0] for d in constraint_demo_data[:args.num_constraint_transitions]])
+            demo_data_actions = np.array([d[1] for d in constraint_demo_data[:args.num_constraint_transitions]])
+            demo_data_next_states = np.array([d[3] for d in constraint_demo_data[:args.num_constraint_transitions]])
+            num_constraint_transitions = 0
+            num_viols = 0
+            for transition in constraint_demo_data:
+                recovery_memory.push(*transition)
+                num_viols += int(transition[2])
+                num_constraint_transitions += 1
+                if num_constraint_transitions == args.num_constraint_transitions:
+                    break
+            print("Number of Constraint Transitions: ", num_constraint_transitions)
+            print("Number of Constraint Violations: ", num_viols)
+            if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
+                plot = True
+            else:
+                plot = False
+            if args.use_qvalue:
+                for i in range(args.critic_safe_pretraining_steps):
+                    if i % 100 == 0:
+                        print("CRITIC SAFE UPDATE STEP: ", i)
+                    agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
+                            batch_size=min(args.batch_size, len(constraint_demo_data)))
+            else:
+                agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
+            if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints or args.RCPO):
+                train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
         else:
-            plot = False
-        if args.use_qvalue:
-            for i in range(args.critic_safe_pretraining_steps):
-                if i % 100 == 0:
-                    print("CRITIC SAFE UPDATE STEP: ", i)
-                agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
-                        batch_size=min(args.batch_size, len(constraint_demo_data)))
-        else:
-            agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
-        if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints or args.RCPO):
-            train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
-    else:
-        # Pre-train vis dynamics model if needed
-        if not args.load_vismpc:
-            recovery_policy.train(obs_seqs, ac_seqs, constraint_seqs, recovery_memory, num_train_steps=20000 if "maze" in args.env_name else 200000)
-        # Process everything in recovery_memory to be encoded in order to train safety critic
-        num_constraint_transitions = 0
-        num_viols = 0
-        for transition in constraint_demo_data:
-            recovery_memory.push(*transition)
-            num_viols += int(transition[2])
-            num_constraint_transitions += 1
-            if num_constraint_transitions == args.num_constraint_transitions:
-                break
-        print("Number of Constraint Transitions: ", num_constraint_transitions)
-        print("Number of Constraint Violations: ", num_viols)
-        if args.use_qvalue:
-            # Pass encoding function to safety critic:
-            agent.safety_critic.encoder = recovery_policy.get_encoding
-            # Train safety critic using the encoder
-            for i in range(args.critic_safe_pretraining_steps):
-                if i % 100 == 0:
-                    print("CRITIC SAFE UPDATE STEP: ", i)
-                agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
-                        batch_size=min(args.batch_size, len(constraint_demo_data)))
+            # Pre-train vis dynamics model if needed
+            if not args.load_vismpc:
+                recovery_policy.train(obs_seqs, ac_seqs, constraint_seqs, recovery_memory, num_train_steps=20000 if "maze" in args.env_name else 200000)
+            # Process everything in recovery_memory to be encoded in order to train safety critic
+            num_constraint_transitions = 0
+            num_viols = 0
+            for transition in constraint_demo_data:
+                recovery_memory.push(*transition)
+                num_viols += int(transition[2])
+                num_constraint_transitions += 1
+                if num_constraint_transitions == args.num_constraint_transitions:
+                    break
+            print("Number of Constraint Transitions: ", num_constraint_transitions)
+            print("Number of Constraint Violations: ", num_viols)
+            if args.use_qvalue:
+                # Pass encoding function to safety critic:
+                agent.safety_critic.encoder = recovery_policy.get_encoding
+                # Train safety critic using the encoder
+                for i in range(args.critic_safe_pretraining_steps):
+                    if i % 100 == 0:
+                        print("CRITIC SAFE UPDATE STEP: ", i)
+                    agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
+                            batch_size=min(args.batch_size, len(constraint_demo_data)))
 
 # If use task demos, add them to memory and train agent
 if task_demos:
@@ -567,7 +585,7 @@ for i_episode in itertools.count(1):
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, min(args.batch_size, len(memory)), updates, safety_critic=agent.safety_critic, nu=nu_schedule(i_episode))
-                if args.use_qvalue:
+                if args.use_qvalue and not args.disable_online_updates:
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
                             batch_size=args.batch_size, plot=0)
                 writer.add_scalar('loss/critic_1', critic_1_loss, updates)
@@ -599,12 +617,16 @@ for i_episode in itertools.count(1):
 
         mask = float(not done)
         done = done or episode_steps == env._max_episode_steps
-        memory.push(state, action, reward, next_state, mask) # Append transition to memory
+        if not args.disable_action_relabeling:
+            memory.push(state, action, reward, next_state, mask) # Append transition to memory
+        else:
+            memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
+
 
         if args.use_recovery or args.DGD_constraints or args.RCPO:
             recovery_memory.push(state, real_action, info['constraint'], next_state, mask)
-            # if recovery_used:
-            #     memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
+            if recovery_used and args.add_both_transitions:
+                memory.push(state, real_action, reward, next_state, mask) # Append transition to memory
 
         state = next_state
         ep_states.append(state)
@@ -627,14 +649,14 @@ for i_episode in itertools.count(1):
     elif "maze" in args.env_name and -info['reward'] < 0.03:
         num_successes += 1
 
-    if (args.use_recovery and not args.disable_learned_recovery):
+    if (args.use_recovery and not args.disable_learned_recovery) and not args.disable_online_updates:
         all_ep_data.append({'obs': np.array(ep_states), 'ac': np.array(ep_actions), 'constraint': np.array(ep_constraints)})
         if i_episode % args.recovery_policy_update_freq == 0 and not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints):
             if not args.vismpc_recovery:
                 train_recovery([ep_data['obs'] for ep_data in all_ep_data], [ep_data['ac'] for ep_data in all_ep_data])
                 all_ep_data = []
             else:
-                recovery_policy.train_dynamics(i_episode, recovery_memory)
+                recovery_policy.train_dynamics(i_episode, recovery_memory) # Tbh we could train this on everything collected, but are not right now
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
             if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
                 plot = True
