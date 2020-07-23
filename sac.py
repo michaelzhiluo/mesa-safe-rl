@@ -368,6 +368,7 @@ class SAC(object):
 
     def select_action(self, state, eval=False):
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
+        self.safe_samples = 100
         if self.use_constraint_sampling:
             if not self.cnn:
                 state_batch = state.repeat(self.safe_samples, 1)
