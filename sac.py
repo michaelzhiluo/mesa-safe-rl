@@ -300,6 +300,7 @@ class SAC(object):
         self.update_nu = args.update_nu
         self.cnn = args.cnn
         self.eps_safe = args.eps_safe
+        self.use_constraint_sampling = args.use_constraint_sampling
         self.log_nu = torch.tensor(np.log(self.nu), requires_grad=True, device=self.device)
         self.nu_optim = Adam([self.log_nu], lr=0.1*args.lr)
 
@@ -367,10 +368,32 @@ class SAC(object):
 
     def select_action(self, state, eval=False):
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
-        if eval is False:
-            action, _, _ = self.policy.sample(state)
+        if self.use_constraint_sampling:
+            if not self.cnn:
+                state_batch = state.repeat(self.safe_samples, 1)
+            else:
+                state_batch = state.repeat(self.safe_samples, 1, 1, 1)
+            pi, log_pi, _ = self.policy.sample(state_batch)
+            max_qf_constraint_pi = self.safety_critic.get_value(state_batch, pi)
+
+            # Threshold with epsilon safe and get idxs and apply to both pi and max_qf_constraint_pi, if empty state
+            thresh_idxs = (max_qf_constraint_pi <= self.eps_safe).nonzero()[:, 0]
+            # Note: these are auto-normalized
+            thresh_probs = torch.exp(log_pi[thresh_idxs])
+            thresh_probs = thresh_probs.flatten()
+
+            if list(thresh_probs.size())[0] == 0:
+                min_q_value_idx = torch.argmin(max_qf_constraint_pi)
+                action = pi[min_q_value_idx, :].unsqueeze(0)
+            else:
+                prob_dist = torch.distributions.Categorical(thresh_probs)
+                sampled_idx = prob_dist.sample()
+                action = pi[sampled_idx, :].unsqueeze(0)
         else:
-            _, _, action = self.policy.sample(state)
+            if eval is False:
+                action, _, _ = self.policy.sample(state)
+            else:
+                _, _, action = self.policy.sample(state)
         return action.detach().cpu().numpy()[0]
 
     def train_safety_critic(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False):

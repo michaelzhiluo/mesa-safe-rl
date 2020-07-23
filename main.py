@@ -413,6 +413,7 @@ parser.add_argument('--add_both_transitions', action="store_true")
 
 # Lagrangian, RSPO
 parser.add_argument('--DGD_constraints', action="store_true") 
+parser.add_argument('--use_constraint_sampling', action="store_true")
 parser.add_argument('--nu', type=float, default=0.01, metavar='G',
                     help='todo') # TODO: needs some tuning
 parser.add_argument('--update_nu', action="store_true")
