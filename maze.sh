@@ -6,12 +6,44 @@
 # 	python -m main --cuda --env-name maze --use_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --num_eps 500 --seed $i --logdir maze --logdir_suffix recovery
 # done
 
-# # Recovery RL DDPG Recovey
+# # Recovery RL DDPG Recovery
 # for i in {1..3}
 # do
 # 	echo "DDPG Recovery Run $i"
 # 	python -m main --cuda --env-name maze --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --num_eps 500 --seed $i --logdir maze --logdir_suffix ddpg_recovery
 # done
+
+# Recovery RL PETS Recovery no action relabeling
+# for i in {1..3}
+# do
+# 	echo "Recovery Run $i"
+# 	python -m main --cuda --env-name maze --use_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --disable_action_relabeling --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --num_eps 500 --seed $i --logdir maze --logdir_suffix recovery_disable_action_relabeling
+# done
+
+# Recovery RL PETS Recovery add both transitions
+# for i in {1..3}
+# do
+# 	echo "Recovery Run $i"
+# 	python -m main --cuda --env-name maze --use_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --add_both_transitions --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --num_eps 500 --seed $i --logdir maze --logdir_suffix recovery_add_both_transitions
+# done
+
+# Disable offline
+# for i in {1..3}
+# do
+# 	echo "Recovery Run $i"
+# 	python -m main --cuda --env-name maze --use_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --disable_offline_updates --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --num_eps 500 --seed $i --logdir maze --logdir_suffix recovery_disable_offline
+# done
+
+# Disable online
+# for i in {1..3}
+# do
+# 	echo "Recovery Run $i"
+# 	python -m main --cuda --env-name maze --use_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --disable_online_updates --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --num_eps 500 --seed $i --logdir maze --logdir_suffix recovery_disable_online
+# done
+
+# TODO: grid of eps_safe x gamma_safe
+
+
 
 # # Unconstrained
 # for i in {1..3}
@@ -73,11 +105,11 @@
 # done
 
 # SAC Lagrangian RSPO
-for i in {1..3}
-do
-	echo "Lagrangian RSPO Run $i"
-	python -m main --cuda --env-name maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --DGD_constraints --nu_schedule --nu_start 200 --logdir maze --logdir_suffix RSPO --num_eps 500 --seed $i
-done
+# for i in {1..3}
+# do
+# 	echo "Lagrangian RSPO Run $i"
+# 	python -m main --cuda --env-name maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.5 --eps_safe 0.15 --pos_fraction=0.3 --DGD_constraints --nu_schedule --nu_start 200 --logdir maze --logdir_suffix RSPO --num_eps 500 --seed $i
+# done
 
 # RCPO Lambda=50
 # for i in {1..3}

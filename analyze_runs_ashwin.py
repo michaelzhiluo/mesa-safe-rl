@@ -65,6 +65,19 @@ experiment_map = {
         },
         "outfile": "pointbot1.png"
     },
+
+    "shelf_long": {
+        "algs": {
+            "sac_vanilla": ["shelf_long_env/2020-07-17_09-35-22_SAC_shelf_long_env_Gaussian_vanilla", "shelf_long_env/2020-07-17_13-57-11_SAC_shelf_long_env_Gaussian_vanilla", "shelf_long_env/2020-07-17_17-40-01_SAC_shelf_long_env_Gaussian_vanilla"],
+            "sac_penalty": ["shelf_long_env/2020-07-21_03-11-14_SAC_shelf_long_env_Gaussian_reward_50", "shelf_long_env/2020-07-21_08-00-18_SAC_shelf_long_env_Gaussian_reward_50", "shelf_long_env/2020-07-21_12-37-01_SAC_shelf_long_env_Gaussian_reward_50"],
+            "sac_rcpo": ["shelf_long_env/2020-07-21_03-41-20_SAC_shelf_long_env_Gaussian_rcpo_50", "shelf_long_env/2020-07-21_09-02-49_SAC_shelf_long_env_Gaussian_rcpo_50", "shelf_long_env/2020-07-21_18-59-59_SAC_shelf_long_env_Gaussian_rcpo_50"],
+            "sac_lagrangian": ["shelf_long_env/2020-07-20_04-54-13_SAC_shelf_long_env_Gaussian_nu_50", "shelf_long_env/2020-07-20_13-01-12_SAC_shelf_long_env_Gaussian_nu_50", "shelf_long_env/2020-07-21_03-01-55_SAC_shelf_long_env_Gaussian_nu_50"],
+            "sac_rspo": ["shelf_long_env/2020-07-22_05-48-32_SAC_shelf_long_env_Gaussian_RSPO", "shelf_long_env/2020-07-22_05-48-43_SAC_shelf_long_env_Gaussian_RSPO", "shelf_long_env/2020-07-22_05-48-51_SAC_shelf_long_env_Gaussian_RSPO"],
+            "sac_recovery_pets": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"],
+            "sac_recovery_ddpg": ["shelf_long_env/2020-07-20_04-51-41_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_10-16-07_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_15-48-15_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25"]
+        },
+        "outfile": "shelf_long.png"
+    },
     # "shelf": {  # Up to 2800
     #     "algs": {
     #         "sac_norecovery": ["2020-05-02_10-02-27_SAC_shelf_env_Gaussian_", "2020-05-02_23-46-58_SAC_shelf_env_Gaussian_", "2020-05-02_23-47-31_SAC_shelf_env_Gaussian_"],
@@ -266,7 +279,8 @@ eps = {
     "pointbot0": 300,
     "pointbot1": 300,
     "shelf": 4000,
-    "shelf_dynamic": 3000
+    "shelf_dynamic": 3000,
+    "shelf_long": 4000
 }
 
 
@@ -276,16 +290,18 @@ envname = {
     "pointbot0": "Navigation 1",
     "pointbot1": "Navigation 2",
     "shelf": "Shelf",
-    "shelf_dynamic": "Dynamic Shelf"
+    "shelf_dynamic": "Dynamic Shelf",
+    "shelf_long": "Shelf"
 }
 
 
 yscaling = {
-    "maze": 0.45,
+    "maze": 0.25,
     "image_maze": 0.45,
     "pointbot0": 0.9,
     "pointbot1": 0.4,
     "shelf": 0.1,
+    "shelf_long": 0.04,
     "shelf_dynamic": 0.3
 }
 
@@ -394,10 +410,11 @@ def plot_experiment(experiment):
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    experiment = "image_maze"
+    # experiment = "image_maze"
     # experiment = "shelf"
     # experiment = "image_shelf"
     # experiment = "maze"
+    experiment = "shelf_long"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 

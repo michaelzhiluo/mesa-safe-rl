@@ -161,6 +161,7 @@ class VisualRecovery(Controller):
 
     # Do online model updates with encoder/decoder frozen + on just one step loss
     def train_dynamics(self, ep, memory, batch_size=3000, training_iterations=6):
+        print("TRAIN DYNAMICS: ", ep)
         for j in range(training_iterations):
             state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
             state_batch = torch.FloatTensor(state_batch).to(TORCH_DEVICE)

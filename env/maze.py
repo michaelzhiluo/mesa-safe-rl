@@ -195,16 +195,20 @@ class MazeNavigation(Env, utils.EzPickle):
         ims = self.sim.render(64, 64, camera_name= "cam0")
         return ims/255
 
-    def reset(self, difficulty='h', check_constraint=True, demos=False):
-        if difficulty is None:
-          self.sim.data.qpos[0] = np.random.uniform(-0.27, 0.27)
-        elif difficulty == 'e':
-          self.sim.data.qpos[0] = np.random.uniform(0.14, 0.22)
-        elif difficulty == 'm':
-          self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
-        elif difficulty == 'h':
-          self.sim.data.qpos[0] = np.random.uniform(-0.22, -0.13)
-        self.sim.data.qpos[1] = np.random.uniform(-0.22, 0.22)
+    def reset(self, difficulty='h', check_constraint=True, demos=False, pos=()):
+        if len(pos):
+            self.sim.data.qpos[0] = pos[0]
+            self.sim.data.qpos[1] = pos[1]
+        else:
+            if difficulty is None:
+              self.sim.data.qpos[0] = np.random.uniform(-0.27, 0.27)
+            elif difficulty == 'e':
+              self.sim.data.qpos[0] = np.random.uniform(0.14, 0.22)
+            elif difficulty == 'm':
+              self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
+            elif difficulty == 'h':
+              self.sim.data.qpos[0] = np.random.uniform(-0.22, -0.13)
+            self.sim.data.qpos[1] = np.random.uniform(-0.22, 0.22)
 
         self.steps = 0
 
@@ -227,7 +231,8 @@ class MazeNavigation(Env, utils.EzPickle):
         # print("RESET!", self._get_obs())
         constraint = int(self.sim.data.ncon > 3)
         if constraint and check_constraint:
-            self.reset(difficulty)
+            if not len(pos):
+                self.reset(difficulty)
         #     # self.render()
         #     im = self.sim.render(64, 64, camera_name= "cam0")
         #     print('aaa',self.sim.data.ncon, self.sim.data.qpos, im.sum())

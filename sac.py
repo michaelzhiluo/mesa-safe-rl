@@ -11,6 +11,7 @@ from utils import soft_update, hard_update
 from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN, QNetworkConstraint, QNetworkConstraintCNN, DeterministicPolicyCNN
 from dotmap import DotMap
 from constraint import ValueFunction, QFunction
+import cv2
 
 def process_obs(obs):
     im = np.transpose(obs, (2, 0, 1))
@@ -61,6 +62,8 @@ class QSafeWrapper:
         self.recovery_lambda = args.recovery_lambda
         self.eps_safe = args.eps_safe
         self.alpha = args.alpha
+        if args.env_name == 'maze':
+            self.tmp_env.reset(pos=(12, 12))
 
     def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
@@ -219,9 +222,15 @@ class QSafeWrapper:
             plt.gca().add_patch(Rectangle((0,25),500,50,linewidth=1,edgecolor='r',facecolor='none'))
         elif self.env_name == 'simplepointbot1':
             plt.gca().add_patch(Rectangle((45,65),10,20,linewidth=1,edgecolor='r',facecolor='none'))
-        plt.imshow(grid.T)
-        plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix))
 
+        if self.env_name == 'maze':
+            background = cv2.resize(env._get_obs(images=True), (x_pts, y_pts))
+            plt.imshow(background)
+            plt.imshow(grid.T, alpha=0.6)
+        else:
+            plt.imshow(grid.T)
+
+        plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix), bbox_inches='tight')
 
     def __call__(self, states, actions):
         if self.encoding:
