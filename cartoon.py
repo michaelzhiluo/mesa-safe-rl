@@ -23,7 +23,7 @@ ax = fig.add_subplot(111)
 
 margin = .1
 min_f0, max_f0 = -70, 20
-min_f1, max_f1 = 10, 15
+min_f1, max_f1 = 5, 10
 width = max_f0 - min_f0
 height = max_f1 - min_f1
 
@@ -41,7 +41,7 @@ ax.add_patch(
 
 margin = .1
 min_f0, max_f0 = -70, 20
-min_f1, max_f1 = -15, -10
+min_f1, max_f1 = -10, -5
 width = max_f0 - min_f0
 height = max_f1 - min_f1
 
@@ -65,11 +65,11 @@ label = ax.annotate("goal", xy=(0, 3), fontsize=10, ha="center")
 
 
 plt.xlim(-60, 10)
-plt.ylim(-20, 20)
+plt.ylim(-10, 10)
 
 ax.set_aspect('equal')
 ax.autoscale_view()
 
-plt.savefig("pointbot1.png")
+plt.savefig("pointbot0_cartoon.png")
 
 plt.show()
