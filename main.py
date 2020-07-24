@@ -279,7 +279,7 @@ def get_constraint_demos(env, args):
                     else:
                         constraint_demo_data_list_safe.append(constraint_demo_data[i])
                         
-                constraint_demo_data = constraint_demo_data_list_viol + constraint_demo_data_list_safe
+                constraint_demo_data = constraint_demo_data_list_viol[:int(0.5*args.num_constraint_transitions)] + constraint_demo_data_list_safe
             else:
                 constraint_demo_data = []
                 data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
