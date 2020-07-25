@@ -8,7 +8,10 @@ colors = {
     "sac_rcpo": "purple",
     "sac_rspo": "orange",
     "sac_vanilla": "olive",
-    "sac_sqrl": "magenta"
+    "sac_sqrl": "magenta",
+    "sac_recovery_disable_relabel": "blue",
+    "sac_recovery_pets_1k": "green",
+    "sac_recovery_pets_5k": "purple"
 }
 
 
@@ -32,7 +35,10 @@ names = {
     "sac_rcpo": "SAC + Critic Penalty (RCPO)",
     "sac_rspo": "SAC + RSPO",
     "sac_vanilla": "SAC",
-    "sac_sqrl": "SQRL"
+    "sac_sqrl": "SQRL",
+    "sac_recovery_disable_relabel": "No Action Relabeling",
+    "sac_recovery_pets_1k": "1K Demos",
+    "sac_recovery_pets_5k": "5K Demos"
 }
 
 
