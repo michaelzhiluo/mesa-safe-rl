@@ -1,19 +1,29 @@
 import numpy as np
 
-colors = {
-    "sac_recovery_pets": "red",
-    "sac_recovery_ddpg": "blue",
-    "sac_penalty": "green",
-    "sac_lagrangian": "black",
-    "sac_rcpo": "purple",
-    "sac_rspo": "orange",
-    "sac_vanilla": "olive",
-    "sac_sqrl": "magenta",
-    "sac_recovery_disable_relabel": "blue",
-    "sac_recovery_pets_1k": "green",
-    "sac_recovery_pets_5k": "purple"
-}
+# colors = {
+#     "sac_recovery_pets": "red",
+#     "sac_recovery_ddpg": "blue",
+#     "sac_penalty": "green",
+#     "sac_lagrangian": "black",
+#     "sac_rcpo": "purple",
+#     "sac_rspo": "orange",
+#     "sac_vanilla": "olive",
+#     "sac_sqrl": "magenta",
+#     "sac_recovery_disable_relabel": "blue",
+#     "sac_recovery_pets_1k": "green",
+#     "sac_recovery_pets_5k": "purple"
+# }
 
+colors = {
+    "sac_vanilla": "#7776bc",
+    "sac_lagrangian": "#aef78e",
+    "sac_rspo": "#8ff499",
+    "sac_sqrl": "#66a182",
+    "sac_penalty": "#b7c335",
+    "sac_rcpo": "#be8d39",
+    "sac_recovery_ddpg": "#f88585",
+    "sac_recovery_pets": "#830404"
+}
 
 # colors = {
 #     "sac_recovery_pets": (0, 0.45, 0.7),
