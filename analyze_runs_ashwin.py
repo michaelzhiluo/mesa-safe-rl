@@ -312,11 +312,11 @@ def plot_experiment(experiment):
     max_eps = eps[experiment]
     fig, axs = plt.subplots(1, figsize=(16, 8))
 
-    axs.set_title("%s: Ratio of Successes/Violations"%envname[experiment], fontsize=30)
+    axs.set_title("%s: Ratio of Successes/Violations"%envname[experiment], fontsize=36)
     axs.set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
-    axs.set_xlabel("Episode", fontsize=24)
-    axs.set_ylabel("Ratio of Successes/Violations", fontsize=24)
-    axs.tick_params(axis='both', which='major', labelsize=21)
+    axs.set_xlabel("Episode", fontsize=30)
+    axs.set_ylabel("Ratio of Successes/Violations", fontsize=30)
+    axs.tick_params(axis='both', which='major', labelsize=30)
     plt.subplots_adjust(hspace=0.3)
 
     for alg in experiment_map[experiment]["algs"]:
@@ -405,7 +405,7 @@ def plot_experiment(experiment):
                      color=get_color(alg), alpha=.25, label=get_legend_name(alg))
         axs.plot(safe_ratios_mean, color=get_color(alg))
 
-    axs.legend(loc="upper left", fontsize=20)
+    # axs.legend(loc="upper left", fontsize=20)
     plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
     plt.show()
 
@@ -417,9 +417,10 @@ if __name__ == '__main__':
     # experiment = "image_shelf"
     # experiment = "maze"
     # experiment = "shelf_long"
-    experiment = "shelf_long_ablations"
+    # experiment = "shelf_long_ablations"
     # experiment = "image_shelf_dynamic"
-    plot_experiment(experiment)
+    for experiment in ["image_maze", "maze", "shelf_long"]:
+        plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
 # "recovery_0.4": ["2020-05-04_03-00-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-01-05_SAC_shelf_env_Gaussian_", "2020-05-04_03-01-17_SAC_shelf_env_Gaussian_"], # Bad results: include constraint penalty
