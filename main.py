@@ -504,7 +504,7 @@ if not args.disable_offline_updates:
                     if i % 100 == 0:
                         print("CRITIC SAFE UPDATE STEP: ", i)
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
-                            batch_size=min(args.batch_size, len(constraint_demo_data)))
+                            batch_size=min(args.batch_size, int(args.pos_fraction * args.num_constraint_transitions)))
             else:
                 agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
             if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints or args.RCPO):
