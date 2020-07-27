@@ -287,10 +287,10 @@ envname = {
     "image_maze": "Image Maze",
     "pointbot0": "Navigation 1",
     "pointbot1": "Navigation 2",
-    "shelf": "Shelf",
-    "shelf_dynamic": "Dynamic Shelf",
-    "shelf_long": "Shelf",
-    "image_shelf": "Image Shelf",
+    "shelf": "Object Extraction",
+    "shelf_dynamic": "Object Extraction (Dynamic Obstacle)",
+    "shelf_long": "Object Extraction",
+    "image_shelf": "Object Extraction (Dynamic Obstacle)",
     "shelf_long_ablations": "Shelf Ablations"
 }
 
@@ -312,11 +312,11 @@ def plot_experiment(experiment):
     max_eps = eps[experiment]
     fig, axs = plt.subplots(1, figsize=(16, 8))
 
-    axs.set_title("%s: Ratio of Successes/Violations"%envname[experiment], fontsize=36)
+    axs.set_title(envname[experiment], fontsize=48)
     axs.set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
-    axs.set_xlabel("Episode", fontsize=30)
-    axs.set_ylabel("Ratio of Successes/Violations", fontsize=30)
-    axs.tick_params(axis='both', which='major', labelsize=30)
+    axs.set_xlabel("Episode", fontsize=42)
+    axs.set_ylabel("Ratio of Successes/Violations", fontsize=42)
+    axs.tick_params(axis='both', which='major', labelsize=36)
     plt.subplots_adjust(hspace=0.3)
 
     for alg in experiment_map[experiment]["algs"]:
