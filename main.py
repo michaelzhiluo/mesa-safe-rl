@@ -279,7 +279,7 @@ def get_constraint_demos(env, args):
                     else:
                         constraint_demo_data_list_safe.append(constraint_demo_data[i])
                         
-                constraint_demo_data = constraint_demo_data_list_viol + constraint_demo_data_list_safe
+                constraint_demo_data = constraint_demo_data_list_viol[:int(0.5*args.num_constraint_transitions)] + constraint_demo_data_list_safe
             else:
                 constraint_demo_data = []
                 data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
@@ -478,7 +478,7 @@ constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_c
 #      open("demos/image_maze/demos.pkl", "wb") )
 # assert(False)
 
-
+num_constraint_violations = 0
 # Train recovery policy and associated value function on demos
 if not args.disable_offline_updates:
     if (args.use_recovery and not args.disable_learned_recovery) or args.DGD_constraints or args.RCPO:
@@ -487,15 +487,14 @@ if not args.disable_offline_updates:
             demo_data_actions = np.array([d[1] for d in constraint_demo_data[:args.num_constraint_transitions]])
             demo_data_next_states = np.array([d[3] for d in constraint_demo_data[:args.num_constraint_transitions]])
             num_constraint_transitions = 0
-            num_viols = 0
             for transition in constraint_demo_data:
                 recovery_memory.push(*transition)
-                num_viols += int(transition[2])
+                num_constraint_violations += int(transition[2])
                 num_constraint_transitions += 1
                 if num_constraint_transitions == args.num_constraint_transitions:
                     break
             print("Number of Constraint Transitions: ", num_constraint_transitions)
-            print("Number of Constraint Violations: ", num_viols)
+            print("Number of Constraint Violations: ", num_constraint_violations)
             if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
                 plot = 0
             else:
@@ -505,7 +504,7 @@ if not args.disable_offline_updates:
                     if i % 100 == 0:
                         print("CRITIC SAFE UPDATE STEP: ", i)
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
-                            batch_size=min(args.batch_size, len(constraint_demo_data)))
+                            batch_size=min(args.batch_size, int(args.pos_fraction * args.num_constraint_transitions)))
             else:
                 agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=0)
             if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints or args.RCPO):
@@ -516,15 +515,14 @@ if not args.disable_offline_updates:
                 recovery_policy.train(obs_seqs, ac_seqs, constraint_seqs, recovery_memory, num_train_steps=20000 if "maze" in args.env_name else 200000)
             # Process everything in recovery_memory to be encoded in order to train safety critic
             num_constraint_transitions = 0
-            num_viols = 0
             for transition in constraint_demo_data:
                 recovery_memory.push(*transition)
-                num_viols += int(transition[2])
+                num_constraint_violations += int(transition[2])
                 num_constraint_transitions += 1
                 if num_constraint_transitions == args.num_constraint_transitions:
                     break
             print("Number of Constraint Transitions: ", num_constraint_transitions)
-            print("Number of Constraint Violations: ", num_viols)
+            print("Number of Constraint Violations: ", num_constraint_violations)
             if args.use_qvalue:
                 # Pass encoding function to safety critic:
                 agent.safety_critic.encoder = recovery_policy.get_encoding
@@ -580,12 +578,12 @@ for i_episode in itertools.count(1):
         if args.env_name == 'reacher':
             recorder.capture_frame()
 
-        if (not args.disable_offline_updates and len(memory) > args.batch_size) or (args.disable_offline_updates and len(memory) > 5*args.batch_size):
+        if len(memory) > args.batch_size:
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
                 critic_1_loss, critic_2_loss, policy_loss, ent_loss, alpha = agent.update_parameters(memory, min(args.batch_size, len(memory)), updates, safety_critic=agent.safety_critic, nu=nu_schedule(i_episode))
-                if args.use_qvalue and not args.disable_online_updates:
+                if args.use_qvalue and not args.disable_online_updates and len(recovery_memory) > args.batch_size and (num_viols + num_constraint_violations)/args.batch_size > args.pos_fraction:
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
                             batch_size=args.batch_size, plot=0)
                 writer.add_scalar('loss/critic_1', critic_1_loss, updates)

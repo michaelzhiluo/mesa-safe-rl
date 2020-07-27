@@ -33,8 +33,8 @@ experiment_map = {
             "sac_lagrangian": ["maze/2020-07-14_17-56-02_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_18-58-07_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_19-58-31_SAC_maze_Gaussian_update_nu_100"],
             "sac_sqrl": ["maze/2020-07-23_23-44-56_SAC_maze_Gaussian_update_nu_100_SQRL", "maze/2020-07-24_00-40-39_SAC_maze_Gaussian_update_nu_100_SQRL", "maze/2020-07-24_01-35-06_SAC_maze_Gaussian_update_nu_100_SQRL"],
             "sac_rspo": ["maze/2020-07-14_21-23-48_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_20-45-50_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_19-47-31_SAC_maze_Gaussian_RSPO"],
+            "sac_recovery_ddpg": ["maze/2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"],
             "sac_recovery_pets": ["maze/2020-07-14_07-46-28_SAC_maze_Gaussian_recovery", "maze/2020-07-14_10-38-39_SAC_maze_Gaussian_recovery", "maze/2020-07-14_09-13-40_SAC_maze_Gaussian_recovery"],
-            "sac_recovery_ddpg": ["maze/2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"]
         },
         "outfile": "maze_plot.png"
     },
@@ -48,8 +48,9 @@ experiment_map = {
             "sac_sqrl": ["image_maze/2020-07-23_23-45-02_SAC_image_maze_Gaussian_update_nu_10_SQRL", "image_maze/2020-07-24_00-24-31_SAC_image_maze_Gaussian_update_nu_10_SQRL", "image_maze/2020-07-24_01-04-51_SAC_image_maze_Gaussian_update_nu_10_SQRL"],
             "sac_rspo": ["image_maze/2020-07-15_19-31-11_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_21-02-14_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_22-31-30_SAC_image_maze_Gaussian_RSPO"],
             # "sac_recovery_pets": ["runs/2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
+            "sac_recovery_ddpg": ["runs/2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-41_SAC_image_maze_Gaussian_"], # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
             "sac_recovery_pets": ["runs/2020-07-16_19-49-53_SAC_image_maze_Gaussian_", "runs/2020-07-16_20-46-35_SAC_image_maze_Gaussian_", "runs/2020-07-16_21-12-01_SAC_image_maze_Gaussian_"],
-            "sac_recovery_ddpg": ["runs/2020-07-07_05-11-16_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-33_SAC_image_maze_Gaussian_", "runs/2020-07-07_05-10-41_SAC_image_maze_Gaussian_"] # DDPG recovery, gamma_safe 0.65, eps_safe 0.1
+            
         },
         "outfile": "image_maze_plot.png"
     },
@@ -74,11 +75,23 @@ experiment_map = {
             "sac_penalty": ["shelf_long_env/2020-07-21_03-11-14_SAC_shelf_long_env_Gaussian_reward_50", "shelf_long_env/2020-07-21_08-00-18_SAC_shelf_long_env_Gaussian_reward_50", "shelf_long_env/2020-07-21_12-37-01_SAC_shelf_long_env_Gaussian_reward_50"],
             "sac_rcpo": ["shelf_long_env/2020-07-21_03-41-20_SAC_shelf_long_env_Gaussian_rcpo_50", "shelf_long_env/2020-07-21_09-02-49_SAC_shelf_long_env_Gaussian_rcpo_50", "shelf_long_env/2020-07-21_18-59-59_SAC_shelf_long_env_Gaussian_rcpo_50"],
             "sac_lagrangian": ["shelf_long_env/2020-07-20_04-54-13_SAC_shelf_long_env_Gaussian_nu_50", "shelf_long_env/2020-07-20_13-01-12_SAC_shelf_long_env_Gaussian_nu_50", "shelf_long_env/2020-07-21_03-01-55_SAC_shelf_long_env_Gaussian_nu_50"],
+            # "sac_sqrl": ["shelf_long_env/2020-07-24_03-36-02_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL", "shelf_long_env/2020-07-24_03-36-46_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL", "2020-07-24_05-40-36_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL", "2020-07-24_09-37-51_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL", "2020-07-24_11-54-58_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL"],
+            "sac_sqrl": ["shelf_long_env/2020-07-24_03-36-02_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL", "shelf_long_env/2020-07-24_05-40-36_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL", "shelf_long_env/2020-07-24_09-37-51_SAC_shelf_long_env_Gaussian_update_nu_50_SQRL"],
             "sac_rspo": ["shelf_long_env/2020-07-22_05-48-32_SAC_shelf_long_env_Gaussian_RSPO", "shelf_long_env/2020-07-22_05-48-43_SAC_shelf_long_env_Gaussian_RSPO", "shelf_long_env/2020-07-22_05-48-51_SAC_shelf_long_env_Gaussian_RSPO"],
-            "sac_recovery_pets": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"],
-            "sac_recovery_ddpg": ["shelf_long_env/2020-07-20_04-51-41_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_10-16-07_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_15-48-15_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25"]
+            "sac_recovery_ddpg": ["shelf_long_env/2020-07-20_04-51-41_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_10-16-07_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_15-48-15_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25"],
+            "sac_recovery_pets": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"]
         },
         "outfile": "shelf_long.png"
+    },
+
+    "shelf_long_ablations": {
+        "algs": {
+            "sac_recovery_pets": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"],
+            "sac_recovery_pets_disable_relabel": ["shelf_long_env/2020-07-24_06-34-39_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_relabel", "shelf_long_env/2020-07-24_06-35-23_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_relabel", "shelf_long_env/2020-07-24_06-36-21_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_relabel"],
+            "sac_recovery_pets_1k": ["shelf_long_env/2020-07-24_06-18-13_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos", "shelf_long_env/2020-07-24_06-21-25_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos", "shelf_long_env/2020-07-24_23-16-08_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos"],
+            "sac_recovery_pets_5k": ["shelf_long_env/2020-07-24_19-14-04_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos", "shelf_long_env/2020-07-24_19-14-54_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos", "shelf_long_env/2020-07-24_19-16-02_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos"],
+        },
+        "outfile": "shelf_long_ablations.png"
     },
     # "shelf": {  # Up to 2800
     #     "algs": {
@@ -139,32 +152,13 @@ experiment_map = {
     },
     "image_shelf": {
         "algs": {
-            "sac_norecovery": ["2020-06-17_07-48-06_SAC_shelf_env_Gaussian_", "2020-06-17_07-50-05_SAC_shelf_env_Gaussian_", "2020-06-27_01-28-54_SAC_shelf_env_Gaussian_"],
-            # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-41-30_SAC_shelf_env_Gaussian_"], # eps_safe = 0.25
-            # "recovery": ["2020-06-19_17-43-10_SAC_shelf_env_Gaussian_", "2020-06-21_06-02-27_SAC_shelf_env_Gaussian_"], # eps_safe = 0.2
-            # "recovery": ["2020-06-17_07-46-08_SAC_shelf_env_Gaussian_", "2020-06-17_07-46-16_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
-            # 'recovery': ["2020-06-28_21-58-25_SAC_shelf_env_Gaussian_", "2020-06-28_21-59-18_SAC_shelf_env_Gaussian_", "2020-06-28_21-59-31_SAC_shelf_env_Gaussian_"], # eps_safe = 0.3
-            # 'recovery': ["2020-06-29_08-00-13_SAC_shelf_env_Gaussian_", "2020-06-29_08-00-23_SAC_shelf_env_Gaussian_", "2020-06-29_08-01-04_SAC_shelf_env_Gaussian_"], # update model only...
-            # 'recovery': ["2020-06-29_19-26-58_SAC_shelf_env_Gaussian_", "2020-06-29_19-27-14_SAC_shelf_env_Gaussian_", "2020-06-29_19-27-26_SAC_shelf_env_Gaussian_"], # batch balancing
-            # 'recovery': ["2020-06-30_21-57-03_SAC_shelf_env_Gaussian_", "2020-06-30_21-57-10_SAC_shelf_env_Gaussian_", "2020-06-30_21-57-48_SAC_shelf_env_Gaussian_"],   # continuous updating, eps 0.25, gamma=0.75, hor=10
-            # 'recovery': ["2020-07-09_10-03-33_SAC_shelf_env_Gaussian_", "2020-07-09_17-23-47_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.25
-            # 'recovery': ["2020-07-09_17-23-53_SAC_shelf_env_Gaussian_"], # gamma_safe=0.55, eps_safe=0.25
-            'recovery': ["2020-07-09_17-24-50_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.2
-            # 'recovery': ["2020-07-09_17-47-14_SAC_shelf_env_Gaussian_"], # gamma_safe=0.5, eps_safe=0.25
-            # 'recovery': ["2020-07-09_17-47-27_SAC_shelf_env_Gaussian_"], # gamma_safe=0.5, eps_safe=0.2
-            # 'recovery': ["2020-07-09_17-47-40_SAC_shelf_env_Gaussian_"], # gamma_safe=0.4, eps_safe=0.25
-            # 'recovery': ["2020-07-10_02-37-46_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.4
-            # 'recovery': ["2020-07-10_02-37-27_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.3
-            # 'recovery': ["2020-07-10_02-37-35_SAC_shelf_env_Gaussian_"], # gamma_safe=0.65, eps_safe=0.35
-            # 'recovery': ["2020-07-09_22-21-16_SAC_shelf_env_Gaussian_"], #gamma_safe=0.55, eps_safe=0.15
-            # 'recovery': ["2020-07-10_02-37-55_SAC_shelf_env_Gaussian_"], 
-
-
-            # 'recovery': ["2020-07-01_06-52-20_SAC_shelf_env_Gaussian_", "2020-07-01_06-52-28_SAC_shelf_env_Gaussian_", "2020-07-01_06-52-40_SAC_shelf_env_Gaussian_"], # continuous updating, eps 0.2, gamma=0.85, hor=5
-            # 'recovery': ["2020-07-01_23-51-15_SAC_shelf_env_Gaussian_", "2020-07-01_19-30-27_SAC_shelf_env_Gaussian_", "2020-07-01_19-30-35_SAC_shelf_env_Gaussian_"],    # continuous updating, eps 0.2, gamma_safe 0.75, hor=?
-
-            "sac_penalty10": ["2020-06-18_04-43-05_SAC_shelf_env_Gaussian_", "2020-06-18_04-43-29_SAC_shelf_env_Gaussian_", "2020-06-27_01-29-00_SAC_shelf_env_Gaussian_"],
-            "sac_penalty3": ["2020-06-22_22-24-29_SAC_shelf_env_Gaussian_", "2020-06-25_23-35-20_SAC_shelf_env_Gaussian_", "2020-06-27_01-32-00_SAC_shelf_env_Gaussian_"]
+            "sac_vanilla": ["image_shelf/2020-07-18_23-03-03_SAC_shelf_env_Gaussian_vanilla", "image_shelf/2020-07-19_02-19-42_SAC_shelf_env_Gaussian_vanilla", "image_shelf/2020-07-19_05-54-20_SAC_shelf_env_Gaussian_vanilla"],
+            "sac_penalty": ["image_shelf/2020-07-18_23-04-23_SAC_shelf_env_Gaussian_reward_10", "image_shelf/2020-07-19_04-22-55_SAC_shelf_env_Gaussian_reward_10", "image_shelf/2020-07-19_10-00-20_SAC_shelf_env_Gaussian_reward_10"],
+            "sac_recovery_ddpg": ["image_shelf/2020-07-22_02-08-57_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.35", "image_shelf/2020-07-22_01-33-56_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.35", "image_shelf/2020-07-21_17-40-44_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.35"],
+            # "sac_recovery_pets": ["2020-07-23_11-16-56_SAC_shelf_env_Gaussian_recovery_0.55_0.35", "2020-07-23_18-40-40_SAC_shelf_env_Gaussian_recovery_0.55_0.35"]
+            # "sac_recovery_ddpg": ["image_shelf/2020-07-22_03-41-41_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.25", "image_shelf/2020-07-21_18-59-32_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.25", "image_shelf/2020-07-21_09-55-14_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.25"]
+            # "sac_penalty3": ["2020-06-22_22-24-29_SAC_shelf_env_Gaussian_", "2020-06-25_23-35-20_SAC_shelf_env_Gaussian_", "2020-06-27_01-32-00_SAC_shelf_env_Gaussian_"]
+            # "sac_recovery_ddpg": ["image_shelf/2020-07-19_01-26-44_SAC_shelf_env_Gaussian_ddpg_recovery_0.7_0.25", "image_shelf/2020-07-19_10-47-14_SAC_shelf_env_Gaussian_ddpg_recovery_0.7_0.25"]
         },
         "outfile": "image_shelf.png"
     },
@@ -282,7 +276,9 @@ eps = {
     "pointbot1": 300,
     "shelf": 4000,
     "shelf_dynamic": 3000,
-    "shelf_long": 4000
+    "shelf_long": 4000,
+    "shelf_long_ablations": 4000,
+    "image_shelf": 4000
 }
 
 
@@ -293,7 +289,9 @@ envname = {
     "pointbot1": "Navigation 2",
     "shelf": "Shelf",
     "shelf_dynamic": "Dynamic Shelf",
-    "shelf_long": "Shelf"
+    "shelf_long": "Shelf",
+    "image_shelf": "Image Shelf",
+    "shelf_long_ablations": "Shelf Ablations"
 }
 
 
@@ -304,7 +302,9 @@ yscaling = {
     "pointbot1": 0.4,
     "shelf": 0.1,
     "shelf_long": 0.04,
-    "shelf_dynamic": 0.3
+    "shelf_long_ablations": 0.04,
+    "shelf_dynamic": 0.3,
+    "image_shelf": 0.0005
 }
 
 def plot_experiment(experiment):
@@ -312,11 +312,11 @@ def plot_experiment(experiment):
     max_eps = eps[experiment]
     fig, axs = plt.subplots(1, figsize=(16, 8))
 
-    axs.set_title("%s: Ratio of Successes/Violations"%envname[experiment], fontsize=30)
+    axs.set_title("%s: Ratio of Successes/Violations"%envname[experiment], fontsize=36)
     axs.set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
-    axs.set_xlabel("Episode", fontsize=24)
-    axs.set_ylabel("Ratio of Successes/Violations", fontsize=24)
-    axs.tick_params(axis='both', which='major', labelsize=21)
+    axs.set_xlabel("Episode", fontsize=30)
+    axs.set_ylabel("Ratio of Successes/Violations", fontsize=30)
+    axs.tick_params(axis='both', which='major', labelsize=30)
     plt.subplots_adjust(hspace=0.3)
 
     for alg in experiment_map[experiment]["algs"]:
@@ -405,7 +405,7 @@ def plot_experiment(experiment):
                      color=get_color(alg), alpha=.25, label=get_legend_name(alg))
         axs.plot(safe_ratios_mean, color=get_color(alg))
 
-    axs.legend(loc="upper left", fontsize=20)
+    # axs.legend(loc="upper left", fontsize=20)
     plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
     plt.show()
 
@@ -415,10 +415,12 @@ if __name__ == '__main__':
     # experiment = "image_maze"
     # experiment = "shelf"
     # experiment = "image_shelf"
-    experiment = "maze"
+    # experiment = "maze"
     # experiment = "shelf_long"
+    # experiment = "shelf_long_ablations"
     # experiment = "image_shelf_dynamic"
-    plot_experiment(experiment)
+    for experiment in ["image_maze", "maze", "shelf_long"]:
+        plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
 # "recovery_0.4": ["2020-05-04_03-00-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-01-05_SAC_shelf_env_Gaussian_", "2020-05-04_03-01-17_SAC_shelf_env_Gaussian_"], # Bad results: include constraint penalty
