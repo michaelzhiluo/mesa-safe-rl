@@ -8,6 +8,7 @@ colors = {
     "sac_rcpo": "purple",
     "sac_rspo": "orange",
     "sac_vanilla": "olive",
+    "sac_sqrl": "magenta"
 }
 
 
@@ -19,6 +20,7 @@ colors = {
 #     "sac_rcpo": (0.8, 0.4, 0),
 #     "sac_rspo": (0.9, 0.6, 0),
 #     "sac_vanilla": (0.35, 0.7, 0.9),
+#     "sac_sqrl": (0.2, 0.7, 0.3)
 # }
 
 
@@ -30,6 +32,7 @@ names = {
     "sac_rcpo": "SAC + Critic Penalty (RCPO)",
     "sac_rspo": "SAC + RSPO",
     "sac_vanilla": "SAC",
+    "sac_sqrl": "SQRL"
 }
 
 

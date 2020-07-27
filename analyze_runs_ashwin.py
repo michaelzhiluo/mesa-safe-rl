@@ -31,6 +31,7 @@ experiment_map = {
             # "sac_penalty100": ["2020-07-14_09-38-04_SAC_maze_Gaussian_reward_100", "2020-07-14_10-08-58_SAC_maze_Gaussian_reward_100", "2020-07-14_10-31-51_SAC_maze_Gaussian_reward_100"],
             "sac_rcpo": ["maze/2020-07-14_08-02-41_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_08-46-35_SAC_maze_Gaussian_lambda_50", "maze/2020-07-14_09-31-38_SAC_maze_Gaussian_lambda_50"],
             "sac_lagrangian": ["maze/2020-07-14_17-56-02_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_18-58-07_SAC_maze_Gaussian_update_nu_100", "maze/2020-07-14_19-58-31_SAC_maze_Gaussian_update_nu_100"],
+            "sac_sqrl": ["maze/2020-07-23_23-44-56_SAC_maze_Gaussian_update_nu_100_SQRL", "maze/2020-07-24_00-40-39_SAC_maze_Gaussian_update_nu_100_SQRL", "maze/2020-07-24_01-35-06_SAC_maze_Gaussian_update_nu_100_SQRL"],
             "sac_rspo": ["maze/2020-07-14_21-23-48_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_20-45-50_SAC_maze_Gaussian_RSPO", "maze/2020-07-14_19-47-31_SAC_maze_Gaussian_RSPO"],
             "sac_recovery_pets": ["maze/2020-07-14_07-46-28_SAC_maze_Gaussian_recovery", "maze/2020-07-14_10-38-39_SAC_maze_Gaussian_recovery", "maze/2020-07-14_09-13-40_SAC_maze_Gaussian_recovery"],
             "sac_recovery_ddpg": ["maze/2020-07-14_07-46-44_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-08-59_SAC_maze_Gaussian_ddpg_recovery", "maze/2020-07-14_08-30-01_SAC_maze_Gaussian_ddpg_recovery"]
@@ -44,6 +45,7 @@ experiment_map = {
             "sac_penalty": ["runs/2020-06-15_02-03-52_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-08_SAC_image_maze_Gaussian_", "runs/2020-06-15_01-48-22_SAC_image_maze_Gaussian_"],
             "sac_rcpo": ["image_maze/2020-07-15_05-15-11_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_16-09-59_SAC_image_maze_Gaussian_lambda_20", "image_maze/2020-07-14_13-22-01_SAC_image_maze_Gaussian_lambda_20"],
             "sac_lagrangian": ["image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10", "image_maze/2020-07-14_13-59-30_SAC_image_maze_Gaussian_nu_10"],
+            "sac_sqrl": ["image_maze/2020-07-23_23-45-02_SAC_image_maze_Gaussian_update_nu_10_SQRL", "image_maze/2020-07-24_00-24-31_SAC_image_maze_Gaussian_update_nu_10_SQRL", "image_maze/2020-07-24_01-04-51_SAC_image_maze_Gaussian_update_nu_10_SQRL"],
             "sac_rspo": ["image_maze/2020-07-15_19-31-11_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_21-02-14_SAC_image_maze_Gaussian_RSPO", "image_maze/2020-07-15_22-31-30_SAC_image_maze_Gaussian_RSPO"],
             # "sac_recovery_pets": ["runs/2020-06-14_06-23-20_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-09-47_SAC_image_maze_Gaussian_", "runs/2020-06-14_07-10-32_SAC_image_maze_Gaussian_"],
             "sac_recovery_pets": ["runs/2020-07-16_19-49-53_SAC_image_maze_Gaussian_", "runs/2020-07-16_20-46-35_SAC_image_maze_Gaussian_", "runs/2020-07-16_21-12-01_SAC_image_maze_Gaussian_"],
@@ -64,6 +66,19 @@ experiment_map = {
             "sac_lagrangian": ["2020-04-30_05-20-57_SAC_simplepointbot1_Gaussian_", "2020-04-30_04-45-47_SAC_simplepointbot1_Gaussian_", "2020-04-30_08-13-34_SAC_simplepointbot1_Gaussian_"]
         },
         "outfile": "pointbot1.png"
+    },
+
+    "shelf_long": {
+        "algs": {
+            "sac_vanilla": ["shelf_long_env/2020-07-17_09-35-22_SAC_shelf_long_env_Gaussian_vanilla", "shelf_long_env/2020-07-17_13-57-11_SAC_shelf_long_env_Gaussian_vanilla", "shelf_long_env/2020-07-17_17-40-01_SAC_shelf_long_env_Gaussian_vanilla"],
+            "sac_penalty": ["shelf_long_env/2020-07-21_03-11-14_SAC_shelf_long_env_Gaussian_reward_50", "shelf_long_env/2020-07-21_08-00-18_SAC_shelf_long_env_Gaussian_reward_50", "shelf_long_env/2020-07-21_12-37-01_SAC_shelf_long_env_Gaussian_reward_50"],
+            "sac_rcpo": ["shelf_long_env/2020-07-21_03-41-20_SAC_shelf_long_env_Gaussian_rcpo_50", "shelf_long_env/2020-07-21_09-02-49_SAC_shelf_long_env_Gaussian_rcpo_50", "shelf_long_env/2020-07-21_18-59-59_SAC_shelf_long_env_Gaussian_rcpo_50"],
+            "sac_lagrangian": ["shelf_long_env/2020-07-20_04-54-13_SAC_shelf_long_env_Gaussian_nu_50", "shelf_long_env/2020-07-20_13-01-12_SAC_shelf_long_env_Gaussian_nu_50", "shelf_long_env/2020-07-21_03-01-55_SAC_shelf_long_env_Gaussian_nu_50"],
+            "sac_rspo": ["shelf_long_env/2020-07-22_05-48-32_SAC_shelf_long_env_Gaussian_RSPO", "shelf_long_env/2020-07-22_05-48-43_SAC_shelf_long_env_Gaussian_RSPO", "shelf_long_env/2020-07-22_05-48-51_SAC_shelf_long_env_Gaussian_RSPO"],
+            "sac_recovery_pets": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"],
+            "sac_recovery_ddpg": ["shelf_long_env/2020-07-20_04-51-41_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_10-16-07_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25", "shelf_long_env/2020-07-20_15-48-15_SAC_shelf_long_env_Gaussian_recovery_ddpg_0.75_0.25"]
+        },
+        "outfile": "shelf_long.png"
     },
     # "shelf": {  # Up to 2800
     #     "algs": {
@@ -266,7 +281,8 @@ eps = {
     "pointbot0": 300,
     "pointbot1": 300,
     "shelf": 4000,
-    "shelf_dynamic": 3000
+    "shelf_dynamic": 3000,
+    "shelf_long": 4000
 }
 
 
@@ -276,16 +292,18 @@ envname = {
     "pointbot0": "Navigation 1",
     "pointbot1": "Navigation 2",
     "shelf": "Shelf",
-    "shelf_dynamic": "Dynamic Shelf"
+    "shelf_dynamic": "Dynamic Shelf",
+    "shelf_long": "Shelf"
 }
 
 
 yscaling = {
-    "maze": 0.45,
+    "maze": 0.25,
     "image_maze": 0.45,
     "pointbot0": 0.9,
     "pointbot1": 0.4,
     "shelf": 0.1,
+    "shelf_long": 0.04,
     "shelf_dynamic": 0.3
 }
 
@@ -385,7 +403,7 @@ def plot_experiment(experiment):
 
         axs.fill_between(range(safe_ratios_mean.shape[0]), safe_ratios_ub, safe_ratios_lb,
                      color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        axs.plot(safe_ratios_mean, get_color(alg))
+        axs.plot(safe_ratios_mean, color=get_color(alg))
 
     axs.legend(loc="upper left", fontsize=20)
     plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
@@ -394,10 +412,11 @@ def plot_experiment(experiment):
 
 if __name__ == '__main__':
     # experiment = "shelf_dynamic"
-    experiment = "image_maze"
+    # experiment = "image_maze"
     # experiment = "shelf"
     # experiment = "image_shelf"
-    # experiment = "maze"
+    experiment = "maze"
+    # experiment = "shelf_long"
     # experiment = "image_shelf_dynamic"
     plot_experiment(experiment)
 

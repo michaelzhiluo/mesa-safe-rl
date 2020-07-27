@@ -229,29 +229,29 @@ def get_constraint_demos(env, args):
             constraint_demo_data = constraint_demo_data_list_viol + constraint_demo_data_list_safe
         elif 'shelf' in args.env_name:
             folder_name = args.env_name.split('_env')[0]
-            if not args.vismpc_recovery:
-                if not args.cnn:
-                    constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
-                else:
-                    constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images.pkl"), "rb"))
+            # if not args.vismpc_recovery:
+            if not args.cnn:
+                constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos.pkl"), "rb"))
             else:
-                constraint_demo_data = []
-                data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
-                obs_seqs = data['obs'][:args.num_constraint_transitions//25]
-                ac_seqs = data['ac'][:args.num_constraint_transitions//25]
-                constraint_seqs = data['constraint'][:args.num_constraint_transitions//25] 
-                for i in range(len(ac_seqs)):
-                    ac_seqs[i] = np.array(ac_seqs[i])
-                for i in range(len(obs_seqs)):
-                    obs_seqs[i] = np.array(obs_seqs[i])
-                for i in range(len(constraint_seqs)):
-                    constraint_seqs[i] = np.array(constraint_seqs[i])
-                ac_seqs = np.array(ac_seqs)
-                obs_seqs = np.array(obs_seqs)
-                constraint_seqs = np.array(constraint_seqs)
-                for i in range(obs_seqs.shape[0]):
-                    for j in range(obs_seqs.shape[1]-1):
-                        constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
+                constraint_demo_data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images.pkl"), "rb"))
+            # else:
+            #     constraint_demo_data = []
+            #     data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
+            #     obs_seqs = data['obs'][:args.num_constraint_transitions//25]
+            #     ac_seqs = data['ac'][:args.num_constraint_transitions//25]
+            #     constraint_seqs = data['constraint'][:args.num_constraint_transitions//25] 
+            #     for i in range(len(ac_seqs)):
+            #         ac_seqs[i] = np.array(ac_seqs[i])
+            #     for i in range(len(obs_seqs)):
+            #         obs_seqs[i] = np.array(obs_seqs[i])
+            #     for i in range(len(constraint_seqs)):
+            #         constraint_seqs[i] = np.array(constraint_seqs[i])
+            #     ac_seqs = np.array(ac_seqs)
+            #     obs_seqs = np.array(obs_seqs)
+            #     constraint_seqs = np.array(constraint_seqs)
+            #     for i in range(obs_seqs.shape[0]):
+            #         for j in range(obs_seqs.shape[1]-1):
+            #             constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
         else:
             constraint_demo_data = env.transition_function(args.num_constraint_transitions)
     else:
@@ -413,6 +413,7 @@ parser.add_argument('--add_both_transitions', action="store_true")
 
 # Lagrangian, RSPO
 parser.add_argument('--DGD_constraints', action="store_true") 
+parser.add_argument('--use_constraint_sampling', action="store_true")
 parser.add_argument('--nu', type=float, default=0.01, metavar='G',
                     help='todo') # TODO: needs some tuning
 parser.add_argument('--update_nu', action="store_true")
@@ -496,7 +497,7 @@ if not args.disable_offline_updates:
             print("Number of Constraint Transitions: ", num_constraint_transitions)
             print("Number of Constraint Violations: ", num_viols)
             if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
-                plot = True
+                plot = 0
             else:
                 plot = False
             if args.use_qvalue:
@@ -506,7 +507,7 @@ if not args.disable_offline_updates:
                     agent.safety_critic.update_parameters(memory=recovery_memory, policy=agent.policy, critic=agent.critic,
                             batch_size=min(args.batch_size, len(constraint_demo_data)))
             else:
-                agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=plot)
+                agent.train_safety_critic(0, recovery_memory, agent.policy_sample, plot=0)
             if not (args.ddpg_recovery or args.Q_sampling_recovery or args.DGD_constraints or args.RCPO):
                 train_recovery(demo_data_states, demo_data_actions, demo_data_next_states, epochs=50)
         else:
@@ -551,7 +552,6 @@ if task_demos:
 
 
 
-
 test_rollouts = []
 train_rollouts = []
 all_ep_data = []
@@ -580,7 +580,7 @@ for i_episode in itertools.count(1):
         if args.env_name == 'reacher':
             recorder.capture_frame()
 
-        if len(memory) > args.batch_size:
+        if (not args.disable_offline_updates and len(memory) > args.batch_size) or (args.disable_offline_updates and len(memory) > 5*args.batch_size):
             # Number of updates per step in environment
             for i in range(args.updates_per_step):
                 # Update parameters of all the networks
@@ -659,7 +659,7 @@ for i_episode in itertools.count(1):
                 recovery_policy.train_dynamics(i_episode, recovery_memory) # Tbh we could train this on everything collected, but are not right now
         if i_episode % args.critic_safe_update_freq == 0 and args.use_recovery:
             if args.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
-                plot = True
+                plot = 0
             else:
                 plot = False
             if args.use_value:

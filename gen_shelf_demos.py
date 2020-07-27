@@ -3,7 +3,6 @@ import datetime
 import gym
 import numpy as np
 import itertools
-import torch
 from tensorboardX import SummaryWriter
 import cv2
 import os
@@ -12,6 +11,7 @@ from env.shelf_env import ShelfEnv
 import pickle
 import time
 
+# TORCH_DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 HYPERPARAMS = {
     'T': 25, # length of each episode
     'image_height' : 48,
@@ -66,7 +66,6 @@ args = parser.parse_args()
 # Environment
 env = gym.make('Shelf-v0')
 
-torch.manual_seed(args.seed)
 np.random.seed(args.seed)
 env.seed(args.seed)
 

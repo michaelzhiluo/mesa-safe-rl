@@ -63,16 +63,22 @@
 
 
 
-for i in {1..3}
-do
-	echo "Lagrangian Nu 1000 Run $i"
-	python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints --nu 1000 --gamma_safe 0.8 --eps_safe 0.3 --logdir pointbot0 --logdir_suffix nu_1000 --num_eps 300 --seed $i --update_nu
-done
+# for i in {1..3}
+# do
+# 	echo "Lagrangian Nu 1000 Run $i"
+# 	python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints --nu 1000 --gamma_safe 0.8 --eps_safe 0.3 --logdir pointbot0 --logdir_suffix nu_1000 --num_eps 300 --seed $i --update_nu
+# done
+
+# for i in {1..3}
+# do
+# 	echo "Lagrangian Nu 5000 Run $i"
+# 	python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints --nu 5000 --gamma_safe 0.8 --eps_safe 0.3 --logdir pointbot0 --logdir_suffix nu_5000 --num_eps 300 --seed $i --update_nu
+# done
 
 for i in {1..3}
 do
 	echo "Lagrangian Nu 5000 Run $i"
-	python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints --nu 5000 --gamma_safe 0.8 --eps_safe 0.3 --logdir pointbot0 --logdir_suffix nu_5000 --num_eps 300 --seed $i --update_nu
+	python main.py --env-name simplepointbot0 --cuda --use_qvalue --DGD_constraints --nu 5000 --gamma_safe 0.8 --eps_safe 0.3 --logdir pointbot0 --logdir_suffix rsqrl_5000 --num_eps 300 --seed $i --update_nu --use_constraint_sampling
 done
 
 # for i in {1..3}

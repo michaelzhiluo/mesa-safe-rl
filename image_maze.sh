@@ -43,11 +43,11 @@
 # done
 
 # SAC Lagrangian RSPO
-for i in {1..3}
-do
-	echo "Lagrangian RSPO Run $i"
-	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu_schedule --nu_start 20  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix RSPO --num_eps 500 --seed $i
-done
+# for i in {1..3}
+# do
+# 	echo "Lagrangian RSPO Run $i"
+# 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu_schedule --nu_start 20  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix RSPO --num_eps 500 --seed $i
+# done
 
 # # RCPO Lambda=5
 # for i in {1..3}

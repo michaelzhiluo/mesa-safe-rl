@@ -11,6 +11,7 @@ from utils import soft_update, hard_update
 from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN, QNetworkConstraint, QNetworkConstraintCNN, DeterministicPolicyCNN
 from dotmap import DotMap
 from constraint import ValueFunction, QFunction
+import cv2
 
 def process_obs(obs):
     im = np.transpose(obs, (2, 0, 1))
@@ -61,6 +62,8 @@ class QSafeWrapper:
         self.recovery_lambda = args.recovery_lambda
         self.eps_safe = args.eps_safe
         self.alpha = args.alpha
+        if args.env_name == 'maze':
+            self.tmp_env.reset(pos=(12, 12))
 
     def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=3000, plot=1):
         # TODO: cleanup this is hardcoded for maze
@@ -123,19 +126,19 @@ class QSafeWrapper:
             soft_update(self.safety_critic_target, self.safety_critic, self.tau)
         self.updates += 1
 
-        plot_interval = 1000
-        if self.env_name == 'image_maze':
-            plot_interval = 29000
-        if plot and self.updates % plot_interval == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
-            self.plot(policy, self.updates, [1, 0], "right")
-            self.plot(policy, self.updates, [-1, 0], "left")
-            self.plot(policy, self.updates, [0, 1], "up")
-            self.plot(policy, self.updates, [0, -1], "down")
-        if plot and self.updates % 1000 == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
-            self.plot(policy, self.updates, [.1, 0], "right")
-            self.plot(policy, self.updates, [-.1, 0], "left")
-            self.plot(policy, self.updates, [0, .1], "up")
-            self.plot(policy, self.updates, [0, -.1], "down")
+        # plot_interval = 1000
+        # if self.env_name == 'image_maze':
+        #     plot_interval = 29000
+        # if plot and self.updates % plot_interval == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
+        #     self.plot(policy, self.updates, [1, 0], "right")
+        #     self.plot(policy, self.updates, [-1, 0], "left")
+        #     self.plot(policy, self.updates, [0, 1], "up")
+        #     self.plot(policy, self.updates, [0, -1], "down")
+        # if plot and self.updates % 1000 == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+        #     self.plot(policy, self.updates, [.1, 0], "right")
+        #     self.plot(policy, self.updates, [-.1, 0], "left")
+        #     self.plot(policy, self.updates, [0, .1], "up")
+        #     self.plot(policy, self.updates, [0, -.1], "down")
             # if self.updates % 2000 == 0 and self.updates > 5000:
             #     plt.show()
 
@@ -219,9 +222,15 @@ class QSafeWrapper:
             plt.gca().add_patch(Rectangle((0,25),500,50,linewidth=1,edgecolor='r',facecolor='none'))
         elif self.env_name == 'simplepointbot1':
             plt.gca().add_patch(Rectangle((45,65),10,20,linewidth=1,edgecolor='r',facecolor='none'))
-        plt.imshow(grid.T)
-        plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix))
 
+        if self.env_name == 'maze':
+            background = cv2.resize(env._get_obs(images=True), (x_pts, y_pts))
+            plt.imshow(background)
+            plt.imshow(grid.T, alpha=0.6)
+        else:
+            plt.imshow(grid.T)
+
+        plt.savefig(osp.join(self.logdir, "qvalue_" + str(ep) + suffix), bbox_inches='tight')
 
     def __call__(self, states, actions):
         if self.encoding:
@@ -291,6 +300,7 @@ class SAC(object):
         self.update_nu = args.update_nu
         self.cnn = args.cnn
         self.eps_safe = args.eps_safe
+        self.use_constraint_sampling = args.use_constraint_sampling
         self.log_nu = torch.tensor(np.log(self.nu), requires_grad=True, device=self.device)
         self.nu_optim = Adam([self.log_nu], lr=0.1*args.lr)
 
@@ -358,10 +368,33 @@ class SAC(object):
 
     def select_action(self, state, eval=False):
         state = torch.FloatTensor(state).to(self.device).unsqueeze(0)
-        if eval is False:
-            action, _, _ = self.policy.sample(state)
+        self.safe_samples = 100
+        if self.use_constraint_sampling:
+            if not self.cnn:
+                state_batch = state.repeat(self.safe_samples, 1)
+            else:
+                state_batch = state.repeat(self.safe_samples, 1, 1, 1)
+            pi, log_pi, _ = self.policy.sample(state_batch)
+            max_qf_constraint_pi = self.safety_critic.get_value(state_batch, pi)
+
+            # Threshold with epsilon safe and get idxs and apply to both pi and max_qf_constraint_pi, if empty state
+            thresh_idxs = (max_qf_constraint_pi <= self.eps_safe).nonzero()[:, 0]
+            # Note: these are auto-normalized
+            thresh_probs = torch.exp(log_pi[thresh_idxs])
+            thresh_probs = thresh_probs.flatten()
+
+            if list(thresh_probs.size())[0] == 0:
+                min_q_value_idx = torch.argmin(max_qf_constraint_pi)
+                action = pi[min_q_value_idx, :].unsqueeze(0)
+            else:
+                prob_dist = torch.distributions.Categorical(thresh_probs)
+                sampled_idx = prob_dist.sample()
+                action = pi[sampled_idx, :].unsqueeze(0)
         else:
-            _, _, action = self.policy.sample(state)
+            if eval is False:
+                action, _, _ = self.policy.sample(state)
+            else:
+                _, _, action = self.policy.sample(state)
         return action.detach().cpu().numpy()[0]
 
     def train_safety_critic(self, ep, memory, pi, lr=0.0003, batch_size=1000, training_iterations=3000, plot=False):
