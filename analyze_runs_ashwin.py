@@ -310,12 +310,12 @@ envname = {
 
 
 yscaling = {
-    "maze": 0.25,
-    "image_maze": 0.45,
+    "maze": 1,#0.25,
+    "image_maze": 1,#0.45,
     "pointbot0": 0.9,
     "pointbot1": 0.4,
     "shelf": 0.1,
-    "shelf_long": 0.04,
+    "shelf_long": 1,#0.04,
     "shelf_long_ablations_method": 0.04,
     "shelf_long_ablations_demos": 0.04,
     "shelf_dynamic": 0.3,
@@ -424,7 +424,8 @@ def plot_experiment(experiment):
         #              color=get_color(alg), alpha=.25, label=get_legend_name(alg))
         axs.fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
                      color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        axs.plot(safe_ratios_mean, color=get_color(alg))
+        # axs.plot(safe_ratios_mean, color=get_color(alg))
+        axs.plot(ts_mean, color=get_color(alg))
 
     print(avg_num_violations_dict)
     axs.legend(loc="upper left", fontsize=20)
