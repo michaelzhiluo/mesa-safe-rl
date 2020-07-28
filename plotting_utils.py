@@ -15,23 +15,23 @@ import numpy as np
 # }
 
 colors = {
-    "sac_vanilla": "#7776bc",
-    "sac_lagrangian": "#aef78e",
-    "sac_rspo": "#8ff499",
-    "sac_sqrl": "#66a182",
-    "sac_penalty": "#b7c335",
-    "sac_rcpo": "#be8d39",
-    "sac_recovery_ddpg": "#f88585",
-    "sac_recovery_pets": "#830404",
-    "sac_recovery_pets_100": "#7776bc",
-    "sac_recovery_pets_500": "#be8d39",
-    "sac_recovery_pets_1k": "#b7c335",
-    "sac_recovery_pets_5k": "#66a182",
-    "sac_recovery_pets_20k": "#830404",
-    "sac_recovery_pets_ablations": "#830404",
-    "sac_recovery_pets_disable_relabel": "#be8d39",
-    "sac_recovery_pets_disable_offline": "#f88585",
-    "sac_recovery_pets_disable_online": "#66a182"
+    "sac_vanilla": "#AA5D1F",
+    "sac_lagrangian": "#BA2DC1",
+    "sac_rspo": "#6C2896",
+    "sac_sqrl": "#D43827",
+    "sac_penalty": "#4899C5",
+    "sac_rcpo": "#34539C",
+    "sac_recovery_ddpg": "#60CC38",
+    "sac_recovery_pets": "#349C26",
+    "sac_recovery_pets_100": "#AA5D1F",
+    "sac_recovery_pets_500": "#34539C",
+    "sac_recovery_pets_1k": "#4899C5",
+    "sac_recovery_pets_5k": "#D43827",
+    "sac_recovery_pets_20k": "#349C26",
+    "sac_recovery_pets_ablations": "#349C26",
+    "sac_recovery_pets_disable_relabel": "#34539C",
+    "sac_recovery_pets_disable_offline": "#60CC38",
+    "sac_recovery_pets_disable_online": "#D43827"
 }
 
 # colors = {
@@ -48,7 +48,7 @@ colors = {
 
 names = {
     "sac_recovery_pets": "SAC + Model-Based Recovery",
-    "sac_recovery_pets_ablations": "Ours",
+    "sac_recovery_pets_ablations": "Ours: Recovery RL (MB Recovery)",
     "sac_recovery_ddpg": "SAC + Model-Free Recovery",
     "sac_penalty": "SAC + Reward Penalty (RCPO)",
     "sac_lagrangian": "SAC + Lagrangian",
