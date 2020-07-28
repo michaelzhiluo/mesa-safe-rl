@@ -22,7 +22,16 @@ colors = {
     "sac_penalty": "#b7c335",
     "sac_rcpo": "#be8d39",
     "sac_recovery_ddpg": "#f88585",
-    "sac_recovery_pets": "#830404"
+    "sac_recovery_pets": "#830404",
+    "sac_recovery_pets_100": "#7776bc",
+    "sac_recovery_pets_500": "#be8d39",
+    "sac_recovery_pets_1k": "#b7c335",
+    "sac_recovery_pets_5k": "#66a182",
+    "sac_recovery_pets_20k": "#830404",
+    "sac_recovery_pets_ablations": "#830404",
+    "sac_recovery_pets_disable_relabel": "#be8d39",
+    "sac_recovery_pets_disable_offline": "#f88585",
+    "sac_recovery_pets_disable_online": "#66a182"
 }
 
 # colors = {
@@ -39,6 +48,7 @@ colors = {
 
 names = {
     "sac_recovery_pets": "SAC + Model-Based Recovery",
+    "sac_recovery_pets_ablations": "Ours",
     "sac_recovery_ddpg": "SAC + Model-Free Recovery",
     "sac_penalty": "SAC + Reward Penalty (RCPO)",
     "sac_lagrangian": "SAC + Lagrangian",
@@ -46,9 +56,14 @@ names = {
     "sac_rspo": "SAC + RSPO",
     "sac_vanilla": "SAC",
     "sac_sqrl": "SQRL",
-    "sac_recovery_disable_relabel": "No Action Relabeling",
-    "sac_recovery_pets_1k": "1K Demos",
-    "sac_recovery_pets_5k": "5K Demos"
+    "sac_recovery_pets_100": "100",
+    "sac_recovery_pets_500": "500",
+    "sac_recovery_pets_1k": "1K",
+    "sac_recovery_pets_5k": "5K", 
+    "sac_recovery_pets_20k": "20K", 
+    "sac_recovery_pets_disable_relabel": "Ours - Action Relabeling",
+    "sac_recovery_pets_disable_offline": "Ours - Offline Training",
+    "sac_recovery_pets_disable_online": "Ours - Online Training"
 }
 
 
