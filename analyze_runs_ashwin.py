@@ -84,15 +84,27 @@ experiment_map = {
         "outfile": "shelf_long.png"
     },
 
-    "shelf_long_ablations": {
+    "shelf_long_ablations_demos": {
+        "algs": {
+            "sac_recovery_pets_100": ["shelf_long_env/2020-07-26_03-40-55_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_100demos", "shelf_long_env/2020-07-26_03-41-18_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_100demos", "shelf_long_env/2020-07-26_03-41-27_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_100demos"],
+            "sac_recovery_pets_500": ["shelf_long_env/2020-07-26_23-59-18_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_500demos", "shelf_long_env/2020-07-26_23-59-29_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_500demos", "shelf_long_env/2020-07-26_04-05-30_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_500"],
+            "sac_recovery_pets_1k": ["shelf_long_env/2020-07-24_06-18-13_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos", "shelf_long_env/2020-07-24_06-21-25_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos", "shelf_long_env/2020-07-24_23-16-08_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos"],
+            "sac_recovery_pets_5k": ["shelf_long_env/2020-07-24_19-14-04_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos", "shelf_long_env/2020-07-24_19-14-54_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos", "shelf_long_env/2020-07-24_19-16-02_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos"],
+            "sac_recovery_pets_20k": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"],
+        },
+        "outfile": "shelf_long_ablations_demos.png"
+    },
+
+    "shelf_long_ablations_method": {
         "algs": {
             "sac_recovery_pets": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"],
             "sac_recovery_pets_disable_relabel": ["shelf_long_env/2020-07-24_06-34-39_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_relabel", "shelf_long_env/2020-07-24_06-35-23_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_relabel", "shelf_long_env/2020-07-24_06-36-21_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_relabel"],
-            "sac_recovery_pets_1k": ["shelf_long_env/2020-07-24_06-18-13_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos", "shelf_long_env/2020-07-24_06-21-25_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos", "shelf_long_env/2020-07-24_23-16-08_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_1kdemos"],
-            "sac_recovery_pets_5k": ["shelf_long_env/2020-07-24_19-14-04_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos", "shelf_long_env/2020-07-24_19-14-54_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos", "shelf_long_env/2020-07-24_19-16-02_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_5kdemos"],
+            "sac_recovery_pets_disable_offline": ["shelf_long_env/2020-07-26_23-54-15_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_offline", "shelf_long_env/2020-07-26_23-54-50_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_offline", "shelf_long_env/2020-07-26_23-55-17_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_offline"],
+            "sac_recovery_pets_disable_online": ["shelf_long_env/2020-07-25_19-00-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_online", "shelf_long_env/2020-07-25_04-25-09_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_online", "shelf_long_env/2020-07-25_12-06-41_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_online"]
         },
-        "outfile": "shelf_long_ablations.png"
+        "outfile": "shelf_long_ablations_method.png"
     },
+
     # "shelf": {  # Up to 2800
     #     "algs": {
     #         "sac_norecovery": ["2020-05-02_10-02-27_SAC_shelf_env_Gaussian_", "2020-05-02_23-46-58_SAC_shelf_env_Gaussian_", "2020-05-02_23-47-31_SAC_shelf_env_Gaussian_"],
@@ -277,7 +289,8 @@ eps = {
     "shelf": 4000,
     "shelf_dynamic": 3000,
     "shelf_long": 4000,
-    "shelf_long_ablations": 4000,
+    "shelf_long_ablations_method": 4000,
+    "shelf_long_ablations_demos": 4000,
     "image_shelf": 4000
 }
 
@@ -291,33 +304,37 @@ envname = {
     "shelf_dynamic": "Object Extraction (Dynamic Obstacle)",
     "shelf_long": "Object Extraction",
     "image_shelf": "Object Extraction (Dynamic Obstacle)",
-    "shelf_long_ablations": "Shelf Ablations"
+    "shelf_long_ablations_demos": "Object Extraction: # Offline Transitions",
+    "shelf_long_ablations_method": "Object Extraction: Method Ablations"
 }
 
 
 yscaling = {
-    "maze": 0.25,
-    "image_maze": 0.45,
+    "maze": 1,#0.25,
+    "image_maze": 1,#0.45,
     "pointbot0": 0.9,
     "pointbot1": 0.4,
     "shelf": 0.1,
-    "shelf_long": 0.04,
-    "shelf_long_ablations": 0.04,
+    "shelf_long": 1,#0.04,
+    "shelf_long_ablations_method": 0.04,
+    "shelf_long_ablations_demos": 0.04,
     "shelf_dynamic": 0.3,
     "image_shelf": 0.0005
 }
 
 def plot_experiment(experiment):
-
+    print("EXP NAME: ", experiment)
     max_eps = eps[experiment]
     fig, axs = plt.subplots(1, figsize=(16, 8))
 
     axs.set_title(envname[experiment], fontsize=48)
     axs.set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
     axs.set_xlabel("Episode", fontsize=42)
-    axs.set_ylabel("Ratio of Successes/Violations", fontsize=42)
+    # axs.set_ylabel("Ratio of Successes/Violations", fontsize=42)
+    axs.set_ylabel("Cumulative Task Successes", fontsize=42)
     axs.tick_params(axis='both', which='major', labelsize=36)
     plt.subplots_adjust(hspace=0.3)
+    avg_num_violations_dict = {}
 
     for alg in experiment_map[experiment]["algs"]:
         print(alg)
@@ -393,7 +410,9 @@ def plot_experiment(experiment):
         print("TRAIN VIOLS", train_violations_list.shape)
         print("TRAIN RECOVERY", recovery_called_list.shape)
         print("TRAIN RECOVERY CONSTRAINT", recovery_called_constraint_list.shape)
-
+        avg_num_violations =  train_violations_list.mean(axis=0)[-1]
+        print("AVG # VIOLATIONS: ", avg_num_violations)
+        avg_num_violations_dict[alg] = avg_num_violations
         safe_ratios = (task_successes_list+1)/(train_violations_list+1)
         safe_ratios_mean, safe_ratios_lb, safe_ratios_ub = get_stats(safe_ratios)
         ts_mean, ts_lb, ts_ub = get_stats(task_successes_list)
@@ -401,11 +420,15 @@ def plot_experiment(experiment):
         trec_mean, trec_lb, trec_ub = get_stats(recovery_called_list)
         trec_constraint_mean, trec_constraint_lb, trec_constraint_ub = get_stats(recovery_called_constraint_list)
 
-        axs.fill_between(range(safe_ratios_mean.shape[0]), safe_ratios_ub, safe_ratios_lb,
+        # axs.fill_between(range(safe_ratios_mean.shape[0]), safe_ratios_ub, safe_ratios_lb,
+        #              color=get_color(alg), alpha=.25, label=get_legend_name(alg))
+        axs.fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
                      color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        axs.plot(safe_ratios_mean, color=get_color(alg))
+        # axs.plot(safe_ratios_mean, color=get_color(alg))
+        axs.plot(ts_mean, color=get_color(alg))
 
-    # axs.legend(loc="upper left", fontsize=20)
+    print(avg_num_violations_dict)
+    axs.legend(loc="upper left", fontsize=20)
     plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
     plt.show()
 
@@ -420,6 +443,7 @@ if __name__ == '__main__':
     # experiment = "shelf_long_ablations"
     # experiment = "image_shelf_dynamic"
     for experiment in ["image_maze", "maze", "shelf_long"]:
+    # for experiment in ["shelf_long_ablations_method", "shelf_long_ablations_demos"]:
         plot_experiment(experiment)
 
 # "recovery_0.4": ["2020-05-04_03-41-46_SAC_shelf_env_Gaussian_", "2020-05-04_03-49-11_SAC_shelf_env_Gaussian_", "2020-05-04_03-42-53_SAC_shelf_env_Gaussian_"], # Bad results: planhor=5
