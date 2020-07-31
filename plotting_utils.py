@@ -30,7 +30,7 @@ colors = {
     "sac_recovery_pets_20k": "#349C26",
     "sac_recovery_pets_ablations": "#349C26",
     "sac_recovery_pets_disable_relabel": "#34539C",
-    "sac_recovery_pets_disable_offline": "#60CC38",
+    "sac_recovery_pets_disable_offline": "#AA5D1F",
     "sac_recovery_pets_disable_online": "#D43827"
 }
 

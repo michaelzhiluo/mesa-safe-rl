@@ -6,23 +6,6 @@ from scipy.interpolate import make_interp_spline, BSpline
 from plotting_utils import get_color, get_legend_name
 
 experiment_map = {
-    # "maze": {
-    #     "algs": {
-    #         # "recovery": ["2020-04-22_00-28-46_SAC_maze_Gaussian_", "2020-04-22_03-19-56_SAC_maze_Gaussian_", "2020-04-22_07-59-58_SAC_maze_Gaussian_"],
-    #         "recovery": ["2020-07-09_19-08-08_SAC_maze_Gaussian_", "2020-07-09_19-18-44_SAC_maze_Gaussian_", "2020-07-09_19-18-37_SAC_maze_Gaussian_"], # DDPG recovery, gamma_safe=0.5, eps_safe=0.15, pos_fraction=0.3
-    #         # "recovery": ["2020-06-01_06-12-07_SAC_maze_Gaussian_", "2020-06-01_06-12-31_SAC_maze_Gaussian_", "2020-06-01_06-12-41_SAC_maze_Gaussian_"], # Latest run on master...not *quite* as good, maybe need to look into it still?
-    #         # "recovery_reachability" : ["2020-06-01_10-17-26_SAC_maze_Gaussian_", "2020-06-01_10-17-37_SAC_maze_Gaussian_", "2020-06-01_10-17-50_SAC_maze_Gaussian_"], # reachability stuff barely gives a win so not using it for now
-    #         "sac_norecovery": ["2020-04-22_00-50-15_SAC_maze_Gaussian_", "2020-04-22_09-54-41_SAC_maze_Gaussian_", "2020-04-22_09-56-59_SAC_maze_Gaussian_"],
-    #         # "sac_penalty5": ["2020-04-22_05-55-55_SAC_maze_Gaussian_", "2020-04-22_09-54-56_SAC_maze_Gaussian_", "2020-04-22_09-58-36_SAC_maze_Gaussian_"],
-    #         # "sac_penalty10": ["2020-04-22_05-56-18_SAC_maze_Gaussian_", "2020-04-22_09-55-06_SAC_maze_Gaussian_", "2020-04-22_10-09-11_SAC_maze_Gaussian_"],
-    #         "sac_penalty20": ["2020-04-22_05-56-33_SAC_maze_Gaussian_", "2020-04-22_09-55-13_SAC_maze_Gaussian_", "2020-04-22_10-43-14_SAC_maze_Gaussian_"],
-    #         "sac_penalty50": ["2020-04-27_09-20-34_SAC_maze_Gaussian_", "2020-04-27_09-20-54_SAC_maze_Gaussian_", "2020-04-27_09-21-14_SAC_maze_Gaussian_"],
-    #         "sac_penalty75": ["2020-04-27_09-25-19_SAC_maze_Gaussian_", "2020-04-27_09-25-35_SAC_maze_Gaussian_", "2020-04-27_09-25-48_SAC_maze_Gaussian_"],
-    #         "sac_penalty100": ["2020-04-27_09-23-49_SAC_maze_Gaussian_", "2020-04-27_09-24-03_SAC_maze_Gaussian_", "2020-04-27_09-24-15_SAC_maze_Gaussian_"],
-    #         "sac_lagrangian": ["2020-04-30_09-42-50_SAC_maze_Gaussian_", "2020-04-30_09-42-55_SAC_maze_Gaussian_", "2020-04-30_10-16-13_SAC_maze_Gaussian_"]
-    #     },
-    #     "outfile": "maze_plot.png"
-    # },
     "maze": {
         "algs": {
             "sac_vanilla": ["maze/2020-07-14_07-53-24_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-56-18_SAC_maze_Gaussian_vanilla", "maze/2020-07-14_07-59-01_SAC_maze_Gaussian_vanilla"],
@@ -54,21 +37,6 @@ experiment_map = {
         },
         "outfile": "image_maze_plot.png"
     },
-    "pointbot0": {
-        "algs": {
-            "sac_norecovery": ["2020-04-30_03-27-49_SAC_simplepointbot0_Gaussian_", "2020-04-30_04-29-05_SAC_simplepointbot0_Gaussian_", "2020-04-30_04-35-14_SAC_simplepointbot0_Gaussian_"],
-            "sac_lagrangian": ["2020-04-30_04-02-57_SAC_simplepointbot0_Gaussian_", "2020-04-30_04-12-58_SAC_simplepointbot0_Gaussian_", "2020-04-30_04-21-06_SAC_simplepointbot0_Gaussian_"]
-        },
-        "outfile": "pointbot0.png"
-    },
-    "pointbot1": {
-        "algs": {
-            "sac_norecovery": ["2020-04-30_07-55-32_SAC_simplepointbot1_Gaussian_", "2020-04-30_07-55-17_SAC_simplepointbot1_Gaussian_", "2020-04-30_07-55-05_SAC_simplepointbot1_Gaussian_"],
-            "sac_lagrangian": ["2020-04-30_05-20-57_SAC_simplepointbot1_Gaussian_", "2020-04-30_04-45-47_SAC_simplepointbot1_Gaussian_", "2020-04-30_08-13-34_SAC_simplepointbot1_Gaussian_"]
-        },
-        "outfile": "pointbot1.png"
-    },
-
     "shelf_long": {
         "algs": {
             "sac_vanilla": ["shelf_long_env/2020-07-17_09-35-22_SAC_shelf_long_env_Gaussian_vanilla", "shelf_long_env/2020-07-17_13-57-11_SAC_shelf_long_env_Gaussian_vanilla", "shelf_long_env/2020-07-17_17-40-01_SAC_shelf_long_env_Gaussian_vanilla"],
@@ -83,7 +51,6 @@ experiment_map = {
         },
         "outfile": "shelf_long.png"
     },
-
     "shelf_long_ablations_demos": {
         "algs": {
             "sac_recovery_pets_100": ["shelf_long_env/2020-07-26_03-40-55_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_100demos", "shelf_long_env/2020-07-26_03-41-18_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_100demos", "shelf_long_env/2020-07-26_03-41-27_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_100demos"],
@@ -94,7 +61,6 @@ experiment_map = {
         },
         "outfile": "shelf_long_ablations_demos.png"
     },
-
     "shelf_long_ablations_method": {
         "algs": {
             "sac_recovery_pets_ablations": ["shelf_long_env/2020-07-20_20-01-12_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_10-00-44_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35", "shelf_long_env/2020-07-21_09-50-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35"],
@@ -103,86 +69,7 @@ experiment_map = {
             "sac_recovery_pets_disable_online": ["shelf_long_env/2020-07-25_19-00-28_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_online", "shelf_long_env/2020-07-25_04-25-09_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_online", "shelf_long_env/2020-07-25_12-06-41_SAC_shelf_long_env_Gaussian_recovery_0.85_0.35_disable_online"]
         },
         "outfile": "shelf_long_ablations_method.png"
-    },
-
-    # "shelf": {  # Up to 2800
-    #     "algs": {
-    #         "sac_norecovery": ["2020-05-02_10-02-27_SAC_shelf_env_Gaussian_", "2020-05-02_23-46-58_SAC_shelf_env_Gaussian_", "2020-05-02_23-47-31_SAC_shelf_env_Gaussian_"],
-    #         # "recovery_0.1": ["2020-05-02_10-25-48_SAC_shelf_env_Gaussian_"],
-    #         # "recovery_0.2": ["2020-05-02_10-34-18_SAC_shelf_env_Gaussian_"],
-    #         "recovery_0.3": ["2020-05-02_23-50-24_SAC_shelf_env_Gaussian_", "2020-05-02_23-51-35_SAC_shelf_env_Gaussian_", "2020-05-02_23-52-27_SAC_shelf_env_Gaussian_"],
-    #         "recovery_0.4": ["2020-05-02_10-35-04_SAC_shelf_env_Gaussian_", "2020-05-02_23-48-11_SAC_shelf_env_Gaussian_", "2020-05-02_23-49-08_SAC_shelf_env_Gaussian_"],
-    #         "recovery_0.6": ["2020-05-02_23-53-33_SAC_shelf_env_Gaussian_", "2020-05-02_23-54-31_SAC_shelf_env_Gaussian_", "2020-05-02_23-55-08_SAC_shelf_env_Gaussian_"],
-    #         "recovery_0.8": ["2020-05-02_10-37-10_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-07_SAC_shelf_env_Gaussian_", "2020-05-02_23-58-33_SAC_shelf_env_Gaussian_"],
-    #         # "recovery_0.9": ["2020-05-02_10-49-34_SAC_shelf_env_Gaussian_"]
-    #         "sac_penalty1": ["2020-05-03_22-17-28_SAC_shelf_env_Gaussian_", "2020-05-03_22-17-50_SAC_shelf_env_Gaussian_", "2020-05-03_22-18-43_SAC_shelf_env_Gaussian_"],
-    #         "sac_penalty3": ["2020-05-03_22-20-30_SAC_shelf_env_Gaussian_", "2020-05-03_22-21-35_SAC_shelf_env_Gaussian_", "2020-05-03_22-22-46_SAC_shelf_env_Gaussian_"],
-    #         "sac_penalty5": ["2020-05-03_22-31-48_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-17_SAC_shelf_env_Gaussian_", "2020-05-03_22-32-44_SAC_shelf_env_Gaussian_"],
-    #         # "sac_penalty10": ["2020-05-03_22-34-18_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-38_SAC_shelf_env_Gaussian_", "2020-05-03_22-34-54_SAC_shelf_env_Gaussian_"],
-    #         "sac_penalty25": ["2020-05-04_02-24-15_SAC_shelf_env_Gaussian_", "2020-05-04_02-24-21_SAC_shelf_env_Gaussian_", "2020-05-04_02-24-26_SAC_shelf_env_Gaussian_"],
-    #         "sac_lagrangian": ["2020-05-04_04-34-38_SAC_shelf_env_Gaussian_", "2020-05-04_04-34-54_SAC_shelf_env_Gaussian_", "2020-05-04_04-35-08_SAC_shelf_env_Gaussian_"]
-    #     },
-    #     "outfile": "shelf.png"
-    # } 
-    "shelf": { # Sparse reward instead... (all up to 2800)
-        "algs": {
-            "sac_norecovery": ["2020-05-07_20-54-58_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-14_SAC_shelf_env_Gaussian_", "2020-05-07_20-55-33_SAC_shelf_env_Gaussian_"],
-            # "recovery": ["2020-05-07_21-03-10_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-22_SAC_shelf_env_Gaussian_", "2020-05-07_21-03-33_SAC_shelf_env_Gaussian_"], # eps_safe 0.4, 20k
-            # "recovery": ["2020-07-04_08-31-09_SAC_shelf_env_Gaussian_", "2020-07-04_22-09-47_SAC_shelf_env_Gaussian_", "2020-07-04_22-09-25_SAC_shelf_env_Gaussian_"], # DDPG recovery, eps_safe = 0.5, gamma_safe = 0.85
-            "recovery": ["2020-07-12_02-38-09_SAC_shelf_env_Gaussian_", "2020-07-12_02-38-27_SAC_shelf_env_Gaussian_", "2020-07-12_02-38-42_SAC_shelf_env_Gaussian_"],   # DDPG recovery, eps_safe = 0.5, gamma_safe = 0.85 (new reward)
-            # 'recovery': ["2020-07-04_08-30-44_SAC_shelf_env_Gaussian_"], # DDPG recovery, eps_safe = 0.4
-            # 'recovery': ["2020-07-04_08-30-53_SAC_shelf_env_Gaussian_"] # DDPG recovery, eps_safe = 0.3
-
-            "sac_penalty3": ["2020-07-12_02-53-56_SAC_shelf_env_Gaussian_", "2020-07-12_02-53-28_SAC_shelf_env_Gaussian_", "2020-07-12_02-53-41_SAC_shelf_env_Gaussian_"], # (new reward)
-            "sac_penalty15": ["2020-07-12_02-48-41_SAC_shelf_env_Gaussian_", "2020-07-12_02-56-44_SAC_shelf_env_Gaussian_", "2020-07-12_02-43-32_SAC_shelf_env_Gaussian_"], # (new reward)
-
-
-            # "sac_penalty3": ["2020-05-07_21-36-57_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-04_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-11_SAC_shelf_env_Gaussian_"],
-            # "sac_penalty10": ["2020-05-07_21-37-17_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-25_SAC_shelf_env_Gaussian_", "2020-05-07_21-37-32_SAC_shelf_env_Gaussian_"],
-            "RCPO": ["2020-06-15_19-49-04_SAC_shelf_env_Gaussian_", "2020-06-15_19-49-23_SAC_shelf_env_Gaussian_", "2020-06-15_19-49-39_SAC_shelf_env_Gaussian_"],
-            "sac_lagrangian": ["2020-06-15_09-50-15_SAC_shelf_env_Gaussian_", "2020-06-15_09-50-45_SAC_shelf_env_Gaussian_", "2020-06-15_09-51-01_SAC_shelf_env_Gaussian_"], # nu = 1
-            "sac_lagrangian_update": ["2020-06-16_02-30-16_SAC_shelf_env_Gaussian_", "2020-06-16_00-10-45_SAC_shelf_env_Gaussian_", "2020-06-16_00-10-57_SAC_shelf_env_Gaussian_"] 
-        },
-        "outfile": "shelf.png"
-    },
-    "shelf_dynamic": {
-        "algs": {
-            "sac_norecovery": ["2020-05-24_09-07-14_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-07-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-59_SAC_shelf_dynamic_env_Gaussian_"],
-            "sac_penalty3": ["2020-05-24_09-05-16_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_10-26-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_09-08-28_SAC_shelf_dynamic_env_Gaussian_"],
-            "sac_penalty10": ["2020-05-25_09-48-06_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-47-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-48-15_SAC_shelf_dynamic_env_Gaussian_"],
-            # "recovery_0.2": ["2020-05-25_09-41-29_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-42-02_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_20-21-35_SAC_shelf_dynamic_env_Gaussian_"],
-            # "recovery": ["2020-05-26_03-32-21_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-30_SAC_shelf_dynamic_env_Gaussian_", "2020-05-26_03-32-37_SAC_shelf_dynamic_env_Gaussian_"], # eps_safe=0.25
-            # "recovery": ["2020-07-06_08-28-11_SAC_shelf_dynamic_env_Gaussian_", "2020-07-06_23-45-04_SAC_shelf_dynamic_env_Gaussian_", "2020-07-06_23-45-08_SAC_shelf_dynamic_env_Gaussian_"], # 0.35, gamma_safe=0.9, ddpg recovery
-            "recovery": ["2020-07-11_22-41-30_SAC_shelf_dynamic_env_Gaussian_", "2020-07-11_22-41-13_SAC_shelf_dynamic_env_Gaussian_", "2020-07-11_22-40-57_SAC_shelf_dynamic_env_Gaussian_"], # eps_safe=0.2, gamma_safe=0.8, ddpg recovery (NEW REWARD)
-            "RCPO": ["2020-06-15_19-47-45_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-48-05_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-48-19_SAC_shelf_dynamic_env_Gaussian_"],
-            "sac_lagrangian": ["2020-06-04_04-31-13_SAC_shelf_dynamic_env_Gaussian_", "2020-06-03_23-56-14_SAC_shelf_dynamic_env_Gaussian_", "2020-06-15_19-41-22_SAC_shelf_dynamic_env_Gaussian_"], # nu = 1 (tried nu=1, 10, 100 this was best)
-            "sac_lagrangian_update": ["2020-06-16_00-02-34_SAC_shelf_dynamic_env_Gaussian_", "2020-06-16_00-03-21_SAC_shelf_dynamic_env_Gaussian_", "2020-06-16_00-03-30_SAC_shelf_dynamic_env_Gaussian_"] 
-            # "recovery_0.3": ["2020-05-24_21-59-33_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-26_SAC_shelf_dynamic_env_Gaussian_", "2020-05-25_09-38-51_SAC_shelf_dynamic_env_Gaussian_"],
-            # "recovery_0.4": ["2020-05-24_21-57-43_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-23_SAC_shelf_dynamic_env_Gaussian_", "2020-05-24_21-59-28_SAC_shelf_dynamic_env_Gaussian_"]
-        },
-        "outfile": "shelf_dynamic.png"
-    },
-    "image_shelf": {
-        "algs": {
-            "sac_vanilla": ["image_shelf/2020-07-18_23-03-03_SAC_shelf_env_Gaussian_vanilla", "image_shelf/2020-07-19_02-19-42_SAC_shelf_env_Gaussian_vanilla", "image_shelf/2020-07-19_05-54-20_SAC_shelf_env_Gaussian_vanilla"],
-            "sac_penalty": ["image_shelf/2020-07-18_23-04-23_SAC_shelf_env_Gaussian_reward_10", "image_shelf/2020-07-19_04-22-55_SAC_shelf_env_Gaussian_reward_10", "image_shelf/2020-07-19_10-00-20_SAC_shelf_env_Gaussian_reward_10"],
-            "sac_recovery_ddpg": ["image_shelf/2020-07-22_02-08-57_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.35", "image_shelf/2020-07-22_01-33-56_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.35", "image_shelf/2020-07-21_17-40-44_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.35"],
-            # "sac_recovery_pets": ["2020-07-23_11-16-56_SAC_shelf_env_Gaussian_recovery_0.55_0.35", "2020-07-23_18-40-40_SAC_shelf_env_Gaussian_recovery_0.55_0.35"]
-            # "sac_recovery_ddpg": ["image_shelf/2020-07-22_03-41-41_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.25", "image_shelf/2020-07-21_18-59-32_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.25", "image_shelf/2020-07-21_09-55-14_SAC_shelf_env_Gaussian_ddpg_recovery_0.6_0.25"]
-            # "sac_penalty3": ["2020-06-22_22-24-29_SAC_shelf_env_Gaussian_", "2020-06-25_23-35-20_SAC_shelf_env_Gaussian_", "2020-06-27_01-32-00_SAC_shelf_env_Gaussian_"]
-            # "sac_recovery_ddpg": ["image_shelf/2020-07-19_01-26-44_SAC_shelf_env_Gaussian_ddpg_recovery_0.7_0.25", "image_shelf/2020-07-19_10-47-14_SAC_shelf_env_Gaussian_ddpg_recovery_0.7_0.25"]
-        },
-        "outfile": "image_shelf.png"
-    },
-    "image_shelf_dynamic": {
-        "algs": {
-            "sac_norecovery": ["2020-06-22_06-46-55_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_06-47-04_SAC_shelf_dynamic_env_Gaussian_"],
-            "recovery": ["2020-06-22_11-48-37_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_11-49-03_SAC_shelf_dynamic_env_Gaussian_"], # eps=0.1
-            "sac_penalty3": ["2020-06-22_06-48-53_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_06-39-57_SAC_shelf_dynamic_env_Gaussian_"],
-            "sac_penalty10": ["2020-06-22_06-40-16_SAC_shelf_dynamic_env_Gaussian_", "2020-06-22_06-40-36_SAC_shelf_dynamic_env_Gaussian_"]
-        },
-        "outfile": "image_dynamic_shelf.png"
-    }  
+    },  
 }
 
 
@@ -281,6 +168,9 @@ def get_stats(data):
     ub = mu + np.std(data, axis=0)
     return mu, lb, ub
 
+PLOT_TYPE = "violation"
+assert PLOT_TYPE in ['ratio', 'success', 'violation']
+
 eps = {
     "maze": 500,
     "image_maze": 500,
@@ -308,19 +198,31 @@ envname = {
     "shelf_long_ablations_method": "Object Extraction: Method Ablations"
 }
 
+if PLOT_TYPE == "ratio":
+    yscaling = {
+        "maze": 0.25,
+        "image_maze": 0.45,
+        "shelf_long": 0.04,
+        "shelf_long_ablations_method": 0.04,
+        "shelf_long_ablations_demos": 0.04,
+    }
+elif PLOT_TYPE == "success":
+    yscaling = {
+        "maze": 1,
+        "image_maze": 1,
+        "shelf_long": 0.6,
+        "shelf_long_ablations_method": 0.6,
+        "shelf_long_ablations_demos": 0.6,
+    }
+else:
+    yscaling = {
+        "maze": 0.25,
+        "image_maze": 0.15,
+        "shelf_long": 0.07,
+        "shelf_long_ablations_method": 0.07,
+        "shelf_long_ablations_demos": 0.07,
+    }
 
-yscaling = {
-    "maze": 0.25,
-    "image_maze": 0.45,
-    "pointbot0": 0.9,
-    "pointbot1": 0.4,
-    "shelf": 0.1,
-    "shelf_long": 0.04,
-    "shelf_long_ablations_method": 0.04,
-    "shelf_long_ablations_demos": 0.04,
-    "shelf_dynamic": 0.3,
-    "image_shelf": 0.0005
-}
 
 def plot_experiment(experiment):
     print("EXP NAME: ", experiment)
@@ -330,8 +232,12 @@ def plot_experiment(experiment):
     axs.set_title(envname[experiment], fontsize=48)
     axs.set_ylim(-0.1, int(yscaling[experiment] * max_eps) + 1)
     axs.set_xlabel("Episode", fontsize=42)
-    axs.set_ylabel("Ratio of Successes/Violations", fontsize=42)
-    # axs.set_ylabel("Cumulative Task Successes", fontsize=42)
+    if PLOT_TYPE == 'ratio':
+        axs.set_ylabel("Ratio of Successes/Violations", fontsize=42)
+    elif PLOT_TYPE == 'success':
+        axs.set_ylabel("Cumulative Task Successes", fontsize=42)
+    else:
+        axs.set_ylabel("Cumulative Constraint Violations", fontsize=42)
     axs.tick_params(axis='both', which='major', labelsize=36)
     plt.subplots_adjust(hspace=0.3)
     final_ratios_dict = {}
@@ -346,6 +252,7 @@ def plot_experiment(experiment):
         train_violations_list = []
         recovery_called_list = []
         recovery_called_constraint_list = []
+        prop_viol_recovery_list = []
 
         for fname in fnames:
             with open(fname, "rb") as f:
@@ -356,6 +263,10 @@ def plot_experiment(experiment):
             train_rewards = []
             last_rewards = []
             recovery_called = []
+            num_viols_recovery = []
+            num_viols_no_recovery = []
+            num_viols_recovery = 0
+            num_viols_no_recovery = 0
             for traj_stats in train_stats:
                 train_violations.append([])
                 recovery_called.append([])
@@ -364,19 +275,22 @@ def plot_experiment(experiment):
                 for step_stats in traj_stats:
                     train_violations[-1].append(step_stats['constraint'])
                     # recovery_called[-1].append(step_stats['recovery'])
-                    if alg == "recovery" or alg == "recovery_reachability":
-                        # recovery_called[-1].append(step_stats['recovery'])
-                        recovery_called[-1].append(0)
-                    else:
-                        recovery_called[-1].append(0)
+                    if "recovery" in alg:
+                        # print("CONSTRANT", step_stats['constraint'])
+                        recovery_viol = int(step_stats['recovery'] and step_stats['constraint'])
+                        no_recovery_viol = int( (not step_stats['recovery']) and step_stats['constraint'])
+                        num_viols_recovery += recovery_viol
+                        num_viols_no_recovery += no_recovery_viol
                     train_rewards[-1] += step_stats['reward']
                     last_reward = step_stats['reward']
+
                 last_rewards.append(last_reward)
 
-            recovery_called = np.array([np.sum(t) > 0 for t in recovery_called])[:max_eps].astype(int) # For now just look at whether a recovery was called at any point
+            recovery_called = np.array([np.sum(t) > 0 for t in recovery_called])[:max_eps].astype(int)
             ep_lengths = np.array([len(t) for t in train_violations])[:max_eps]
             train_violations = np.array([np.sum(t) > 0 for t in train_violations])[:max_eps]
             recovery_called_constraint = np.bitwise_and(recovery_called, train_violations)
+
 
             recovery_called = np.cumsum(recovery_called)
             train_violations = np.cumsum(train_violations)
@@ -396,10 +310,13 @@ def plot_experiment(experiment):
 
             task_successes = np.cumsum(task_successes)
             task_successes_list.append(task_successes)
-
             train_violations_list.append(train_violations)
             recovery_called_list.append(recovery_called)
             recovery_called_constraint_list.append(recovery_called_constraint)
+            if not num_viols_no_recovery + num_viols_recovery == 0:
+                prop_viol_recovery_list.append(float(num_viols_recovery)/float(num_viols_no_recovery + num_viols_recovery))
+            else:
+                prop_viol_recovery_list.append(-1)
 
         task_successes_list = np.array(task_successes_list)
         train_violations_list = np.array(train_violations_list)
@@ -413,6 +330,9 @@ def plot_experiment(experiment):
         safe_ratios = (task_successes_list+1)/(train_violations_list+1)
         final_ratio =  safe_ratios.mean(axis=0)[-1]
         print("FINAL RATIO: ", final_ratio)
+        print("PROP VIOLS", experiment, prop_viol_recovery_list)
+        # if "recovery" in alg:
+        #     assert(False)
         final_ratios_dict[alg] = final_ratio
         safe_ratios_mean, safe_ratios_lb, safe_ratios_ub = get_stats(safe_ratios)
         ts_mean, ts_lb, ts_ub = get_stats(task_successes_list)
@@ -420,29 +340,29 @@ def plot_experiment(experiment):
         trec_mean, trec_lb, trec_ub = get_stats(recovery_called_list)
         trec_constraint_mean, trec_constraint_lb, trec_constraint_ub = get_stats(recovery_called_constraint_list)
 
-        axs.fill_between(range(safe_ratios_mean.shape[0]), safe_ratios_ub, safe_ratios_lb,
-                     color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        # axs.fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
-        #              color=get_color(alg), alpha=.25, label=get_legend_name(alg))
-        axs.plot(safe_ratios_mean, color=get_color(alg))
-        # axs.plot(ts_mean, color=get_color(alg))
+        if PLOT_TYPE == 'ratio':
+            axs.fill_between(range(safe_ratios_mean.shape[0]), safe_ratios_ub, safe_ratios_lb,
+                         color=get_color(alg), alpha=.25, label=get_legend_name(alg))
+            axs.plot(safe_ratios_mean, color=get_color(alg))
+        elif PLOT_TYPE == 'success':
+            axs.fill_between(range(ts_mean.shape[0]), ts_ub, ts_lb,
+                         color=get_color(alg), alpha=.25, label=get_legend_name(alg))
+            axs.plot(ts_mean, color=get_color(alg))
+        else:
+            axs.fill_between(range(tv_mean.shape[0]), tv_ub, tv_lb,
+                         color=get_color(alg), alpha=.25, label=get_legend_name(alg))
+            axs.plot(tv_mean, color=get_color(alg))
 
     print(final_ratios_dict)
-    axs.legend(loc="upper left", fontsize=36, frameon=False)
+    # axs.legend(loc="upper left", fontsize=36, frameon=False)
     plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
     plt.show()
 
+def pr_curve(experiment):
+    pass
+
 
 if __name__ == '__main__':
-    # experiment = "shelf_dynamic"
-    # experiment = "image_maze"
-    # experiment = "shelf"
-    # experiment = "image_shelf"
-    # experiment = "maze"
-    # experiment = "shelf_long"
-    # experiment = "shelf_long_ablations"
-    # experiment = "image_shelf_dynamic"
-    # for experiment in ["image_maze", "maze", "shelf_long"]:
-    for experiment in ["shelf_long_ablations_method", "shelf_long_ablations_demos"]:
+    for experiment in ["image_maze", "maze", "shelf_long"]:
+    # for experiment in ["shelf_long_ablations_method", "shelf_long_ablations_demos"]:
         plot_experiment(experiment)
-        
