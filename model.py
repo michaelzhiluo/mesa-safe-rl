@@ -525,8 +525,7 @@ class TransitionModel(nn.Module):
     hidden = hidden.view(trajlen, batchsize, -1)
     return hidden
 
-
-## Image Encoder (TODO: I think this is built to handle 64 x 64 images, if so I guess thats good for me :P)
+# Encoder
 class VisualEncoderAttn(nn.Module):
   __constants__ = ['embedding_size']
   
@@ -574,8 +573,7 @@ class VisualEncoderAttn(nn.Module):
     atn = atn.view(trajlen, batchsize, 1, self.width, 64)
     return hidden, atn
     
-
-## Reconstruction Model (TODO: I think this is built to handle 64 x 64 images, if so I guess thats good for me :P)
+# Decoder
 class VisualReconModel(nn.Module):
   __constants__ = ['embedding_size']
   
