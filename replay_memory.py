@@ -1,3 +1,8 @@
+'''
+Built on on SAC implementation from 
+https://github.com/pranz24/pytorch-soft-actor-critic
+'''
+
 import random
 import numpy as np
 from operator import itemgetter 

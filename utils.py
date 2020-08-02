@@ -1,3 +1,10 @@
+'''
+Built on on SAC implementation from 
+https://github.com/pranz24/pytorch-soft-actor-critic
+except for video processing uitls, which are built on
+Goal-Aware Prediction: Learning to Model What Matters (ICML 2020)
+'''
+
 import os
 import cv2
 import numpy as np

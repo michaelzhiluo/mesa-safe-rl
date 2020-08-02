@@ -1,3 +1,10 @@
+'''
+Latent dynamics models are modelled on latent dynamics model used in
+Goal-Aware Prediction: Learning to Model What Matters (ICML 2020). All
+other networks are built on SAC implementation from 
+https://github.com/pranz24/pytorch-soft-actor-critic
+'''
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
