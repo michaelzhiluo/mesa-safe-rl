@@ -1,3 +1,8 @@
+'''
+Built on cartrgipper implementation in
+https://github.com/SudeepDasari/visual_foresight
+'''
+
 import numpy as np
 import moviepy.editor as mpy
 import copy
@@ -9,7 +14,7 @@ import os
 
 FIXED_ENV = False
 DENSE_REWARD = False
-GT_STATE = True
+GT_STATE = False#True
 EARLY_TERMINATION = True
 
 def no_rot_dynamics(prev_target_qpos, action):

@@ -1,3 +1,8 @@
+'''
+Built on cartrgipper implementation in
+https://github.com/SudeepDasari/visual_foresight
+'''
+
 import numpy as np
 import random
 from tensorflow.contrib.training import HParams

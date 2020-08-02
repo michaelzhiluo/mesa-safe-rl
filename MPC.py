@@ -1,3 +1,8 @@
+'''
+Built on PETS implementation in
+https://github.com/quanvuong/handful-of-trials-pytorch
+'''
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

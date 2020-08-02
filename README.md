@@ -1,88 +1,38 @@
 ### Description
 ------------
-Reimplementation of [Soft Actor-Critic Algorithms and Applications](https://arxiv.org/pdf/1812.05905.pdf) and a deterministic variant of SAC from [Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement
-Learning with a Stochastic Actor](https://arxiv.org/pdf/1801.01290.pdf).
+Implementation of Recovery RL: Safe Reinforcement Learning with Learned Recovery Zones. The main file is main.py in the root
+directory. The core sac implementation can be found in sac.py and is built on the implementation from https://github.com/pranz24/pytorch-soft-actor-critic.
+This file also implements constraint critic training for Recovery RL. All environments can be found in the env folder. For the model-based recovery
+policy, for low dimensional experiments we build on the PETS implementation provided in https://github.com/quanvuong/handful-of-trials-pytorch while
+for image-based experiments we build on the latent dynamics model from Goal-Aware Prediction: Learning to Model What Matters (ICML 2020). The relevant
+code can be found in MPC.py and VisualRecovery.py respectively and the relevant configs can be found in the config folder. The file model.py contains
+the core architectures for the SAC implementations and for the latent dynamics model. Recovery RL and all comparisons share the same SAC and safety
+critic implementation and differ only in how the safety critic is utilized. All environments are implemented in the env folder. The object extraction
+environments are built on top of the cartrgipper environment from https://github.com/SudeepDasari/visual_foresight.
 
-Added another branch for [Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement
-Learning with a Stochastic Actor](https://arxiv.org/pdf/1801.01290.pdf) -> [SAC_V](https://github.com/pranz24/pytorch-soft-actor-critic/tree/SAC_V).
+The files most directly related to the scientific contribution of the paper are main.py, which implements the main logic for Recovery RL and all comparisons,
+and sac.py, which implements SAC and safety critic training. MPC.py and VisualRecovery.py are relevant for model-based recovery. 
 
-### Requirements
+### Reproducing Experiments
 ------------
-*   [mujoco-py](https://github.com/openai/mujoco-py)
-*   [TensorboardX](https://github.com/lanpa/tensorboardX)
-*   [PyTorch](http://pytorch.org/)
 
-### Default Arguments and Usage
-------------
-### Usage
+To reproduce experiments (1) download data from \todo{insert} link and place it in a folder called data in the root directory. Then, run the following
+bash scripts to reproduce the results from each of the reported experiments:
 
-```
-usage: main.py [-h] [--env-name ENV_NAME] [--policy POLICY] [--eval EVAL]
-               [--gamma G] [--tau G] [--lr G] [--alpha G]
-               [--automatic_entropy_tuning G] [--seed N] [--batch_size N]
-               [--num_steps N] [--hidden_size N] [--updates_per_step N]
-               [--start_steps N] [--target_update_interval N]
-               [--replay_size N] [--cuda]
-```
+# Navigation 1
+. navigation1.sh
 
-(Note: There is no need for setting Temperature(`--alpha`) if `--automatic_entropy_tuning` is True.)
+# Navigation 2
+. navigation2.sh
 
-#### For SAC
+# Maze
+. maze.sh
 
-```
-python main.py --env-name Humanoid-v2 --alpha 0.05
-```
+# Object Extraction
+. object_extraction.sh
 
-#### For SAC (Hard Update)
+# Object Extraction (Dynamic Obstacle)
+. object_extraction_dynamic_obs.sh
 
-```
-python main.py --env-name Humanoid-v2 --alpha 0.05 --tau 1 --target_update_interval 1000
-```
-
-#### For SAC (Deterministic, Hard Update)
-
-```
-python main.py --env-name Humanoid-v2 --policy Deterministic --tau 1 --target_update_interval 1000
-```
-
-### Arguments
-------------
-```
-PyTorch Soft Actor-Critic Args
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --env-name ENV_NAME   Mujoco Gym environment (default: HalfCheetah-v2)
-  --policy POLICY       Policy Type: Gaussian | Deterministic (default:
-                        Gaussian)
-  --eval EVAL           Evaluates a policy a policy every 10 episode (default:
-                        True)
-  --gamma G             discount factor for reward (default: 0.99)
-  --tau G               target smoothing coefficient(τ) (default: 5e-3)
-  --lr G                learning rate (default: 3e-4)
-  --alpha G             Temperature parameter α determines the relative
-                        importance of the entropy term against the reward
-                        (default: 0.2)
-  --automatic_entropy_tuning G
-                        Automaically adjust α (default: False)
-  --seed N              random seed (default: 123456)
-  --batch_size N        batch size (default: 256)
-  --num_steps N         maximum number of steps (default: 1e6)
-  --hidden_size N       hidden size (default: 256)
-  --updates_per_step N  model updates per simulator step (default: 1)
-  --start_steps N       Steps sampling random actions (default: 1e4)
-  --target_update_interval N
-                        Value target update per no. of updates per step
-                        (default: 1)
-  --replay_size N       size of replay buffer (default: 1e6)
-  --cuda                run on CUDA (default: False)
-```
-
-| Environment **(`--env-name`)**| Temperature **(`--alpha`)**|
-| ---------------| -------------|
-| HalfCheetah-v2| 0.2|
-| Hopper-v2| 0.2|
-| Walker2d-v2| 0.2|
-| Ant-v2| 0.2|
-| Humanoid-v2| 0.05|
-
+# Ablations
+. ablations.sh
