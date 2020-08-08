@@ -1,12 +1,13 @@
 from dmbrl.env.cartgripper_env import BaseCartgripperEnv
 import numpy as np
 
+
 def zangle_to_quat(zangle):
     """
     :param zangle in rad
     :return: quaternion
     """
-    return np.array([np.cos(zangle/2), 0, 0, np.sin(zangle/2)])
+    return np.array([np.cos(zangle / 2), 0, 0, np.sin(zangle / 2)])
 
 
 def quat_to_zangle(quat):
@@ -14,8 +15,9 @@ def quat_to_zangle(quat):
     :param quat: quaternion with only
     :return: zangle in rad
     """
-    theta = np.arctan2(2 * quat[0] * quat[3], 1 - 2 * quat[3] ** 2)
+    theta = np.arctan2(2 * quat[0] * quat[3], 1 - 2 * quat[3]**2)
     return np.array([theta])
+
 
 class CartgripperXZGrasp(BaseCartgripperEnv):
     def __init__(self, env_params={}, reset_state=None):
@@ -23,7 +25,7 @@ class CartgripperXZGrasp(BaseCartgripperEnv):
         self.low_bound = self.ac_low_bound = np.array([-0.4, -0.075, 0])
         self.high_bound = self.ac_high_bound = np.array([0.4, 0.15, 0.1])
         self._base_adim, self._base_sdim = 3, 6
-        self._adim, self._sdim = 3, 3      # x z grasp
+        self._adim, self._sdim = 3, 3  # x z grasp
         self._gripper_dim = 2
         self._n_joints = 6
         self.unwrapped = self
@@ -53,8 +55,10 @@ class CartgripperXZGrasp(BaseCartgripperEnv):
         return parent_params
 
     def _get_state(self):
-        gripper_val = (self.sim.data.qpos[4] - self._hp.gripper_close)/(self._hp.gripper_open - self._hp.gripper_close)
-        return np.array([self.sim.data.qpos[0], self.sim.data.qpos[2], 1 - gripper_val])
+        gripper_val = (self.sim.data.qpos[4] - self._hp.gripper_close) / (
+            self._hp.gripper_open - self._hp.gripper_close)
+        return np.array(
+            [self.sim.data.qpos[0], self.sim.data.qpos[2], 1 - gripper_val])
 
     def _init_dynamics(self):
         self._previous_target_qpos = self._get_state()
@@ -81,14 +85,15 @@ class CartgripperXZGrasp(BaseCartgripperEnv):
     def _create_pos(self):
         object_poses = super()._create_pos()
         for i in range(self.num_objects):
-            object_poses[i][0] = np.random.uniform(-self._hp.x_range, self._hp.x_range)
+            object_poses[i][0] = np.random.uniform(-self._hp.x_range,
+                                                   self._hp.x_range)
             object_poses[i][1] = self._hp.default_y
             object_poses[i][3:] = zangle_to_quat(self._hp.default_theta)
         return object_poses
 
     def get_armpos(self, object_pos):
         xpos0 = np.zeros(self._base_sdim)
-        if self.randomize_initial_pos or 1: # fix later
+        if self.randomize_initial_pos or 1:  # fix later
             assert not self.arm_obj_initdist
             xpos0[0] = np.random.uniform(-.4, .4)
             xpos0[1] = self._hp.default_y
@@ -102,12 +107,16 @@ class CartgripperXZGrasp(BaseCartgripperEnv):
 
     def _post_step(self):
         if self._hp.finger_sensors:
-            finger_sensors_thresh = np.amax(self._last_obs['finger_sensors']) > 0
+            finger_sensors_thresh = np.amax(
+                self._last_obs['finger_sensors']) > 0
         else:
-            finger_sensors_thresh = self._last_obs['state'][2] <= 0.9    # check if gripper is closed
+            finger_sensors_thresh = self._last_obs['state'][2] <= 0.9  # check if gripper is closed
 
-        object_deltas = self._last_obs['object_poses_full'][:, 2] - self._object_floors[:, 2]
-        z_thresholds = np.amax(object_deltas) >= 0.05 and self._last_obs['state'][1] >= 0.02
+        object_deltas = self._last_obs['object_poses_full'][:,
+                                                            2] - self._object_floors[:,
+                                                                                     2]
+        z_thresholds = np.amax(
+            object_deltas) >= 0.05 and self._last_obs['state'][1] >= 0.02
         if z_thresholds and finger_sensors_thresh:
             self._goal_reached = True
 
@@ -122,8 +131,11 @@ class CartgripperXZGrasp(BaseCartgripperEnv):
         Moves arm to random position
         :return: None
         """
-        target_dx = np.random.uniform(-self._hp.x_range, self._hp.x_range) - self._previous_target_qpos[0]
-        target_dy = np.random.uniform(0.12, self.high_bound[2]) - self._previous_target_qpos[1]
+        target_dx = np.random.uniform(
+            -self._hp.x_range,
+            self._hp.x_range) - self._previous_target_qpos[0]
+        target_dy = np.random.uniform(
+            0.12, self.high_bound[2]) - self._previous_target_qpos[1]
         self.step(np.array([target_dx, target_dy, -1]))
 
     def _move_objects(self):
@@ -142,7 +154,9 @@ class CartgripperXZGrasp(BaseCartgripperEnv):
             self.sim.data.qpos[self._n_joints + i * 7 + 2] = target_y
             self.sim.step()
 
-            target_cmd = np.array([self._previous_target_qpos[0], self._previous_target_qpos[1], 1])
+            target_cmd = np.array([
+                self._previous_target_qpos[0], self._previous_target_qpos[1], 1
+            ])
             for _ in range(self.substeps):
                 self.sim.data.qpos[self._n_joints + i * 7 + 2] = target_y
                 self.sim.data.ctrl[:] = target_cmd
@@ -155,7 +169,10 @@ class CartgripperXZGrasp(BaseCartgripperEnv):
                 done = True
             else:
                 # open up the fingers and try again
-                target_cmd = np.array([self._previous_target_qpos[0], self._previous_target_qpos[1], -1])
+                target_cmd = np.array([
+                    self._previous_target_qpos[0],
+                    self._previous_target_qpos[1], -1
+                ])
                 for _ in range(self.substeps):
                     self.sim.data.ctrl[:] = target_cmd
                     self.sim.step()

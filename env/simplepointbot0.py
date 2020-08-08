@@ -15,7 +15,6 @@ from gym import utils
 from gym.spaces import Box
 
 from obstacle import Obstacle, ComplexObstacle
-
 """
 Constants associated with the PointBot env.
 """
@@ -34,25 +33,18 @@ AIR_RESIST = 0.2
 
 HARD_MODE = False
 
-OBSTACLE = [
-        [[-100, 150], [5, 10]],
-        [[-100, -80], [-10, 10]],
-        [[-100, 150],[-10, -5]]]
+OBSTACLE = [[[-100, 150], [5, 10]], [[-100, -80], [-10, 10]], [[-100, 150],
+                                                               [-10, -5]]]
 
+CAUTION_ZONE = [[[-100, 150], [4, 5]], [[-100, 150], [-5, -4]]]
 
-CAUTION_ZONE = [
-        [[-100, 150], [4, 5]],
-        [[-100, 150], [-5, -4]]]
-
-
-        
 OBSTACLE = ComplexObstacle(OBSTACLE)
 CAUTION_ZONE = ComplexObstacle(CAUTION_ZONE)
 
 
-
 def process_action(a):
     return np.clip(a, -MAX_FORCE, MAX_FORCE)
+
 
 def teacher_action(state, goal):
     disp = np.subtract(goal, state)
@@ -61,17 +53,17 @@ def teacher_action(state, goal):
     return disp
 
 
-
 class SimplePointBot(Env, utils.EzPickle):
-
     def __init__(self):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
         self.A = np.eye(2)
         self.B = np.eye(2)
         self.horizon = HORIZON
-        self.action_space = Box(-np.ones(2) * MAX_FORCE, np.ones(2) * MAX_FORCE)
-        self.observation_space = Box(-np.ones(2) * np.float('inf'), np.ones(2) * np.float('inf'))
+        self.action_space = Box(-np.ones(2) * MAX_FORCE,
+                                np.ones(2) * MAX_FORCE)
+        self.observation_space = Box(-np.ones(2) * np.float('inf'),
+                                     np.ones(2) * np.float('inf'))
         self._max_episode_steps = HORIZON
         self.obstacle = OBSTACLE
         self.caution_zone = CAUTION_ZONE
@@ -90,11 +82,12 @@ class SimplePointBot(Env, utils.EzPickle):
         self.done = cur_cost > -1 or self.obstacle(next_state)
 
         return self.state, cur_cost, self.done, {
-                "constraint": self.obstacle(next_state),
-                "reward": cur_cost,
-                "state": old_state,
-                "next_state": next_state,
-                "action": a}
+            "constraint": self.obstacle(next_state),
+            "reward": cur_cost,
+            "state": old_state,
+            "next_state": next_state,
+            "action": a
+        }
 
     def reset(self):
         self.state = START_STATE + np.random.randn(2)
@@ -111,13 +104,15 @@ class SimplePointBot(Env, utils.EzPickle):
         # if self.caution_zone(s) and not override:
         #     if np.abs(a - safe_action(s, GOAL_STATE)).max() > 0.001:
         #         print(s, a, safe_action(s, GOAL_STATE))
-            # print(a, safe_action(s, GOAL_STATE))
-            # a = safe_action(s, GOAL_STATE)
-        return self.A.dot(s) + self.B.dot(a) + NOISE_SCALE * np.random.randn(len(s))
+        # print(a, safe_action(s, GOAL_STATE))
+        # a = safe_action(s, GOAL_STATE)
+        return self.A.dot(s) + self.B.dot(a) + NOISE_SCALE * np.random.randn(
+            len(s))
 
     def step_cost(self, s, a):
         if HARD_MODE:
-            return -int(np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
+            return -int(
+                np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
         return -np.linalg.norm(np.subtract(GOAL_STATE, s))
 
     def values(self):
@@ -133,7 +128,7 @@ class SimplePointBot(Env, utils.EzPickle):
         if states == None:
             states = self.hist
         states = np.array(states)
-        plt.scatter(states[:,0], states[:,2])
+        plt.scatter(states[:, 0], states[:, 2])
         plt.show()
 
     # Returns whether a state is stable or not
@@ -150,24 +145,32 @@ class SimplePointBot(Env, utils.EzPickle):
         return safe_action(s)
 
 
-def get_random_transitions(num_transitions, task_demos=False, save_rollouts=False):
+def get_random_transitions(num_transitions,
+                           task_demos=False,
+                           save_rollouts=False):
     env = SimplePointBot()
     transitions = []
     rollouts = []
     done = False
-    for i in range(num_transitions//10):
+    for i in range(num_transitions // 10):
         rollouts.append([])
         if np.random.uniform(0, 1) < 0.5:
-            state = np.array([np.random.uniform(-80, 50), np.random.uniform(-5, -2)])
+            state = np.array(
+                [np.random.uniform(-80, 50),
+                 np.random.uniform(-5, -2)])
         else:
-            state = np.array([np.random.uniform(-80, 50), np.random.uniform(2, 5)])
+            state = np.array(
+                [np.random.uniform(-80, 50),
+                 np.random.uniform(2, 5)])
         for j in range(10):
             action = np.clip(np.random.randn(2), -1, 1)
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, not constraint))
-            rollouts[-1].append((state, action, constraint, next_state, not constraint))
+            transitions.append((state, action, constraint, next_state,
+                                not constraint))
+            rollouts[-1].append((state, action, constraint, next_state,
+                                 not constraint))
             state = next_state
             if constraint:
                 break
@@ -185,14 +188,15 @@ def safe_action(state, goal=GOAL_STATE):
     disp[0] = 0
     return disp * 0.25
 
+
 def teacher_action(state, goal=GOAL_STATE):
     disp = np.subtract(goal, state)
     disp[disp > MAX_FORCE] = MAX_FORCE
     disp[disp < -MAX_FORCE] = -MAX_FORCE
     return disp
 
-class SimplePointBotTeacher(object):
 
+class SimplePointBotTeacher(object):
     def __init__(self):
         self.env = SimplePointBot()
         self.demonstrations = []
@@ -220,7 +224,6 @@ class SimplePointBotTeacher(object):
         # self.env.plot_trajectory()
         return transitions
 
-
     def generate_demonstrations(self, num_demos):
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
@@ -240,15 +243,15 @@ class SimplePointBotTeacher(object):
     def _expert_control(self, s, t):
         return teacher_action(s, self.goal)
 
+
 if __name__ == '__main__':
     env = SimplePointBot()
     obs = env.reset()
-    env.step([1,1])
+    env.step([1, 1])
 
-    for i in range(HORIZON-1):
-        env.step([0,0])
+    for i in range(HORIZON - 1):
+        env.step([0, 0])
 
     teacher = env.teacher()
     teacher.generate_demonstrations(1000)
     # env.plot_trajectory()
-

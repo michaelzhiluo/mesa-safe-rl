@@ -14,19 +14,24 @@ LOG_SIG_MAX = 2
 LOG_SIG_MIN = -20
 epsilon = 1e-6
 
+
 # Initialize Policy weights
 def weights_init_(m):
     if isinstance(m, nn.Linear):
         torch.nn.init.xavier_uniform_(m.weight, gain=1)
         torch.nn.init.constant_(m.bias, 0)
 
+
 def soft_update(target, source, tau):
     for target_param, param in zip(target.parameters(), source.parameters()):
-        target_param.data.copy_(target_param.data * (1.0 - tau) + param.data * tau)
+        target_param.data.copy_(target_param.data * (1.0 - tau) +
+                                param.data * tau)
+
 
 def hard_update(target, source):
     for target_param, param in zip(target.parameters(), source.parameters()):
         target_param.data.copy_(param.data)
+
 
 class ValueNetwork(nn.Module):
     def __init__(self, num_inputs, hidden_dim, pred_time=False):
@@ -67,7 +72,7 @@ class QNetwork(nn.Module):
 
     def forward(self, state, action):
         xu = torch.cat([state, action], 1)
-        
+
         x1 = F.relu(self.linear1(xu))
         x1 = F.relu(self.linear2(x1))
         x1 = self.linear3(x1)
@@ -97,7 +102,7 @@ class QNetworkConstraint(nn.Module):
 
     def forward(self, state, action):
         xu = torch.cat([state, action], 1)
-        
+
         x1 = F.relu(self.linear1(xu))
         x1 = F.relu(self.linear2(x1))
         x1 = F.sigmoid(self.linear3(x1))
@@ -108,13 +113,22 @@ class QNetworkConstraint(nn.Module):
 
         return x1, x2
 
+
 class QNetworkConstraintCNN(nn.Module):
     def __init__(self, observation_space, num_actions, hidden_dim, env_name):
         super(QNetworkConstraintCNN, self).__init__()
         # Process the state
-        self.conv1 = nn.Conv2d(observation_space[-1], 128, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv3 = nn.Conv2d(64, 16, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv1 = nn.Conv2d(
+            observation_space[-1],
+            128,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            bias=True)
+        self.conv2 = nn.Conv2d(
+            128, 64, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv3 = nn.Conv2d(
+            64, 16, kernel_size=3, stride=2, padding=1, bias=True)
         self.bn1 = nn.BatchNorm2d(128)
         self.bn2 = nn.BatchNorm2d(64)
         self.bn3 = nn.BatchNorm2d(16)
@@ -128,7 +142,7 @@ class QNetworkConstraintCNN(nn.Module):
         elif "reach" in env_name:
             self.final_linear_size = 640
         else:
-            assert(False)
+            assert (False)
 
         self.final_linear = nn.Linear(self.final_linear_size, hidden_dim)
 
@@ -140,16 +154,15 @@ class QNetworkConstraintCNN(nn.Module):
         # Q1 architecture
 
         # Post state-action merge
-        self.linear1_1 = nn.Linear(2*hidden_dim, hidden_dim)
+        self.linear1_1 = nn.Linear(2 * hidden_dim, hidden_dim)
         self.linear2_1 = nn.Linear(hidden_dim, hidden_dim)
         self.linear3_1 = nn.Linear(hidden_dim, 1)
 
         # Post state-action merge
-        self.linear1_2 = nn.Linear(2*hidden_dim, hidden_dim)
+        self.linear1_2 = nn.Linear(2 * hidden_dim, hidden_dim)
         self.linear2_2 = nn.Linear(hidden_dim, hidden_dim)
 
         self.linear3_2 = nn.Linear(hidden_dim, 1)
-
 
         self.apply(weights_init_)
 
@@ -189,9 +202,17 @@ class QNetworkCNN(nn.Module):
     def __init__(self, observation_space, num_actions, hidden_dim, env_name):
         super(QNetworkCNN, self).__init__()
         # Process the state
-        self.conv1 = nn.Conv2d(observation_space[-1], 128, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv3 = nn.Conv2d(64, 16, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv1 = nn.Conv2d(
+            observation_space[-1],
+            128,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            bias=True)
+        self.conv2 = nn.Conv2d(
+            128, 64, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv3 = nn.Conv2d(
+            64, 16, kernel_size=3, stride=2, padding=1, bias=True)
         self.bn1 = nn.BatchNorm2d(128)
         self.bn2 = nn.BatchNorm2d(64)
         self.bn3 = nn.BatchNorm2d(16)
@@ -205,7 +226,7 @@ class QNetworkCNN(nn.Module):
         elif "reach" in env_name:
             self.final_linear_size = 640
         else:
-            assert(False, env_name)
+            assert (False, env_name)
 
         self.final_linear = nn.Linear(self.final_linear_size, hidden_dim)
 
@@ -217,16 +238,15 @@ class QNetworkCNN(nn.Module):
         # Q1 architecture
 
         # Post state-action merge
-        self.linear1_1 = nn.Linear(2*hidden_dim, hidden_dim)
+        self.linear1_1 = nn.Linear(2 * hidden_dim, hidden_dim)
         self.linear2_1 = nn.Linear(hidden_dim, hidden_dim)
         self.linear3_1 = nn.Linear(hidden_dim, 1)
 
         # Post state-action merge
-        self.linear1_2 = nn.Linear(2*hidden_dim, hidden_dim)
+        self.linear1_2 = nn.Linear(2 * hidden_dim, hidden_dim)
         self.linear2_2 = nn.Linear(hidden_dim, hidden_dim)
 
         self.linear3_2 = nn.Linear(hidden_dim, 1)
-
 
         self.apply(weights_init_)
 
@@ -263,12 +283,25 @@ class QNetworkCNN(nn.Module):
 
 
 class GaussianPolicyCNN(nn.Module):
-    def __init__(self, observation_space, num_actions, hidden_dim, env_name, action_space=None):
+    def __init__(self,
+                 observation_space,
+                 num_actions,
+                 hidden_dim,
+                 env_name,
+                 action_space=None):
         super(GaussianPolicyCNN, self).__init__()
         # Process via a CNN and then collapse to linear
-        self.conv1 = nn.Conv2d(observation_space[-1], 128, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv3 = nn.Conv2d(64, 16, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv1 = nn.Conv2d(
+            observation_space[-1],
+            128,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            bias=True)
+        self.conv2 = nn.Conv2d(
+            128, 64, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv3 = nn.Conv2d(
+            64, 16, kernel_size=3, stride=2, padding=1, bias=True)
         self.bn1 = nn.BatchNorm2d(128)
         self.bn2 = nn.BatchNorm2d(64)
         self.bn3 = nn.BatchNorm2d(16)
@@ -282,7 +315,7 @@ class GaussianPolicyCNN(nn.Module):
         elif "reach" in env_name:
             self.linear_dim = 640
         else:
-            assert(False)
+            assert (False)
 
         self.linear1 = nn.Linear(self.linear_dim, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
@@ -324,7 +357,8 @@ class GaussianPolicyCNN(nn.Module):
         mean, log_std = self.forward(state)
         std = log_std.exp()
         normal = Normal(mean, std)
-        x_t = normal.rsample()  # for reparameterization trick (mean + std * N(0,1))
+        x_t = normal.rsample(
+        )  # for reparameterization trick (mean + std * N(0,1))
         y_t = torch.tanh(x_t)
         action = y_t * self.action_scale + self.action_bias
         log_prob = normal.log_prob(x_t)
@@ -340,12 +374,10 @@ class GaussianPolicyCNN(nn.Module):
         return super(GaussianPolicyCNN, self).to(device)
 
 
-
-
 class GaussianPolicy(nn.Module):
     def __init__(self, num_inputs, num_actions, hidden_dim, action_space=None):
         super(GaussianPolicy, self).__init__()
-        
+
         self.linear1 = nn.Linear(num_inputs, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
 
@@ -376,7 +408,8 @@ class GaussianPolicy(nn.Module):
         mean, log_std = self.forward(state)
         std = log_std.exp()
         normal = Normal(mean, std)
-        x_t = normal.rsample()  # for reparameterization trick (mean + std * N(0,1))
+        x_t = normal.rsample(
+        )  # for reparameterization trick (mean + std * N(0,1))
         y_t = torch.tanh(x_t)
         action = y_t * self.action_scale + self.action_bias
         log_prob = normal.log_prob(x_t)
@@ -393,12 +426,25 @@ class GaussianPolicy(nn.Module):
 
 
 class DeterministicPolicyCNN(nn.Module):
-    def __init__(self, observation_space, num_actions, hidden_dim, env_name, action_space=None):
+    def __init__(self,
+                 observation_space,
+                 num_actions,
+                 hidden_dim,
+                 env_name,
+                 action_space=None):
         super(DeterministicPolicyCNN, self).__init__()
         # Process via a CNN and then collapse to linear
-        self.conv1 = nn.Conv2d(observation_space[-1], 128, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv2 = nn.Conv2d(128, 64, kernel_size=3, stride=2, padding=1, bias=True)
-        self.conv3 = nn.Conv2d(64, 16, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv1 = nn.Conv2d(
+            observation_space[-1],
+            128,
+            kernel_size=3,
+            stride=2,
+            padding=1,
+            bias=True)
+        self.conv2 = nn.Conv2d(
+            128, 64, kernel_size=3, stride=2, padding=1, bias=True)
+        self.conv3 = nn.Conv2d(
+            64, 16, kernel_size=3, stride=2, padding=1, bias=True)
         self.bn1 = nn.BatchNorm2d(128)
         self.bn2 = nn.BatchNorm2d(64)
         self.bn3 = nn.BatchNorm2d(16)
@@ -412,7 +458,7 @@ class DeterministicPolicyCNN(nn.Module):
         elif "reach" in env_name:
             self.linear_dim = 640
         else:
-            assert(False)
+            assert (False)
 
         self.linear1 = nn.Linear(self.linear_dim, hidden_dim)
         self.linear2 = nn.Linear(hidden_dim, hidden_dim)
@@ -502,114 +548,123 @@ class DeterministicPolicy(nn.Module):
         self.noise = self.noise.to(device)
         return super(DeterministicPolicy, self).to(device)
 
+
 ## f_dyn, model of dynamics in latent space
 class TransitionModel(nn.Module):
-  __constants__ = ['min_std_dev']
+    __constants__ = ['min_std_dev']
 
-  def __init__(self, hidden_size, action_size, activation_function='relu'):
-    super().__init__()
-    self.act_fn = getattr(F, activation_function)
-    self.fc1 = nn.Linear(hidden_size + action_size, 128)
-    self.fc2 = nn.Linear(128, 128)
-    self.fc3 = nn.Linear(128, 128)
-    self.fc4 = nn.Linear(128, hidden_size)
-    
-  def forward(self, prev_hidden, action):
-    hidden = torch.cat([prev_hidden, action], dim=-1)
-    trajlen, batchsize = hidden.size(0), hidden.size(1)
-    hidden.view(-1, hidden.size(2))
-    hidden = self.act_fn(self.fc1(hidden))
-    hidden = self.act_fn(self.fc2(hidden))
-    hidden = self.act_fn(self.fc3(hidden))
-    hidden = self.fc4(hidden)
-    hidden = hidden.view(trajlen, batchsize, -1)
-    return hidden
+    def __init__(self, hidden_size, action_size, activation_function='relu'):
+        super().__init__()
+        self.act_fn = getattr(F, activation_function)
+        self.fc1 = nn.Linear(hidden_size + action_size, 128)
+        self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(128, 128)
+        self.fc4 = nn.Linear(128, hidden_size)
+
+    def forward(self, prev_hidden, action):
+        hidden = torch.cat([prev_hidden, action], dim=-1)
+        trajlen, batchsize = hidden.size(0), hidden.size(1)
+        hidden.view(-1, hidden.size(2))
+        hidden = self.act_fn(self.fc1(hidden))
+        hidden = self.act_fn(self.fc2(hidden))
+        hidden = self.act_fn(self.fc3(hidden))
+        hidden = self.fc4(hidden)
+        hidden = hidden.view(trajlen, batchsize, -1)
+        return hidden
+
 
 # Encoder
 class VisualEncoderAttn(nn.Module):
-  __constants__ = ['embedding_size']
-  
-  def __init__(self, env_name, hidden_size, activation_function='relu', ch=6):
-    super().__init__()
-    self.act_fn = getattr(F, activation_function)
-    self.softmax = nn.Softmax(dim=2)
-    self.sigmoid = nn.Sigmoid()
-    self.ch = ch
-    self.conv1 = nn.Conv2d(self.ch, 32, 4, stride=2) #3
-    self.conv1_1 = nn.Conv2d(32, 32, 3, stride=1, padding=1)
-    self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
-    self.conv2_1 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
-    self.conv3 = nn.Conv2d(64, 128, 4, stride=2)
-    self.conv3_1 = nn.Conv2d(128, 128, 3, stride=1, padding=1)
-    self.conv4 = nn.Conv2d(128, 256, 4, stride=2)
-    self.conv4_1 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
-    if 'maze' in env_name:
-        self.fc1 = nn.Linear(1024, 512)
-    elif 'shelf' in env_name:
-        self.fc1 = nn.Linear(512, 512)
-    else:
-        raise NotImplementedError("Needs to be maze or shelf")
-    self.fc2 = nn.Linear(512, 2* hidden_size)
+    __constants__ = ['embedding_size']
 
-  def forward(self, observation):
-    trajlen, batchsize = observation.size(0), observation.size(1)
-    self.width = observation.size(3)
-    observation = observation.view(trajlen*batchsize, 3, self.width, 64)
-    atn = torch.zeros_like(observation[:, :1])
+    def __init__(self, env_name, hidden_size, activation_function='relu',
+                 ch=6):
+        super().__init__()
+        self.act_fn = getattr(F, activation_function)
+        self.softmax = nn.Softmax(dim=2)
+        self.sigmoid = nn.Sigmoid()
+        self.ch = ch
+        self.conv1 = nn.Conv2d(self.ch, 32, 4, stride=2)  #3
+        self.conv1_1 = nn.Conv2d(32, 32, 3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, 4, stride=2)
+        self.conv2_1 = nn.Conv2d(64, 64, 3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 128, 4, stride=2)
+        self.conv3_1 = nn.Conv2d(128, 128, 3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(128, 256, 4, stride=2)
+        self.conv4_1 = nn.Conv2d(256, 256, 3, stride=1, padding=1)
+        if 'maze' in env_name:
+            self.fc1 = nn.Linear(1024, 512)
+        elif 'shelf' in env_name:
+            self.fc1 = nn.Linear(512, 512)
+        else:
+            raise NotImplementedError("Needs to be maze or shelf")
+        self.fc2 = nn.Linear(512, 2 * hidden_size)
 
-    hidden = self.act_fn(self.conv1(observation))
-    hidden = self.act_fn(self.conv1_1(hidden))
-    hidden = self.act_fn(self.conv2(hidden))
-    hidden = self.act_fn(self.conv2_1(hidden))
-    hidden = self.act_fn(self.conv3(hidden))
-    hidden = self.act_fn(self.conv3_1(hidden))
-    hidden = self.act_fn(self.conv4(hidden))
-    hidden = self.act_fn(self.conv4_1(hidden))
+    def forward(self, observation):
+        trajlen, batchsize = observation.size(0), observation.size(1)
+        self.width = observation.size(3)
+        observation = observation.view(trajlen * batchsize, 3, self.width, 64)
+        atn = torch.zeros_like(observation[:, :1])
 
-    hidden = hidden.view(trajlen*batchsize, -1)
-    hidden = self.act_fn(self.fc1(hidden))
-    hidden = self.fc2(hidden)
-    hidden = hidden.view(trajlen, batchsize, -1)
-    atn = atn.view(trajlen, batchsize, 1, self.width, 64)
-    return hidden, atn
-    
+        hidden = self.act_fn(self.conv1(observation))
+        hidden = self.act_fn(self.conv1_1(hidden))
+        hidden = self.act_fn(self.conv2(hidden))
+        hidden = self.act_fn(self.conv2_1(hidden))
+        hidden = self.act_fn(self.conv3(hidden))
+        hidden = self.act_fn(self.conv3_1(hidden))
+        hidden = self.act_fn(self.conv4(hidden))
+        hidden = self.act_fn(self.conv4_1(hidden))
+
+        hidden = hidden.view(trajlen * batchsize, -1)
+        hidden = self.act_fn(self.fc1(hidden))
+        hidden = self.fc2(hidden)
+        hidden = hidden.view(trajlen, batchsize, -1)
+        atn = atn.view(trajlen, batchsize, 1, self.width, 64)
+        return hidden, atn
+
+
 # Decoder
 class VisualReconModel(nn.Module):
-  __constants__ = ['embedding_size']
-  
-  def __init__(self, env_name, hidden_size, activation_function='relu', action_len=5):
-    super().__init__()
-    self.act_fn = getattr(F, activation_function)
-    self.fc1 = nn.Linear(hidden_size * 1, 128)
-    self.fc2 = nn.Linear(128, 128)
-    self.fc3 = nn.Linear(128, 128)
-    self.sigmoid = nn.Sigmoid()
+    __constants__ = ['embedding_size']
 
-    if 'maze' in env_name:
-        self.conv1 = nn.ConvTranspose2d(128, 128, 5, stride=2)
-        self.conv2 = nn.ConvTranspose2d(128, 64, 5, stride=2)
-        self.conv3 = nn.ConvTranspose2d(64, 32, 6, stride=2)
-        self.conv4 = nn.ConvTranspose2d(32, 3, 6, stride=2)
-    elif 'shelf' in env_name:
-        self.conv1 = nn.ConvTranspose2d(128, 128, (4,5), stride=2)
-        self.conv2 = nn.ConvTranspose2d(128, 64, (4,5), stride=2)
-        self.conv3 = nn.ConvTranspose2d(64, 32, (5,6), stride=2)
-        self.conv4 = nn.ConvTranspose2d(32, 3, (4,6), stride=2)
-    else:
-        raise NotImplementedError("Needs to be maze or shelf")
+    def __init__(self,
+                 env_name,
+                 hidden_size,
+                 activation_function='relu',
+                 action_len=5):
+        super().__init__()
+        self.act_fn = getattr(F, activation_function)
+        self.fc1 = nn.Linear(hidden_size * 1, 128)
+        self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(128, 128)
+        self.sigmoid = nn.Sigmoid()
 
-  def forward(self, hidden):
-    trajlen, batchsize = hidden.size(0), hidden.size(1)
-    hidden = hidden.view(trajlen*batchsize, -1)
-    hidden = self.act_fn(self.fc1(hidden))
-    hidden = self.act_fn(self.fc2(hidden))
-    hidden = self.fc3(hidden)
-    hidden = hidden.view(-1, 128, 1, 1)
+        if 'maze' in env_name:
+            self.conv1 = nn.ConvTranspose2d(128, 128, 5, stride=2)
+            self.conv2 = nn.ConvTranspose2d(128, 64, 5, stride=2)
+            self.conv3 = nn.ConvTranspose2d(64, 32, 6, stride=2)
+            self.conv4 = nn.ConvTranspose2d(32, 3, 6, stride=2)
+        elif 'shelf' in env_name:
+            self.conv1 = nn.ConvTranspose2d(128, 128, (4, 5), stride=2)
+            self.conv2 = nn.ConvTranspose2d(128, 64, (4, 5), stride=2)
+            self.conv3 = nn.ConvTranspose2d(64, 32, (5, 6), stride=2)
+            self.conv4 = nn.ConvTranspose2d(32, 3, (4, 6), stride=2)
+        else:
+            raise NotImplementedError("Needs to be maze or shelf")
 
-    hidden = self.act_fn(self.conv1(hidden))
-    hidden = self.act_fn(self.conv2(hidden))
-    hidden = self.act_fn(self.conv3(hidden))
-    residual = self.sigmoid(self.conv4(hidden)) * 255.0
-    
-    residual = residual.view(trajlen, batchsize, residual.size(1), residual.size(2), residual.size(3))
-    return residual
+    def forward(self, hidden):
+        trajlen, batchsize = hidden.size(0), hidden.size(1)
+        hidden = hidden.view(trajlen * batchsize, -1)
+        hidden = self.act_fn(self.fc1(hidden))
+        hidden = self.act_fn(self.fc2(hidden))
+        hidden = self.fc3(hidden)
+        hidden = hidden.view(-1, 128, 1, 1)
+
+        hidden = self.act_fn(self.conv1(hidden))
+        hidden = self.act_fn(self.conv2(hidden))
+        hidden = self.act_fn(self.conv3(hidden))
+        residual = self.sigmoid(self.conv4(hidden)) * 255.0
+
+        residual = residual.view(trajlen, batchsize, residual.size(1),
+                                 residual.size(2), residual.size(3))
+        return residual

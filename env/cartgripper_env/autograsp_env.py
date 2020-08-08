@@ -18,7 +18,11 @@ env_params = {
     'arm_start_lifted': False,
     'randomize_initial_pos': False,
     'init_pos': np.array([0.3, 0.2, 0]),
-    'autograsp': {'zthresh': -0.06, 'touchthresh': 0.0, 'reopen': True}
+    'autograsp': {
+        'zthresh': -0.06,
+        'touchthresh': 0.0,
+        'reopen': True
+    }
 }
 
 # repository specific params
@@ -64,15 +68,17 @@ class AutograspCartgripperEnv(CartgripperRotGraspEnv):
         assert action.shape[0] == self._adim
         gripper_z = self._previous_target_qpos[2]
         z_thresh = self._hp.zthresh
-        delta_z_cond = np.amax(self._last_obs['object_poses_full'][:, 2] - self._ground_zs) > 0.01
+        delta_z_cond = np.amax(self._last_obs['object_poses_full'][:, 2] -
+                               self._ground_zs) > 0.01
 
-        target, self._gripper_closed = autograsp_dynamics(self._previous_target_qpos, action,
-                                                          self._gripper_closed, gripper_z, z_thresh, self._hp.reopen,
-                                                          delta_z_cond)
+        target, self._gripper_closed = autograsp_dynamics(
+            self._previous_target_qpos, action, self._gripper_closed,
+            gripper_z, z_thresh, self._hp.reopen, delta_z_cond)
         return target
 
     def _post_step(self):
-        if np.amax(self._last_obs['object_poses_full'][:, 2] - self._ground_zs) > 0.05:
+        if np.amax(self._last_obs['object_poses_full'][:, 2] -
+                   self._ground_zs) > 0.05:
             self._goal_reached = True
 
     def has_goal(self):

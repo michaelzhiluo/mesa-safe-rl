@@ -24,10 +24,15 @@ ENV_PARAMS = {
     'arm_start_lifted': False,
     'randomize_initial_pos': False,
     'init_pos': np.array([0.3, 0.2, 0]),
-    'autograsp': {'zthresh': -0.06, 'touchthresh': 0.0, 'reopen': True}
+    'autograsp': {
+        'zthresh': -0.06,
+        'touchthresh': 0.0,
+        'reopen': True
+    }
 }
 
 # repository specific params
+
 
 class AutograspCartgripperEnv(CartgripperRotGraspEnv):
     def __init__(self, env_params={}, reset_state=None):
@@ -78,20 +83,22 @@ class AutograspCartgripperEnv(CartgripperRotGraspEnv):
         assert action.shape[0] == self._adim
         gripper_z = self._previous_target_qpos[2]
         z_thresh = self._hp.zthresh
-        delta_z_cond = np.amax(self._last_obs['object_poses_full'][:, 2] - self._ground_zs) > 0.01
+        delta_z_cond = np.amax(self._last_obs['object_poses_full'][:, 2] -
+                               self._ground_zs) > 0.01
 
-        target, self._gripper_closed = autograsp_dynamics(self._previous_target_qpos, action,
-                                                          self._gripper_closed, gripper_z, z_thresh, self._hp.reopen,
-                                                          delta_z_cond)
+        target, self._gripper_closed = autograsp_dynamics(
+            self._previous_target_qpos, action, self._gripper_closed,
+            gripper_z, z_thresh, self._hp.reopen, delta_z_cond)
         return target
 
     def _post_step(self):
-        if np.amax(self._last_obs['object_poses_full'][:, 2] - self._ground_zs) > 0.05:
+        if np.amax(self._last_obs['object_poses_full'][:, 2] -
+                   self._ground_zs) > 0.05:
             self._goal_reached = True
 
     def cost_fn(self, obs):
         # NOTE: obs_cost_fn takes in a processed obs right now
-        return np.sum( (obs - self.goal_image)**2 )
+        return np.sum((obs - self.goal_image)**2)
 
     def has_goal(self):
         return True
@@ -99,17 +106,21 @@ class AutograspCartgripperEnv(CartgripperRotGraspEnv):
     def is_stable(self, obs):
         return self._goal_reached
 
-
     def generate_goal_image(self):
         self.reset(randomize_objects=False)
-        actions = np.tile(np.array([0, 0, -0.02, 0]), (5, 1)) + np.random.randn(5, 4) * 0.01
-        actions = np.vstack([np.tile(np.array([0, -0.02, 0, 0]), (10, 1)) + np.random.randn(10, 4) * 0.01, actions])
+        actions = np.tile(np.array([0, 0, -0.02, 0]),
+                          (5, 1)) + np.random.randn(5, 4) * 0.01
+        actions = np.vstack([
+            np.tile(np.array([0, -0.02, 0, 0]),
+                    (10, 1)) + np.random.randn(10, 4) * 0.01, actions
+        ])
         for ac in actions:
             obs = self.step(ac)
         im = obs[0]['images'][0]
         target_img_height, target_img_width, _ = self.goal_image.shape
-        im = cv2.resize(im, (target_img_width, target_img_height),
-                                            interpolation=cv2.INTER_AREA)
+        im = cv2.resize(
+            im, (target_img_width, target_img_height),
+            interpolation=cv2.INTER_AREA)
         self.goal_image = im
         print("GOAL_IMAGE", self.goal_image.shape)
         self.reset(randomize_objects=False)

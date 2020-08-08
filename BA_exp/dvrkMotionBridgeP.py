@@ -4,6 +4,7 @@ import numpy as np
 import threading
 import BA_exp.utils as U
 
+
 class dvrkMotionBridgeP():
     def __init__(self):
         # Data members
@@ -32,10 +33,12 @@ class dvrkMotionBridgeP():
         self.UDP_PORT_CLNT = 1217
         self.UDP_PORT_CLNT2 = 1218
         self.buffer_size = 1024
-        self.sock = socket.socket(socket.AF_INET,  # Internet
-                             socket.SOCK_DGRAM)  # UDP
-        self.sock2 = socket.socket(socket.AF_INET,  # Internet
-                                  socket.SOCK_DGRAM)  # UDP
+        self.sock = socket.socket(
+            socket.AF_INET,  # Internet
+            socket.SOCK_DGRAM)  # UDP
+        self.sock2 = socket.socket(
+            socket.AF_INET,  # Internet
+            socket.SOCK_DGRAM)  # UDP
         self.sock.setblocking(1)  # Blocking mode
         self.sock.bind((self.UDP_IP, self.UDP_PORT_CLNT))
         self.sock2.bind((self.UDP_IP, self.UDP_PORT_CLNT2))
@@ -47,7 +50,8 @@ class dvrkMotionBridgeP():
 
     def run(self):
         while True:
-            data_recv, addr = self.sock2.recvfrom(self.buffer_size)  # buffer size is 1024 bytes
+            data_recv, addr = self.sock2.recvfrom(
+                self.buffer_size)  # buffer size is 1024 bytes
             data_unpack = list(struct.unpack('=28f', data_recv))
             self.act_pos1 = data_unpack[0:3]
             self.act_rot1 = data_unpack[3:7]
@@ -59,35 +63,36 @@ class dvrkMotionBridgeP():
             self.act_joint2 = data_unpack[22:28]
 
     def send_motion_data(self, func_numb):
-        if self.des_pos1==[]:
+        if self.des_pos1 == []:
             self.des_pos1 = [0.0, 0.0, -0.13]
             self.input_flag[0] = False
-        if  self.des_rot1==[]:
+        if self.des_rot1 == []:
             self.des_rot1 = [0.0, 0.0, 0.0, 1.0]
             self.input_flag[1] = False
-        if self.des_jaw1==[]:
+        if self.des_jaw1 == []:
             self.des_jaw1 = [0.0]
             self.input_flag[2] = False
-        if self.des_pos2==[]:
+        if self.des_pos2 == []:
             self.des_pos2 = [0.0, 0.0, -0.13]
             self.input_flag[3] = False
-        if self.des_rot2==[]:
+        if self.des_rot2 == []:
             self.des_rot2 = [0.0, 0.0, 0.0, 1.0]
             self.input_flag[4] = False
-        if self.des_jaw2==[]:
+        if self.des_jaw2 == []:
             self.des_jaw2 = [0.0]
             self.input_flag[5] = False
-        if self.des_joint1==[]:
+        if self.des_joint1 == []:
             self.des_joint1 = [0.0, 0.0, 0.13, 0.0, 0.0, 0.0]
             self.input_flag[6] = False
-        if self.des_joint2==[]:
+        if self.des_joint2 == []:
             self.des_joint2 = [0.0, 0.0, 0.13, 0.0, 0.0, 0.0]
             self.input_flag[7] = False
 
         concat = list(self.des_pos1)+list(self.des_rot1)+list(self.des_jaw1)\
                  +list(self.des_pos2)+list(self.des_rot2)+list(self.des_jaw2)\
                  +list(self.des_joint1)+list(self.des_joint2)
-        data_send = struct.pack('=%sf8?i' % len(concat), *concat, *self.input_flag, int(func_numb))
+        data_send = struct.pack('=%sf8?i' % len(concat), *concat,
+                                *self.input_flag, int(func_numb))
         self.sock.sendto(data_send, (self.UDP_IP, self.UDP_PORT_SERV))
 
         # data receiving
@@ -113,8 +118,8 @@ class dvrkMotionBridgeP():
         return self.send_motion_data(1)
 
     def set_arm_position(self, pos1=[], pos2=[]):
-        self.des_pos1=pos1
-        self.des_pos2=pos2
+        self.des_pos1 = pos1
+        self.des_pos2 = pos2
         return self.send_motion_data(2)
 
     def set_default(self):
@@ -134,13 +139,14 @@ class dvrkMotionBridgeP():
     def get_joint(self):
         return self.act_joint1
 
+
 if __name__ == "__main__":
     perception = dvrkMotionBridgeP()
     pos1 = [0.07, 0.07, -0.13]
     pos2 = [0.03, 0.03, -0.13]
     rot1 = [0.0, 0.0, 0.0]
     q1 = U.euler_to_quaternion(rot1, unit='deg')
-    jaw1 = [0*np.pi/180.]
+    jaw1 = [0 * np.pi / 180.]
     # perception.set_pose(jaw1=jaw1)
     import time
     while True:

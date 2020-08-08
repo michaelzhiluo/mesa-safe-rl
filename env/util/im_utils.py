@@ -11,8 +11,9 @@ def resize_store(t, target_array, input_array):
             target_array[t, i] = input_array[i]
     else:
         for i in range(input_array.shape[0]):
-            target_array[t, i] = cv2.resize(input_array[i], (target_img_width, target_img_height),
-                                            interpolation=cv2.INTER_AREA)
+            target_array[t, i] = cv2.resize(
+                input_array[i], (target_img_width, target_img_height),
+                interpolation=cv2.INTER_AREA)
 
 
 def npy_to_gif(im_list, filename, fps=4):
