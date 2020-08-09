@@ -120,6 +120,16 @@ experiment_map = {
         },
         "outfile": "recovery_gamma_0.75_ablations.png"
     },  
+    "shelf_recovery_gamma_0.95_ablations": {
+        "algs": {
+            "eps_0.15": ["shelf_long_env/2020-08-01_14-47-38_SAC_shelf_long_env_Gaussian_recovery_0.95_0.15", "shelf_long_env/2020-08-01_09-23-48_SAC_shelf_long_env_Gaussian_recovery_0.95_0.15", "shelf_long_env/2020-08-01_09-24-05_SAC_shelf_long_env_Gaussian_recovery_0.95_0.15"],
+            "eps_0.25": ["shelf_long_env/2020-08-01_19-53-16_SAC_shelf_long_env_Gaussian_recovery_0.95_0.25", "shelf_long_env/2020-07-30_05-10-22_SAC_shelf_long_env_Gaussian_recovery_0.95_0.25", "shelf_long_env/2020-07-31_05-08-59_SAC_shelf_long_env_Gaussian_recovery_0.95_0.25"],
+            "eps_0.35": ["shelf_long_env/2020-07-31_14-31-55_SAC_shelf_long_env_Gaussian_recovery_0.95_0.35", "shelf_long_env/2020-07-30_18-22-56_SAC_shelf_long_env_Gaussian_recovery_0.95_0.35", "shelf_long_env/2020-07-30_05-11-40_SAC_shelf_long_env_Gaussian_recovery_0.95_0.35"],
+            "eps_0.45": ["shelf_long_env/2020-07-30_15-44-39_SAC_shelf_long_env_Gaussian_recovery_0.95_0.45", "shelf_long_env/2020-07-31_03-07-54_SAC_shelf_long_env_Gaussian_recovery_0.95_0.45", "shelf_long_env/2020-08-04_06-31-58_SAC_shelf_long_env_Gaussian_recovery_0.95_0.45"], # "shelf_long_env/2020-07-30_05-12-25_SAC_shelf_long_env_Gaussian_recovery_0.95_0.45"
+            "eps_0.55": ["shelf_long_env/2020-08-04_06-32-43_SAC_shelf_long_env_Gaussian_recovery_0.95_0.55", "shelf_long_env/2020-08-04_06-33-03_SAC_shelf_long_env_Gaussian_recovery_0.95_0.55"], # "shelf_long_env/2020-07-30_05-12-49_SAC_shelf_long_env_Gaussian_recovery_0.95_0.55", #"shelf_long_env/2020-07-31_12-29-36_SAC_shelf_long_env_Gaussian_recovery_0.95_0.55", "shelf_long_env/2020-07-31_23-15-38_SAC_shelf_long_env_Gaussian_recovery_0.95_0.55", "shelf_long_env/2020-07-31_00-32-44_SAC_shelf_long_env_Gaussian_recovery_0.95_0.55"
+        },
+        "outfile": "recovery_gamma_0.95_ablations.png"
+    }, 
 }
 
 
@@ -239,6 +249,7 @@ eps = {
     "shelf_rcpo_ablations" : 4000,
     "shelf_recovery_gamma_0.85_ablations" : 4000,
     "shelf_recovery_gamma_0.75_ablations" : 4000,
+    "shelf_recovery_gamma_0.95_ablations" : 4000,
 }
 
 
@@ -258,6 +269,7 @@ envname = {
     "shelf_rcpo_ablations": "RCPO Ablation",
     "shelf_recovery_gamma_0.85_ablations": "Recovery RL ($\gamma = 0.85$) Ablation",
     "shelf_recovery_gamma_0.75_ablations": "Recovery RL ($\gamma = 0.75$) Ablation",
+    "shelf_recovery_gamma_0.95_ablations": "Recovery RL ($\gamma = 0.95$) Ablation",
 }
 
 if PLOT_TYPE == "ratio":
@@ -271,7 +283,8 @@ if PLOT_TYPE == "ratio":
         "shelf_lr_ablations": 0.04,
         "shelf_rcpo_ablations": 0.04,
         "shelf_recovery_gamma_0.85_ablations": 0.04,
-        "shelf_recovery_gamma_0.75_ablations": 0.15
+        "shelf_recovery_gamma_0.75_ablations": 0.15,
+        "shelf_recovery_gamma_0.95_ablations": 0.04,
 
     }
 elif PLOT_TYPE == "success":
@@ -285,7 +298,8 @@ elif PLOT_TYPE == "success":
         "shelf_lr_ablations": 0.6,
         "shelf_rcpo_ablations": 0.6,
         "shelf_recovery_gamma_0.85_ablations": 0.6,
-        "shelf_recovery_gamma_0.75_ablations": 0.6
+        "shelf_recovery_gamma_0.75_ablations": 0.6,
+        "shelf_recovery_gamma_0.95_ablations": 0.6,
     }
 elif PLOT_TYPE == "violation":
     yscaling = {
@@ -298,7 +312,8 @@ elif PLOT_TYPE == "violation":
         "shelf_lr_ablations": 0.07,
         "shelf_rcpo_ablations": 0.07,
         "shelf_recovery_gamma_0.85_ablations": 0.07,
-        "shelf_recovery_gamma_0.75_ablations": 0.07
+        "shelf_recovery_gamma_0.75_ablations": 0.07,
+        "shelf_recovery_gamma_0.95_ablations": 0.07,
     }
 else:
     yscaling = {
@@ -306,7 +321,8 @@ else:
         "shelf_lr_ablations": 1,
         "shelf_rcpo_ablations": 1,
         "shelf_recovery_gamma_0.85_ablations": 1,
-        "shelf_recovery_gamma_0.75_ablations": 1 
+        "shelf_recovery_gamma_0.75_ablations": 1,
+        "shelf_recovery_gamma_0.95_ablations": 1,  
     }
 
 
@@ -475,6 +491,6 @@ def plot_experiment(experiment):
 
 if __name__ == '__main__':
     # for experiment in ["shelf_long", "maze", "image_maze"]:
-    for experiment in ["shelf_recovery_gamma_0.75_ablations", "shelf_recovery_gamma_0.85_ablations", "shelf_rp_ablations", "shelf_lr_ablations", "shelf_rcpo_ablations"]:
+    for experiment in ["shelf_recovery_gamma_0.95_ablations"]:#["shelf_recovery_gamma_0.75_ablations", "shelf_recovery_gamma_0.85_ablations", "shelf_rp_ablations", "shelf_lr_ablations", "shelf_rcpo_ablations"]:
     # for experiment in ["shelf_long_ablations_method", "shelf_long_ablations_demos"]:
         plot_experiment(experiment)

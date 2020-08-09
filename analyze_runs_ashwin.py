@@ -276,9 +276,11 @@ colors = {
 }
 
 def get_stats(data):
+    minlen = min([len(d) for d in data])
+    data = [d[:minlen] for d in data]
     mu = np.mean(data, axis=0)
-    lb = mu - np.std(data, axis=0)
-    ub = mu + np.std(data, axis=0)
+    lb = mu - np.std(data, axis=0) / np.sqrt(len(data))
+    ub = mu + np.std(data, axis=0) / np.sqrt(len(data))
     return mu, lb, ub
 
 eps = {
@@ -428,7 +430,7 @@ def plot_experiment(experiment):
         # axs.plot(ts_mean, color=get_color(alg))
 
     print(final_ratios_dict)
-    axs.legend(loc="upper left", fontsize=36, frameon=False)
+    # axs.legend(loc="upper left", fontsize=36, frameon=False)
     plt.savefig(experiment_map[experiment]["outfile"], bbox_inches='tight')
     plt.show()
 
@@ -442,7 +444,7 @@ if __name__ == '__main__':
     # experiment = "shelf_long"
     # experiment = "shelf_long_ablations"
     # experiment = "image_shelf_dynamic"
-    # for experiment in ["image_maze", "maze", "shelf_long"]:
-    for experiment in ["shelf_long_ablations_method", "shelf_long_ablations_demos"]:
+    for experiment in ["image_maze", "maze", "shelf_long"]:
+    # for experiment in ["shelf_long_ablations_method", "shelf_long_ablations_demos"]:
         plot_experiment(experiment)
         

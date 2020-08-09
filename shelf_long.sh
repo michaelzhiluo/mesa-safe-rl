@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Recovery RL PETS Recovery
-for i in {1..3}
-do
-	python -m main --cuda --env-name shelf_long_env --task_demos --tau 0.0002 --replay_size 100000 --num_task_transitions 1000 --use_recovery --recovery_policy_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_qvalue --num_eps 4000 --logdir shelf_long_env --logdir_suffix recovery_0.85_0.25 --pos_fraction 0.3 --seed $i
-done
+# for i in {1..3}
+# do
+# 	python -m main --cuda --env-name shelf_long_env --task_demos --tau 0.0002 --replay_size 100000 --num_task_transitions 1000 --use_recovery --recovery_policy_update_freq 20 --gamma_safe 0.85 --eps_safe 0.25 --use_qvalue --num_eps 4000 --logdir shelf_long_env --logdir_suffix recovery_0.85_0.25 --pos_fraction 0.3 --seed $i
+# done
 
 # for i in {1..3}
 # do
@@ -57,7 +57,14 @@ done
 # SAC Lagrangian Nu = 10 (Update nu)
 # for i in {1..3}
 # do
-# 	python -m main --cuda --env-name shelf_long_env --task_demos --tau 0.0002 --replay_size 100000 --num_task_transitions 1000 --gamma_safe 0.75 --eps_safe 0.25 --use_qvalue --DGD_constraints --nu 10 --num_eps 4000 --logdir shelf_long_env --logdir_suffix nu_10 --pos_fraction 0.3 --seed $i
+# 	python -m main --cuda --env-name shelf_long_env --task_demos --tau 0.0002 --replay_size 100000 --num_task_transitions 1000 --gamma_safe 0.75 --eps_safe 0.25 --use_qvalue --DGD_constraints --update_nu --nu 10 --num_eps 4000 --logdir shelf_long_env --logdir_suffix nu_10 --pos_fraction 0.3 --seed $i
+# done
+
+# SQRL Nu = 50 (Update nu)
+# for i in {1..3}
+# do
+# 	echo "SQRL Nu 50 Update Nu Run $i"
+# 	python -m main --cuda --env-name shelf_long_env --task_demos --tau 0.0002 --replay_size 100000 --num_task_transitions 1000 --gamma_safe 0.75 --eps_safe 0.25 --use_qvalue --DGD_constraints --update_nu --use_constraint_sampling --nu 50 --num_eps 4000 --logdir shelf_long_env --logdir_suffix update_nu_50_SQRL --pos_fraction 0.3 --seed $i
 # done
 
 # SAC Lagrangian RSPO (Update nu) # Start at 2x best nu and decay

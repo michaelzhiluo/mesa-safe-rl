@@ -42,6 +42,13 @@
 # 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --nu 10 --update_nu  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix update_nu_10 --num_eps 500 --seed $i
 # done
 
+# # SQRL Nu=10 (update nu)
+# for i in {1..3}
+# do
+# 	echo "SQRL Nu 10 Update Nu Run $i"
+# 	python -m main --cuda --env-name image_maze --use_qvalue --critic_safe_update_freq 5 --gamma_safe 0.65 --eps_safe 0.1 --cnn --DGD_constraints --use_constraint_sampling --nu 10 --update_nu  --critic_safe_pretraining_steps 30000 --num_constraint_transitions 20000 --logdir image_maze --logdir_suffix update_nu_10_SQRL --num_eps 500 --seed $i
+# done
+
 # SAC Lagrangian RSPO
 # for i in {1..3}
 # do
