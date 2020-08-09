@@ -1,6 +1,12 @@
+'''
+Built on on SAC implementation from 
+https://github.com/pranz24/pytorch-soft-actor-critic
+'''
+
 import random
 import numpy as np
-from operator import itemgetter 
+from operator import itemgetter
+
 
 class ReplayMemory:
     def __init__(self, capacity):
@@ -43,8 +49,15 @@ class ConstraintReplayMemory:
         if pos_fraction is not None:
             pos_size = int(batch_size * pos_fraction)
             neg_size = batch_size - pos_size
-            pos_idx = np.array(random.sample(tuple(np.argwhere(self.pos_idx).ravel()), pos_size))
-            neg_idx = np.array(random.sample(tuple(np.argwhere((1 - self.pos_idx)[:len(self.buffer)]).ravel()), neg_size))
+            pos_idx = np.array(
+                random.sample(
+                    tuple(np.argwhere(self.pos_idx).ravel()), pos_size))
+            neg_idx = np.array(
+                random.sample(
+                    tuple(
+                        np.argwhere(
+                            (1 - self.pos_idx)[:len(self.buffer)]).ravel()),
+                    neg_size))
             idx = np.hstack((pos_idx, neg_idx))
             batch = itemgetter(*idx)(self.buffer)
         else:

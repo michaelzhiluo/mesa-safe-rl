@@ -1,14 +1,16 @@
 import numpy as np
 
+
 class Obstacle:
     def __init__(self, boundsx, boundsy, penalty=100):
         self.boundsx = boundsx
         self.boundsy = boundsy
         self.penalty = 1
 
-
     def __call__(self, x):
-        return (self.boundsx[0] <= x[0] <= self.boundsx[1] and self.boundsy[0] <= x[1] <= self.boundsy[1]) * self.penalty
+        return (self.boundsx[0] <= x[0] <= self.boundsx[1]
+                and self.boundsy[0] <= x[1] <= self.boundsy[1]) * self.penalty
+
 
 class Obstacle3D:
     def __init__(self, boundsx, boundsy, boundsz, penalty=100):
@@ -17,12 +19,13 @@ class Obstacle3D:
         self.boundsz = boundsz
         self.penalty = 1
 
-
     def __call__(self, x):
-        return (self.boundsx[0] <= x[0] <= self.boundsx[1] and self.boundsy[0] <= x[1] <= self.boundsy[1] and self.boundsz[0] <= x[2] <= self.boundsz[1]) * self.penalty
+        return (self.boundsx[0] <= x[0] <= self.boundsx[1]
+                and self.boundsy[0] <= x[1] <= self.boundsy[1]
+                and self.boundsz[0] <= x[2] <= self.boundsz[1]) * self.penalty
+
 
 class ComplexObstacle(Obstacle):
-
     def __init__(self, bounds):
         self.obs = []
         for boundsx, boundsy in bounds:

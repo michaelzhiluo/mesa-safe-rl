@@ -1,3 +1,8 @@
+'''
+Architecture is modelled on latent dynamics model used in
+Goal-Aware Prediction: Learning to Model What Matters (ICML 2020)
+'''
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -17,8 +22,10 @@ from torchvision.utils import make_grid, save_image
 import moviepy.editor as mpy
 import matplotlib.pyplot as plt
 
-TORCH_DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+TORCH_DEVICE = torch.device(
+    'cuda') if torch.cuda.is_available() else torch.device('cpu')
 torchify = lambda x: torch.FloatTensor(x).to(TORCH_DEVICE)
+
 
 class Controller:
     def __init__(self, *args, **kwargs):
@@ -51,9 +58,11 @@ def shuffle_rows(arr):
     idxs = np.argsort(np.random.uniform(size=arr.shape), axis=-1)
     return arr[np.arange(arr.shape[0])[:, None], idxs]
 
+
 def npy_to_gif(im_list, filename, fps=4):
     clip = mpy.ImageSequenceClip(im_list, fps=fps)
     clip.write_gif(filename + '.gif')
+
 
 def process_obs(obs):
     im = np.transpose(obs, (2, 0, 1))
@@ -134,14 +143,16 @@ class VisualRecovery(Controller):
 
         # Create action sequence optimizer
         opt_cfg = params.opt_cfg.get("cfg", {})
-        self.plan_hor = get_required_argument(params.opt_cfg, "plan_hor", "Must provide planning horizon.")
+        self.plan_hor = get_required_argument(
+            params.opt_cfg, "plan_hor", "Must provide planning horizon.")
         self.popsize = opt_cfg['popsize']
         self.num_elites = opt_cfg['num_elites']
         self.max_iters = opt_cfg['max_iters']
         self.alpha = opt_cfg['alpha']
 
         self.prev_sol = np.tile((self.ac_lb + self.ac_ub) / 2, [self.plan_hor])
-        self.init_var = np.tile(np.square(self.ac_ub - self.ac_lb) / 16, [self.plan_hor])
+        self.init_var = np.tile(
+            np.square(self.ac_ub - self.ac_lb) / 16, [self.plan_hor])
 
         # VIS MPC stuff
         self.encoder = params.encoder
@@ -160,18 +171,28 @@ class VisualRecovery(Controller):
         self.value_func = value_func
 
     # Do online model updates with encoder/decoder frozen + on just one step loss
-    def train_dynamics(self, ep, memory, batch_size=3000, training_iterations=6):
+    def train_dynamics(self,
+                       ep,
+                       memory,
+                       batch_size=3000,
+                       training_iterations=6):
         print("TRAIN DYNAMICS: ", ep)
         for j in range(training_iterations):
-            state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(batch_size=batch_size)
+            state_batch, action_batch, constraint_batch, next_state_batch, _ = memory.sample(
+                batch_size=batch_size)
             state_batch = torch.FloatTensor(state_batch).to(TORCH_DEVICE)
-            next_state_batch = torch.FloatTensor(next_state_batch).to(TORCH_DEVICE)
-            state_enc_batch = self.encoder(state_batch.unsqueeze(0))[0].squeeze(0)[:, :self.hidden_size]
-            next_state_enc_batch = self.encoder(next_state_batch.unsqueeze(0))[0].squeeze(0)[:, :self.hidden_size]
+            next_state_batch = torch.FloatTensor(next_state_batch).to(
+                TORCH_DEVICE)
+            state_enc_batch = self.encoder(
+                state_batch.unsqueeze(0))[0].squeeze(0)[:, :self.hidden_size]
+            next_state_enc_batch = self.encoder(next_state_batch.unsqueeze(0))[
+                0].squeeze(0)[:, :self.hidden_size]
             action_batch = torch.FloatTensor(action_batch).to(TORCH_DEVICE)
 
-            model_preds_enc_batch = self.transition_model(state_enc_batch.unsqueeze(0), action_batch.unsqueeze(0))
-            model_preds_batch = self.residual_model(model_preds_enc_batch).squeeze(0)
+            model_preds_enc_batch = self.transition_model(
+                state_enc_batch.unsqueeze(0), action_batch.unsqueeze(0))
+            model_preds_batch = self.residual_model(
+                model_preds_enc_batch).squeeze(0)
             loss = ((model_preds_batch - next_state_batch)**2).mean()
             self.dynamics_finetune_optimizer.zero_grad()
             (loss).backward()
@@ -179,29 +200,44 @@ class VisualRecovery(Controller):
 
             if j % 5 == 0:
                 with torch.no_grad():
-                    print("Model Training Iteration %d    Loss: %f"%(j, loss.detach().cpu().numpy()))
+                    print("Model Training Iteration %d    Loss: %f" %
+                          (j, loss.detach().cpu().numpy()))
 
-
-    def train(self, obs_seqs, ac_seqs, constraint_seqs, memory, num_train_steps=20000, checkpoint_interval=100, curric_int=6):
-        metrics = {'trainsteps': [], 'observation_loss': [], 'teststeps':[]}
+    def train(self,
+              obs_seqs,
+              ac_seqs,
+              constraint_seqs,
+              memory,
+              num_train_steps=20000,
+              checkpoint_interval=100,
+              curric_int=6):
+        metrics = {'trainsteps': [], 'observation_loss': [], 'teststeps': []}
         print("Number of Train Steps: ", num_train_steps)
         # self.batch_size = 4 # TODO: for testing
         # num_train_steps=1000
         # checkpoint_interval=20
         for s in range(num_train_steps):
             # Sample batch_size indices
-            batch_idxs = np.random.randint(len(obs_seqs), size=self.batch_size).astype(int)
-            obs_batch = torch.FloatTensor(obs_seqs[batch_idxs].transpose(1, 0, 2, 3, 4)).to(TORCH_DEVICE) # get trajlen in front
-            action_batch = torch.FloatTensor(ac_seqs[batch_idxs].transpose(1, 0, 2)).to(TORCH_DEVICE)# get trajlen in front
-            constraint_batch = torch.FloatTensor(constraint_seqs[batch_idxs].transpose(1, 0)).to(TORCH_DEVICE) # get trajlen in front
+            batch_idxs = np.random.randint(
+                len(obs_seqs), size=self.batch_size).astype(int)
+            obs_batch = torch.FloatTensor(obs_seqs[batch_idxs].transpose(
+                1, 0, 2, 3, 4)).to(TORCH_DEVICE)  # get trajlen in front
+            action_batch = torch.FloatTensor(ac_seqs[batch_idxs].transpose(
+                1, 0, 2)).to(TORCH_DEVICE)  # get trajlen in front
+            constraint_batch = torch.FloatTensor(
+                constraint_seqs[batch_idxs].transpose(1, 0)).to(
+                    TORCH_DEVICE)  # get trajlen in front
             # Get state encoding
             encoding, atn = self.encoder(obs_batch)
-            mu, log_std = encoding[:, :, :self.hidden_size], encoding[:, :, self.hidden_size:]
+            mu, log_std = encoding[:, :, :
+                                   self.hidden_size], encoding[:, :, self.
+                                                               hidden_size:]
             std = torch.exp(log_std)
-            samples = torch.empty(mu.shape).normal_(mean=0,std=1).cuda()
+            samples = torch.empty(mu.shape).normal_(mean=0, std=1).cuda()
             encoding = mu + std * samples
             klloss = 0.5 * torch.mean(mu**2 + std**2 - torch.log(std**2) - 1)
-            lossinc = min(curric_int-1, int(s / (num_train_steps/curric_int)))
+            lossinc = min(curric_int - 1,
+                          int(s / (num_train_steps / curric_int)))
             # lossinc = 0 # Temp for debugging only
 
             if s < num_train_steps:
@@ -211,18 +247,20 @@ class VisualRecovery(Controller):
                 sp_log = np.random.randint(obs_batch.size(0) - lossinc)
                 for sp in range(obs_batch.size(0) - lossinc):
                     next_step = []
-                    next_step_encoding = encoding[sp:sp+1]
+                    next_step_encoding = encoding[sp:sp + 1]
                     next_step.append(next_step_encoding)
                     for p in range(lossinc):
-                        this_act = action_batch[sp+p:sp+p+1]
-                        next_step_encoding = self.transition_model(next_step_encoding, this_act)
+                        this_act = action_batch[sp + p:sp + p + 1]
+                        next_step_encoding = self.transition_model(
+                            next_step_encoding, this_act)
                         next_step.append(next_step_encoding)
                     next_step = torch.cat(next_step)
                     next_res = self.residual_model(next_step)
                     if sp == sp_log:
-                        log_residual_pred = next_res 
+                        log_residual_pred = next_res
                     ## Reconstruction Error
-                    prederr = ((residuals[sp:sp+1+lossinc] - next_res[:1+lossinc])**2)
+                    prederr = ((residuals[sp:sp + 1 + lossinc] -
+                                next_res[:1 + lossinc])**2)
                     all_losses.append(prederr.mean())
                 r_loss = torch.stack(all_losses).mean(0)
 
@@ -241,28 +279,39 @@ class VisualRecovery(Controller):
                 print("KL Loss: ", klloss.cpu().detach().numpy())
                 model_name = 'model_{}.pth'.format(s)
 
-                torch.save({'transition_model': self.transition_model.state_dict(), 
-                            'residual_model': self.residual_model.state_dict(), 
-                            'encoder': self.encoder.state_dict(), 
-                            'dynamics_optimizer': self.dynamics_optimizer.state_dict(),
-                            }, os.path.join(self.logdir, model_name))    
+                torch.save(
+                    {
+                        'transition_model': self.transition_model.state_dict(),
+                        'residual_model': self.residual_model.state_dict(),
+                        'encoder': self.encoder.state_dict(),
+                        'dynamics_optimizer':
+                        self.dynamics_optimizer.state_dict(),
+                    }, os.path.join(self.logdir, model_name))
                 newpath = os.path.join(self.logdir, str(s))
                 os.makedirs(newpath, exist_ok=True)
                 metrics['teststeps'].append(s)
                 # Save model predicttion gif
                 video_frames = []
                 for p in range(lossinc + 1):
-                    video_frames.append(make_grid(torch.cat([residuals[p+sp_log,:5,:,:,:].cpu().detach(),
-                                    log_residual_pred[p,:5,:,:,:].cpu().detach(),
-                                    ],dim=3), nrow=1).numpy().transpose(1, 2, 0))
+                    video_frames.append(
+                        make_grid(
+                            torch.cat(
+                                [
+                                    residuals[p + sp_log, :
+                                              5, :, :, :].cpu().detach(),
+                                    log_residual_pred[p, :5, :, :, :].cpu()
+                                    .detach(),
+                                ],
+                                dim=3),
+                            nrow=1).numpy().transpose(1, 2, 0))
 
-                npy_to_gif(video_frames, os.path.join(newpath, 'train_steps_{}'.format(s)))
+                npy_to_gif(video_frames,
+                           os.path.join(newpath, 'train_steps_{}'.format(s)))
 
     def get_encoding(self, image):
         encoding, atn = self.encoder(image.unsqueeze(0))
         encoding = encoding[:, :, :self.hidden_size].squeeze(0)
         return encoding
-
 
     def act(self, obs, t, get_pred_cost=False):
         """Returns the action that this controller would take at time t given observation obs.
@@ -285,11 +334,12 @@ class VisualRecovery(Controller):
                 ## Generate action samples for the first iteration
                 action_samples = []
                 for _ in range(self.popsize):
-                  action_trajs = []
-                  for j in range(self.plan_hor):
-                    action_trajs.append(torchify(self.env.action_space.sample()))
-                  action_trajs = torch.stack(action_trajs)
-                  action_samples.append(action_trajs)
+                    action_trajs = []
+                    for j in range(self.plan_hor):
+                        action_trajs.append(
+                            torchify(self.env.action_space.sample()))
+                    action_trajs = torch.stack(action_trajs)
+                    action_samples.append(action_trajs)
                 action_samples = torch.stack(action_samples).to(TORCH_DEVICE)
             else:
                 sortid = costs.argsort()
@@ -299,7 +349,8 @@ class VisualRecovery(Controller):
                 # print("MEAN COST: ", torch.mean(costs_ranked))
                 all_states_sorted = all_states[:, sortid, :]
                 all_states_im_sorted = self.residual_model(all_states_sorted)
-                all_states_im_ranked = all_states_im_sorted[:, :self.num_elites, :, :, :]
+                all_states_im_ranked = all_states_im_sorted[:, :self.
+                                                            num_elites, :, :, :]
                 # planning_frames = []
                 # for i in range(self.plan_hor):
                 #     planning_frames.append( make_grid(all_states_im_ranked[i].cpu().detach(), nrow=1).numpy().transpose(1, 2, 0))
@@ -307,30 +358,37 @@ class VisualRecovery(Controller):
                 # print("COST RANKED", costs_ranked)
                 ## Refitting to Best Trajs
                 mean, std = actions_ranked.mean(0), actions_ranked.std(0)
-                smp = torch.empty(action_samples.shape).normal_(mean=0, std=1).cuda()
+                smp = torch.empty(action_samples.shape).normal_(
+                    mean=0, std=1).cuda()
                 mean = mean.unsqueeze(0).repeat(self.popsize, 1, 1)
                 std = std.unsqueeze(0).repeat(self.popsize, 1, 1)
                 action_samples = smp * std + mean
                 # TODO: Assuming action space is symmetric, true for maze and shelf for now
-                action_samples = torch.clamp(action_samples, min=self.env.action_space.low[0], max=self.env.action_space.high[0])
+                action_samples = torch.clamp(
+                    action_samples,
+                    min=self.env.action_space.low[0],
+                    max=self.env.action_space.high[0])
 
             curr_states = encoding.repeat(self.popsize, 1, 1)
             all_states = [curr_states]
             for j in range(self.plan_hor):
-                next_states = self.transition_model(curr_states, action_samples[:, j].unsqueeze(1))
+                next_states = self.transition_model(
+                    curr_states, action_samples[:, j].unsqueeze(1))
                 curr_states = next_states
                 all_states.append(curr_states)
 
             all_states = torch.stack(all_states).squeeze()
             state_batch = all_states[:-1].transpose(1, 0)
-            state_batch = state_batch.reshape(self.popsize*self.plan_hor, -1)
-            action_batch = action_samples.reshape(self.popsize*self.plan_hor, -1)
-            costs = self.value_func.get_value(state_batch, action_batch, encoded=True)
+            state_batch = state_batch.reshape(self.popsize * self.plan_hor, -1)
+            action_batch = action_samples.reshape(self.popsize * self.plan_hor,
+                                                  -1)
+            costs = self.value_func.get_value(
+                state_batch, action_batch, encoded=True)
             # Reshape back to normal
             costs = costs.reshape(self.popsize, self.plan_hor, -1)
-            costs = torch.sum(costs, axis=1).squeeze() # costs of all action sequences
+            costs = torch.sum(
+                costs, axis=1).squeeze()  # costs of all action sequences
 
         # Return the best action
         action = actions_ranked[0][0]
         return action.detach().cpu().numpy()
-

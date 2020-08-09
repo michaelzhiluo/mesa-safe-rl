@@ -12,18 +12,25 @@ import moviepy.editor as mpy
 from .maze_const_images import *
 import cv2
 
+
 def process_action(a):
     return np.clip(a, -MAX_FORCE, MAX_FORCE)
+
 
 def process_obs(obs):
     im = np.transpose(obs, (2, 0, 1))
     return im
 
+
 def npy_to_gif(im_list, filename, fps=4):
     clip = mpy.ImageSequenceClip(im_list, fps=fps)
     clip.write_gif(filename + '.gif')
 
-def get_random_transitions(num_transitions, images=False, save_rollouts=False, task_demos=False):
+
+def get_random_transitions(num_transitions,
+                           images=False,
+                           save_rollouts=False,
+                           task_demos=False):
     env = MazeImageNavigation()
     transitions = []
     num_constraints = 0
@@ -33,12 +40,12 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
     ac_seqs = []
     constraint_seqs = []
 
-    for i in range(int(0.7*num_transitions)):
+    for i in range(int(0.7 * num_transitions)):
         if i % 500 == 0:
             print("DEMO: ", i)
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
-            if sample < 0.4: # maybe make 0.2 to 0.3
+            if sample < 0.4:  # maybe make 0.2 to 0.3
                 mode = 'e'
             else:
                 mode = 'm'
@@ -70,12 +77,12 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
         if images:
             im_state = im_next_state
 
-    for i in range(int(0.3*num_transitions)):
+    for i in range(int(0.3 * num_transitions)):
         if i % 500 == 0:
             print("DEMO: ", i)
         if i % 20 == 0:
             sample = np.random.uniform(0, 1, 1)[0]
-            if sample < 0.4: # maybe make 0.2 to 0.3
+            if sample < 0.4:  # maybe make 0.2 to 0.3
                 mode = 'e'
             else:
                 mode = 'm'
@@ -92,7 +99,7 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
 
         if not GT_STATE:
             next_state = process_obs(next_state)
-            
+
         constraint = info['constraint']
 
         rollouts[-1].append((state, action, constraint, next_state, not done))
@@ -130,11 +137,10 @@ def get_random_transitions(num_transitions, images=False, save_rollouts=False, t
 
 
 class MazeImageNavigation(Env, utils.EzPickle):
-
     def __init__(self):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
-        
+
         dirname = os.path.dirname(__file__)
         filename = os.path.join(dirname, 'simple_maze_images.xml')
         self.sim = MjSim(load_model_from_path(filename))
@@ -143,7 +149,8 @@ class MazeImageNavigation(Env, utils.EzPickle):
         self.transition_function = get_random_transitions
         self.steps = 0
         self.images = not GT_STATE
-        self.action_space = Box(-MAX_FORCE*np.ones(2), MAX_FORCE*np.ones(2))
+        self.action_space = Box(-MAX_FORCE * np.ones(2),
+                                MAX_FORCE * np.ones(2))
         self.transition_function = get_random_transitions
         obs = self._get_obs()
         # print("OBS", obs.shape)
@@ -158,7 +165,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
             self.observation_space = Box(-0.3, 0.3, shape=obs.shape)
 
         self.gain = 5
-        self.goal = np.zeros((2,))
+        self.goal = np.zeros((2, ))
         # self.goal[0] = np.random.uniform(0.15, 0.27)
         # self.goal[1] = np.random.uniform(-0.27, 0.27)
         self.goal[0] = 0.25
@@ -172,38 +179,48 @@ class MazeImageNavigation(Env, utils.EzPickle):
         constraint = int(self.sim.data.ncon > 3)
         if not constraint:
             for _ in range(500):
-              self.sim.step()
+                self.sim.step()
         obs = self._get_obs()
         self.sim.data.qvel[:] = 0
-        self.steps +=1 
+        self.steps += 1
         constraint = int(self.sim.data.ncon > 3)
-        self.done = self.steps >= self.horizon or (self.get_distance_score() < GOAL_THRESH) or constraint
+        self.done = self.steps >= self.horizon or (self.get_distance_score() <
+                                                   GOAL_THRESH) or constraint
         if not self.dense_reward:
-            reward = - (self.get_distance_score() > GOAL_THRESH).astype(float)
+            reward = -(self.get_distance_score() > GOAL_THRESH).astype(float)
         else:
             reward = -self.get_distance_score()
             # if self.get_distance_score() < GOAL_THRESH:
             #     reward += 10
 
-        info = {"constraint": constraint,
-                "reward": reward,
-                "state": cur_obs,
-                "next_state": obs,
-                "action": action}
+        info = {
+            "constraint": constraint,
+            "reward": reward,
+            "state": cur_obs,
+            "next_state": obs,
+            "action": action
+        }
 
         return obs, reward, self.done, info
-      
+
     def _get_obs(self, images=False):
         if images:
-            return cv2.resize(self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64], (64, 64), interpolation=cv2.INTER_AREA)
+            return cv2.resize(
+                self.sim.render(64, 64, camera_name="cam0")[20:64, 20:64],
+                (64, 64),
+                interpolation=cv2.INTER_AREA)
         #joint poisitions and velocities
-        state = np.concatenate([self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
-        
+        state = np.concatenate(
+            [self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
+
         if not self.images:
-          return state[:2] # State is just (x, y) now
+            return state[:2]  # State is just (x, y) now
 
         #get images
-        ims = cv2.resize(self.sim.render(64, 64, camera_name= "cam0")[20:64, 20:64], (64, 64), interpolation=cv2.INTER_AREA)
+        ims = cv2.resize(
+            self.sim.render(64, 64, camera_name="cam0")[20:64, 20:64],
+            (64, 64),
+            interpolation=cv2.INTER_AREA)
         return ims
 
     def reset(self, difficulty='m', check_constraint=True, pos=()):
@@ -212,9 +229,9 @@ class MazeImageNavigation(Env, utils.EzPickle):
             self.sim.data.qpos[1] = pos[1]
         else:
             if difficulty == 'e':
-              self.sim.data.qpos[0] = np.random.uniform(0.15, 0.22)
+                self.sim.data.qpos[0] = np.random.uniform(0.15, 0.22)
             elif difficulty == 'm':
-              self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
+                self.sim.data.qpos[0] = np.random.uniform(-0.04, 0.04)
             self.sim.data.qpos[1] = np.random.uniform(0.0, 0.22)
         self.steps = 0
 
@@ -225,18 +242,18 @@ class MazeImageNavigation(Env, utils.EzPickle):
         # assert(False)
 
         # Randomize wal positions
-    #     w1 = -0#np.random.uniform(-0.2, 0.2)
-    #     w2 = 0 #np.random.uniform(-0.2, 0.2)
-    # #     print(self.sim.model.geom_pos[:])
-    # #     print(self.sim.model.geom_pos[:].shape)
-    #     self.sim.model.geom_pos[5, 1] = 0.4 + w1
-    #     self.sim.model.geom_pos[7, 1] = -0.25 + w1
-    #     self.sim.model.geom_pos[6, 1] = 0.4 + w2
-    #     self.sim.model.geom_pos[8, 1] = -0.25 + w2
-        w1 = -0#np.random.uniform(-0.2, 0.2)
-        w2 = 0.08 #np.random.uniform(-0.2, 0.2)
-    #     print(self.sim.model.geom_pos[:])
-    #     print(self.sim.model.geom_pos[:].shape)
+        #     w1 = -0#np.random.uniform(-0.2, 0.2)
+        #     w2 = 0 #np.random.uniform(-0.2, 0.2)
+        # #     print(self.sim.model.geom_pos[:])
+        # #     print(self.sim.model.geom_pos[:].shape)
+        #     self.sim.model.geom_pos[5, 1] = 0.4 + w1
+        #     self.sim.model.geom_pos[7, 1] = -0.25 + w1
+        #     self.sim.model.geom_pos[6, 1] = 0.4 + w2
+        #     self.sim.model.geom_pos[8, 1] = -0.25 + w2
+        w1 = -0  #np.random.uniform(-0.2, 0.2)
+        w2 = 0.08  #np.random.uniform(-0.2, 0.2)
+        #     print(self.sim.model.geom_pos[:])
+        #     print(self.sim.model.geom_pos[:].shape)
         self.sim.model.geom_pos[5, 1] = 0.25 + w1
         self.sim.model.geom_pos[7, 1] = -0.25 + w1
         self.sim.model.geom_pos[6, 1] = 0.35 + w2
@@ -254,7 +271,7 @@ class MazeImageNavigation(Env, utils.EzPickle):
         #     plt.imshow(im)
         #     plt.show()
         #     plt.pause(0.1)
-            # assert 0
+        # assert 0
         return self._get_obs()
 
     def get_distance_score(self):
@@ -264,20 +281,20 @@ class MazeImageNavigation(Env, utils.EzPickle):
         d = np.sqrt(np.mean((self.goal - self.sim.data.qpos[:])**2))
         return d
 
-    # TODO: implement noise_std, demo_quality, right now these are ignored      
+    # TODO: implement noise_std, demo_quality, right now these are ignored
     def expert_action(self, noise_std=0, demo_quality='high'):
         st = self.sim.data.qpos[:]
         # print("STATE", st)
         if st[0] <= 0.149:
-          delt = (np.array([0.15, 0.125]) - st)
+            delt = (np.array([0.15, 0.125]) - st)
         else:
-          delt = (np.array([self.goal[0], self.goal[1]]) - st)
-        act = self.gain*delt
+            delt = (np.array([self.goal[0], self.goal[1]]) - st)
+        act = self.gain * delt
 
         return act
 
-class MazeImageTeacher(object):
 
+class MazeImageTeacher(object):
     def __init__(self):
         self.env = MazeImageNavigation()
         self.demonstrations = []
@@ -288,7 +305,7 @@ class MazeImageTeacher(object):
         if mode == "eps_greedy":
             if noise_param_in is None:
                 noise_param = 0
-            else: 
+            else:
                 noise_param = noise_param_in
 
         elif mode == "gaussian_noise":
@@ -308,7 +325,7 @@ class MazeImageTeacher(object):
 
             if i < noise_idx:
                 if mode == "eps_greedy":
-                    assert(noise_param <= 1)
+                    assert (noise_param <= 1)
                     if np.random.random() < noise_param:
                         action = self.env.action_space.sample()
                     else:
@@ -316,10 +333,12 @@ class MazeImageTeacher(object):
                             action = self.env.action_space.sample()
 
                 elif mode == "gaussian_noise":
-                    action = (np.array(action) +  np.random.normal(0, noise_param + self.default_noise, self.env.action_space.shape[0])).tolist()
+                    action = (np.array(action) + np.random.normal(
+                        0, noise_param + self.default_noise,
+                        self.env.action_space.shape[0])).tolist()
                 else:
                     print("Invalid Mode!")
-                    assert(False)
+                    assert (False)
 
             A.append(action)
             obs, cost, done, info = self.env.step(action)
@@ -345,7 +364,7 @@ class MazeImageTeacher(object):
             # return self.get_rollout(noise_param_in)
 
         npy_to_gif(im_list, 'image_maze')
-        assert(False)
+        assert (False)
 
         print("obs", O)
 
@@ -358,7 +377,8 @@ class MazeImageTeacher(object):
             "values": -np.array(values)
         }
 
-if __name__ == "__main__": 
+
+if __name__ == "__main__":
     teacher = MazeImageTeacher()
     reward_sum_completed = []
     constraint_sat = 0
@@ -371,9 +391,8 @@ if __name__ == "__main__":
         diff = HORIZON - ep_len
         if ep_len == HORIZON:
             constraint_sat += 1
-        reward_sum_completed.append(rollout_stats['reward_sum'] + diff * rollout_stats['rewards'][-1])
+        reward_sum_completed.append(rollout_stats['reward_sum'] +
+                                    diff * rollout_stats['rewards'][-1])
 
-    print("completed reward sum", np.mean(reward_sum_completed), np.std(reward_sum_completed), constraint_sat)
-
-
-    
+    print("completed reward sum", np.mean(reward_sum_completed),
+          np.std(reward_sum_completed), constraint_sat)

@@ -17,23 +17,25 @@ DENSE_REWARD = False
 GT_STATE = True
 EARLY_TERMINATION = True
 
+
 def no_rot_dynamics(prev_target_qpos, action):
     target_qpos = np.zeros_like(prev_target_qpos)
     target_qpos[:3] = action[:3] + prev_target_qpos[:3]
     target_qpos[4] = action[3]
     return target_qpos
 
+
 def clip_target_qpos(target, lb, ub):
     target[:len(lb)] = np.clip(target[:len(lb)], lb, ub)
     return target
 
-class ShelfLongEnv(BaseMujocoEnv):
 
+class ShelfLongEnv(BaseMujocoEnv):
     def __init__(self):
         parent_params = super()._default_hparams()
         envs_folder = os.path.dirname(os.path.abspath(__file__))
-        self.reset_xml  = os.path.join(envs_folder,
-                                    'cartgripper_assets/shelf.xml')
+        self.reset_xml = os.path.join(envs_folder,
+                                      'cartgripper_assets/shelf.xml')
         super().__init__(self.reset_xml, parent_params)
         self._adim = 4
         self.substeps = 500
@@ -53,7 +55,8 @@ class ShelfLongEnv(BaseMujocoEnv):
         self._max_episode_steps = 25
 
         if self.gt_state:
-            self.observation_space = Box(low=-np.inf, high=np.inf, shape=(27,))
+            self.observation_space = Box(
+                low=-np.inf, high=np.inf, shape=(27, ))
         else:
             self.observation_space = (48, 64, 3)
         self.reset()
@@ -62,7 +65,8 @@ class ShelfLongEnv(BaseMujocoEnv):
         self.dense_reward = dense_reward
 
     def render(self):
-        return super().render()[:, ::-1].copy().squeeze()    # cartgripper cameras are flipped in height dimension
+        return super().render()[:, ::-1].copy().squeeze(
+        )  # cartgripper cameras are flipped in height dimension
 
     def reset(self):
         self._reset_sim(self.reset_xml)
@@ -78,14 +82,14 @@ class ShelfLongEnv(BaseMujocoEnv):
 
         self.sim.forward()
 
-        self._previous_target_qpos = copy.deepcopy(self.sim.data.qpos[:5].squeeze())
+        self._previous_target_qpos = copy.deepcopy(
+            self.sim.data.qpos[:5].squeeze())
         self._previous_target_qpos[-1] = self.low_bound[-1]
 
         if self.gt_state:
-            return pos 
+            return pos
         else:
             return self.render()
-
 
     def step(self, action):
         position = self.position
@@ -97,7 +101,8 @@ class ShelfLongEnv(BaseMujocoEnv):
 
         for st in range(self.substeps):
             alpha = st / (float(self.substeps) - 1)
-            self.sim.data.ctrl[:] = alpha * target_qpos + (1. - alpha) * self._previous_target_qpos
+            self.sim.data.ctrl[:] = alpha * target_qpos + (
+                1. - alpha) * self._previous_target_qpos
             self.sim.step()
 
         self._previous_target_qpos = target_qpos
@@ -112,11 +117,13 @@ class ShelfLongEnv(BaseMujocoEnv):
         # if done and reward > 0:
         #     reward = 5
 
-        info = {"constraint": constraint,
-                "reward": reward,
-                "state": position,
-                "next_state": self.position,
-                "action": action}
+        info = {
+            "constraint": constraint,
+            "reward": reward,
+            "state": position,
+            "next_state": self.position,
+            "action": action
+        }
 
         if self.gt_state:
             return self.position, reward, done, info
@@ -124,11 +131,18 @@ class ShelfLongEnv(BaseMujocoEnv):
             return self.render(), reward, done, info
 
     def topple_check(self, debug=False):
-        quat = self.object_poses[:,3:]
-        phi = np.arctan2(2 * (np.multiply(quat[:,0], quat[:,1]) + quat[:,2] * quat[:,3]), 1 - 2 * (np.power(quat[:,1], 2) + np.power(quat[:,2], 2)))
-        theta = np.arcsin(2 * (np.multiply(quat[:,0], quat[:,2])  - np.multiply(quat[:,3], quat[:,1])))
-        psi = np.arctan2(2 * (np.multiply(quat[:,0], quat[:,3]) + np.multiply(quat[:,1], quat[:,2])), 1 - 2 * (np.power(quat[:,2], 2) + np.power(quat[:,3], 2)))
-        euler = np.stack([phi, theta, psi]).T[:,:2] * 180./np.pi
+        quat = self.object_poses[:, 3:]
+        phi = np.arctan2(
+            2 *
+            (np.multiply(quat[:, 0], quat[:, 1]) + quat[:, 2] * quat[:, 3]),
+            1 - 2 * (np.power(quat[:, 1], 2) + np.power(quat[:, 2], 2)))
+        theta = np.arcsin(2 * (np.multiply(quat[:, 0], quat[:, 2]) -
+                               np.multiply(quat[:, 3], quat[:, 1])))
+        psi = np.arctan2(
+            2 * (np.multiply(quat[:, 0], quat[:, 3]) + np.multiply(
+                quat[:, 1], quat[:, 2])),
+            1 - 2 * (np.power(quat[:, 2], 2) + np.power(quat[:, 3], 2)))
+        euler = np.stack([phi, theta, psi]).T[:, :2] * 180. / np.pi
         if debug:
             return np.abs(euler).max() > 15 or np.isnan(euler).sum() > 0, euler
         return np.abs(euler).max() > 15 or np.isnan(euler).sum() > 0
@@ -136,7 +150,7 @@ class ShelfLongEnv(BaseMujocoEnv):
     @property
     def jaw_width(self):
         pos = self.position
-        return 0.08 - (pos[4] - pos[5]) # 0.11 might be slightly off
+        return 0.08 - (pos[4] - pos[5])  # 0.11 might be slightly off
 
     def set_y_range(self, bounds):
         self.obj_y_dist_range[0] = bounds[0]
@@ -144,7 +158,7 @@ class ShelfLongEnv(BaseMujocoEnv):
 
     def expert_action(self, noise_std=0.0, demo_quality='high'):
         cur_pos = self.position[:3]
-        cur_pos[1] += 0.05 # compensate for length of jaws
+        cur_pos[1] += 0.05  # compensate for length of jaws
         target_obj_pos = self.object_poses[1][:3]
         action = np.zeros(self._adim)
         delta = target_obj_pos - cur_pos
@@ -173,7 +187,8 @@ class ShelfLongEnv(BaseMujocoEnv):
 
     def reward_fn(self):
         # if not self.dense_reward:
-        return -(self.target_object_height < self.target_height_thresh).astype(float)
+        return -(self.target_object_height <
+                 self.target_height_thresh).astype(float)
         # else:
         #     lift_reward = (self.target_object_height > self.target_height_thresh).astype(float)
         #     # if lift_reward == 1:
@@ -190,41 +205,43 @@ class ShelfLongEnv(BaseMujocoEnv):
 
     def object_reset_poses(self):
         new_poses = np.zeros((3, 7))
-        new_poses[:,3] = 1
+        new_poses[:, 3] = 1
         if self.randomize_objects == True:
             x = np.random.uniform(self.obj_x_range[0], self.obj_x_range[1])
             y1 = np.random.randn() * 0.05
-            y0 = y1 - np.random.uniform(self.obj_y_dist_range[0], self.obj_y_dist_range[1])
-            y2 = y1 + np.random.uniform(self.obj_y_dist_range[0], self.obj_y_dist_range[1])
-            new_poses[0,0:2] = np.array([y0, x])
-            new_poses[1,0:2] = np.array([y1, x])
-            new_poses[2,0:2] = np.array([y2, x])
+            y0 = y1 - np.random.uniform(self.obj_y_dist_range[0],
+                                        self.obj_y_dist_range[1])
+            y2 = y1 + np.random.uniform(self.obj_y_dist_range[0],
+                                        self.obj_y_dist_range[1])
+            new_poses[0, 0:2] = np.array([y0, x])
+            new_poses[1, 0:2] = np.array([y1, x])
+            new_poses[2, 0:2] = np.array([y2, x])
         else:
             x = np.mean(self.obj_x_range)
             y1 = 0.
             y0 = y1 - np.mean(self.obj_y_dist_range)
             y2 = y1 + np.mean(self.obj_y_dist_range)
-            new_poses[0,0:2] = np.array([y0, x])
-            new_poses[1,0:2] = np.array([y1, x])
-            new_poses[2,0:2] = np.array([y2, x])
+            new_poses[0, 0:2] = np.array([y0, x])
+            new_poses[1, 0:2] = np.array([y1, x])
+            new_poses[2, 0:2] = np.array([y2, x])
         return new_poses
 
     @property
     def position(self):
         return np.copy(self.sim.get_state().qpos[:])
-    
+
     @property
     def object_poses(self):
         pos = self.position
         num_objs = (self.position.shape[0] - 6) // 7
         poses = []
         for i in range(num_objs):
-            poses.append(np.copy(pos[i*7+6:(i+1)*7+6]))
+            poses.append(np.copy(pos[i * 7 + 6:(i + 1) * 7 + 6]))
         return np.array(poses)
 
     @property
     def target_object_height(self):
-        return self.object_poses[1,2] - 0.072
+        return self.object_poses[1, 2] - 0.072
 
     def _next_qpos(self, action):
         assert action.shape[0] == self._adim, action
@@ -232,9 +249,11 @@ class ShelfLongEnv(BaseMujocoEnv):
         target = clip_target_qpos(target, self.low_bound, self.high_bound)
         return target
 
+
 def npy_to_gif(im_list, filename, fps=4):
     clip = mpy.ImageSequenceClip(im_list, fps=fps)
     clip.write_gif(filename + '.gif')
+
 
 if __name__ == '__main__':
     env = ShelfEnv()
