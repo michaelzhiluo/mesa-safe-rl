@@ -15,7 +15,7 @@ from torch.optim import Adam
 from utils import soft_update, hard_update
 from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN, QNetworkConstraint, QNetworkConstraintCNN, DeterministicPolicyCNN
 from dotmap import DotMap
-from constraint import ValueFunction, QFunction
+from constraint import ValueFunction
 import cv2
 
 
