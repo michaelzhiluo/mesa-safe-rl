@@ -15,7 +15,11 @@ from gym import utils
 from gym.spaces import Box
 
 from obstacle import Obstacle, ComplexObstacle
-
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import numpy as np
+import io
+import cv2
 
 """
 Constants associated with the PointBot env.
@@ -35,22 +39,17 @@ AIR_RESIST = 0.2
 
 HARD_MODE = False
 
+OBSTACLE = [[[-30, -20], [-7.5, 7.5]]]
 
-OBSTACLE = [
-        [[-30, -20], [-7.5, 7.5]]]
+CAUTION_ZONE = [[[-32, -18], [-12, 12]]]
 
-CAUTION_ZONE = [
-        [[-32, -18], [-12, 12]]]
-
-
-        
 OBSTACLE = ComplexObstacle(OBSTACLE)
 CAUTION_ZONE = ComplexObstacle(CAUTION_ZONE)
 
 
-
 def process_action(a):
     return np.clip(a, -MAX_FORCE, MAX_FORCE)
+
 
 def teacher_action(state, goal):
     disp = np.subtract(goal, state)
@@ -59,17 +58,17 @@ def teacher_action(state, goal):
     return disp
 
 
-
 class SimplePointBot(Env, utils.EzPickle):
-
     def __init__(self):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
         self.A = np.eye(2)
         self.B = np.eye(2)
         self.horizon = HORIZON
-        self.action_space = Box(-np.ones(2) * MAX_FORCE, np.ones(2) * MAX_FORCE)
-        self.observation_space = Box(-np.ones(2) * np.float('inf'), np.ones(2) * np.float('inf'))
+        self.action_space = Box(-np.ones(2) * MAX_FORCE,
+                                np.ones(2) * MAX_FORCE)
+        self.observation_space = Box(-np.ones(2) * np.float('inf'),
+                                     np.ones(2) * np.float('inf'))
         self._max_episode_steps = HORIZON
         self.obstacle = OBSTACLE
         self.caution_zone = CAUTION_ZONE
@@ -89,11 +88,12 @@ class SimplePointBot(Env, utils.EzPickle):
         self.done = cur_cost > -1 or self.obstacle(next_state)
 
         return self.state, cur_cost, self.done, {
-                "constraint": self.obstacle(next_state),
-                "reward": cur_cost,
-                "state": old_state,
-                "next_state": next_state,
-                "action": a}
+            "constraint": self.obstacle(next_state),
+            "reward": cur_cost,
+            "state": old_state,
+            "next_state": next_state,
+            "action": a
+        }
 
     def reset(self):
         self.state = START_STATE + np.random.randn(2)
@@ -107,12 +107,15 @@ class SimplePointBot(Env, utils.EzPickle):
         if self.obstacle(s):
             print("obs", s, a)
             return s
-        return self.A.dot(s) + self.B.dot(a) + NOISE_SCALE * np.random.randn(len(s))
+        return self.A.dot(s) + self.B.dot(a) + NOISE_SCALE * np.random.randn(
+            len(s))
 
     def step_cost(self, s, a):
         if HARD_MODE:
-            return int(np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
-        return -np.linalg.norm(np.subtract(GOAL_STATE, s)) - self.obstacle(s) * 0.
+            return int(
+                np.linalg.norm(np.subtract(GOAL_STATE, s)) < GOAL_THRESH)
+        return -np.linalg.norm(np.subtract(GOAL_STATE,
+                                           s)) - self.obstacle(s) * 0.
 
     def values(self):
         return np.cumsum(np.array(self.cost)[::-1])[::-1]
@@ -127,7 +130,7 @@ class SimplePointBot(Env, utils.EzPickle):
         if states == None:
             states = self.hist
         states = np.array(states)
-        plt.scatter(states[:,0], states[:,2])
+        plt.scatter(states[:, 0], states[:, 2])
         plt.show()
 
     # Returns whether a state is stable or not
@@ -141,79 +144,111 @@ class SimplePointBot(Env, utils.EzPickle):
         return self.teacher._expert_control(s, 0)
 
 
-def get_random_transitions(num_transitions, task_demos=False, save_rollouts=False):
+def get_random_transitions(num_transitions,
+                           task_demos=False,
+                           save_rollouts=False):
     env = SimplePointBot()
     transitions = []
     rollouts = []
     done = False
-    for i in range(num_transitions//10//3):
+    for i in range(num_transitions // 10 // 3):
         rollouts.append([])
-        state = np.array([np.random.uniform(-40, 10), np.random.uniform(-25, 25)])
+        state = np.array(
+            [np.random.uniform(-40, 10),
+             np.random.uniform(-25, 25)])
         while env.obstacle(state):
-            state = np.array([np.random.uniform(-40, 10), np.random.uniform(-25, 25)])
+            state = np.array(
+                [np.random.uniform(-40, 10),
+                 np.random.uniform(-25, 25)])
         for j in range(10):
             action = np.clip(np.random.randn(2), -1, 1)
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, not constraint))
-            rollouts[-1].append((state, action, constraint, next_state, not constraint))
+            transitions.append((state, action, constraint, next_state,
+                                not constraint))
+            rollouts[-1].append((state, action, constraint, next_state,
+                                 not constraint))
             state = next_state
             if constraint:
                 break
 
-    for i in range(num_transitions//10 * 1//4):
+    for i in range(num_transitions // 10 * 1 // 4):
         rollouts.append([])
-        state = np.array([np.random.uniform(-35, -30), np.random.uniform(-12, 12)])
+        state = np.array(
+            [np.random.uniform(-35, -30),
+             np.random.uniform(-12, 12)])
         for j in range(10):
-            action = np.clip(np.array([np.random.uniform(0.5, 1, 1), np.random.randn(1)]), -1, 1).ravel()
+            action = np.clip(
+                np.array([np.random.uniform(0.5, 1, 1),
+                          np.random.randn(1)]), -1, 1).ravel()
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, not constraint))
-            rollouts[-1].append((state, action, constraint, next_state, not constraint))
+            transitions.append((state, action, constraint, next_state,
+                                not constraint))
+            rollouts[-1].append((state, action, constraint, next_state,
+                                 not constraint))
             state = next_state
             if constraint:
                 break
 
-    for i in range(num_transitions//10 * 1//4):
+    for i in range(num_transitions // 10 * 1 // 4):
         rollouts.append([])
-        state = np.array([np.random.uniform(-20, -15), np.random.uniform(-12, 12)])
+        state = np.array(
+            [np.random.uniform(-20, -15),
+             np.random.uniform(-12, 12)])
         for j in range(10):
-            action = np.clip(np.array([np.random.uniform(-1, -0.5, 1), np.random.randn(1)]), -1, 1).ravel()
+            action = np.clip(
+                np.array([np.random.uniform(-1, -0.5, 1),
+                          np.random.randn(1)]), -1, 1).ravel()
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, not constraint))
-            rollouts[-1].append((state, action, constraint, next_state, not constraint))
+            transitions.append((state, action, constraint, next_state,
+                                not constraint))
+            rollouts[-1].append((state, action, constraint, next_state,
+                                 not constraint))
             state = next_state
             if constraint:
                 break
 
-    for i in range(num_transitions//10 * 1//4):
+    for i in range(num_transitions // 10 * 1 // 4):
         rollouts.append([])
-        state = np.array([np.random.uniform(-30, -20), np.random.uniform(10, 15)])
+        state = np.array(
+            [np.random.uniform(-30, -20),
+             np.random.uniform(10, 15)])
         for j in range(10):
-            action = np.clip(np.array([np.random.randn(1), np.random.uniform(-1, -0.5, 1)]), -1, 1).ravel()
+            action = np.clip(
+                np.array([np.random.randn(1),
+                          np.random.uniform(-1, -0.5, 1)]), -1, 1).ravel()
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, not constraint))
-            rollouts[-1].append((state, action, constraint, next_state, not constraint))
+            transitions.append((state, action, constraint, next_state,
+                                not constraint))
+            rollouts[-1].append((state, action, constraint, next_state,
+                                 not constraint))
             state = next_state
             if constraint:
                 break
 
-    for i in range(num_transitions//10 * 1//4):
+    for i in range(num_transitions // 10 * 1 // 4):
         rollouts.append([])
-        state = np.array([np.random.uniform(-30, -20), np.random.uniform(-15, -10)])
+        state = np.array(
+            [np.random.uniform(-30, -20),
+             np.random.uniform(-15, -10)])
         for j in range(10):
-            action = np.clip(np.array([np.random.randn(1), np.random.uniform(0.5, 1, 1)]), -1, 1).ravel()
+            action = np.clip(
+                np.array([np.random.randn(1),
+                          np.random.uniform(0.5, 1, 1)]), -1, 1).ravel()
             next_state = env._next_state(state, action, override=True)
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
-            transitions.append((state, action, constraint, next_state, not constraint))
-            rollouts[-1].append((state, action, constraint, next_state, not constraint))
+            transitions.append((state, action, constraint, next_state,
+                                not constraint))
+            rollouts[-1].append((state, action, constraint, next_state,
+                                 not constraint))
             state = next_state
             if constraint:
                 break
@@ -222,6 +257,74 @@ def get_random_transitions(num_transitions, task_demos=False, save_rollouts=Fals
         return rollouts
     else:
         return transitions
+
+
+def render(loc):
+    def get_img_from_fig(fig, dpi=180):
+        buf = io.BytesIO()
+        fig.savefig(buf, format="png", dpi=dpi)
+        buf.seek(0)
+        img_arr = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+        buf.close()
+        img = cv2.imdecode(img_arr, 1)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        return img
+    data_set = np.array([
+        [.9, .9], [.85, 2.1], [1.2, 1.], [2.1, .95], [3., 1.1],
+        [3.9, .7], [4., 1.4], [4.2, 1.8], [2., 2.3], [3., 2.3],
+        [1.5, 1.8], [2., 1.5], [2.2, 2.], [2.6, 1.7], [2.7, 1.85]
+    ])
+    categories = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1])
+    color1 = (0.69411766529083252, 0.3490196168422699, 0.15686275064945221, 1.0)
+    color2 = (0.65098041296005249, 0.80784314870834351, 0.89019608497619629, 1.0)
+    colormap = np.array([color1, color2])
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    # ax.scatter(
+    #     x=[data_set[:, 0]],
+    #     y=[data_set[:, 1]],
+    #     c=colormap[categories],
+    #     marker='o',
+    #     alpha=0.9
+    # )
+
+    margin = .1
+    min_f0, max_f0 = -30, -20
+    min_f1, max_f1 = -7.5, 7.5
+    width = max_f0 - min_f0
+    height = max_f1 - min_f1
+
+    ax.add_patch(
+        patches.Rectangle(
+            xy=(min_f0, min_f1),  # point of origin.
+            width=width,
+            height=height,
+            linewidth=1,
+            color='red',
+            fill=True
+        )
+    )
+
+
+    circle = plt.Circle(loc, radius=1, color='green')
+    ax.add_patch(circle)
+    circle = plt.Circle((-50, 0), radius=1)
+    ax.add_patch(circle)
+    circle = plt.Circle((0, 0), radius=1)
+    ax.add_patch(circle)
+    label = ax.annotate("start", xy=(-50, 3), fontsize=10, ha="center")
+    label = ax.annotate("goal", xy=(0, 3), fontsize=10, ha="center")
+
+
+    plt.xlim(-60, 10)
+    plt.ylim(-30, 30)
+
+    ax.set_aspect('equal')
+    ax.autoscale_view()
+    # plt.savefig("pointbot0_cartoon.png")
+    return get_img_from_fig(fig)
+
 
 def safe_action(state, goal=GOAL_STATE):
     dx = dy = 0
@@ -235,14 +338,15 @@ def safe_action(state, goal=GOAL_STATE):
         dy = -1
     return np.array([dx, dy])
 
+
 def teacher_action(state, goal=GOAL_STATE):
     disp = np.subtract(goal, state)
     disp[disp > MAX_FORCE] = MAX_FORCE
     disp[disp < -MAX_FORCE] = -MAX_FORCE
     return disp
 
-class SimplePointBotTeacher(object):
 
+class SimplePointBotTeacher(object):
     def __init__(self):
         self.env = SimplePointBot()
         self.demonstrations = []
@@ -270,7 +374,6 @@ class SimplePointBotTeacher(object):
         # self.env.plot_trajectory()
         return transitions
 
-
     def generate_demonstrations(self, num_demos):
         if not os.path.exists(self.outdir):
             os.makedirs(self.outdir)
@@ -290,15 +393,15 @@ class SimplePointBotTeacher(object):
     def _expert_control(self, s, t):
         return teacher_action(s, self.goal)
 
+
 if __name__ == '__main__':
     env = SimplePointBot()
     obs = env.reset()
-    env.step([1,1])
+    env.step([1, 1])
 
-    for i in range(HORIZON-1):
-        env.step([0,0])
+    for i in range(HORIZON - 1):
+        env.step([0, 0])
 
     teacher = env.teacher()
     teacher.generate_demonstrations(1000)
     # env.plot_trajectory()
-

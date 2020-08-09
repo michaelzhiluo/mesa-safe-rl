@@ -19,7 +19,8 @@ from tqdm import trange
 
 import torch
 
-TORCH_DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+TORCH_DEVICE = torch.device(
+    'cuda') if torch.cuda.is_available() else torch.device('cpu')
 
 
 class Controller:
@@ -117,7 +118,8 @@ class MPC(Controller):
                         Warning: Can be very memory-intensive
         """
         super().__init__(params)
-        self.dO, self.dU = params.env.observation_space.shape[0], params.env.action_space.shape[0]
+        self.dO, self.dU = params.env.observation_space.shape[
+            0], params.env.action_space.shape[0]
         self.ac_ub, self.ac_lb = params.env.action_space.high, params.env.action_space.low
         self.ac_ub = np.minimum(self.ac_ub, params.get("ac_ub", self.ac_ub))
         self.ac_lb = np.maximum(self.ac_lb, params.get("ac_lb", self.ac_lb))
@@ -126,19 +128,30 @@ class MPC(Controller):
 
         self.model_init_cig = params.prop_cfg.get("model_init_cfg", {})
         self.model_train_cfg = params.prop_cfg.get("model_train_cfg", {})
-        self.prop_mode = get_required_argument(params.prop_cfg, "mode", "Must provide propagation method.")
-        self.npart = get_required_argument(params.prop_cfg, "npart", "Must provide number of particles.")
-        self.ign_var = params.prop_cfg.get("ign_var", False) or self.prop_mode == "E"
+        self.prop_mode = get_required_argument(
+            params.prop_cfg, "mode", "Must provide propagation method.")
+        self.npart = get_required_argument(
+            params.prop_cfg, "npart", "Must provide number of particles.")
+        self.ign_var = params.prop_cfg.get("ign_var",
+                                           False) or self.prop_mode == "E"
 
         self.obs_preproc = params.prop_cfg.get("obs_preproc", lambda obs: obs)
-        self.obs_postproc = params.prop_cfg.get("obs_postproc", lambda obs, model_out: model_out)
-        self.obs_postproc2 = params.prop_cfg.get("obs_postproc2", lambda next_obs: next_obs)
-        self.targ_proc = params.prop_cfg.get("targ_proc", lambda obs, next_obs: next_obs)
+        self.obs_postproc = params.prop_cfg.get(
+            "obs_postproc", lambda obs, model_out: model_out)
+        self.obs_postproc2 = params.prop_cfg.get("obs_postproc2",
+                                                 lambda next_obs: next_obs)
+        self.targ_proc = params.prop_cfg.get("targ_proc",
+                                             lambda obs, next_obs: next_obs)
 
-        self.opt_mode = get_required_argument(params.opt_cfg, "mode", "Must provide optimization method.")
-        self.plan_hor = get_required_argument(params.opt_cfg, "plan_hor", "Must provide planning horizon.")
-        self.obs_cost_fn = get_required_argument(params.opt_cfg, "obs_cost_fn", "Must provide cost on observations.")
-        self.ac_cost_fn = get_required_argument(params.opt_cfg, "ac_cost_fn", "Must provide cost on actions.")
+        self.opt_mode = get_required_argument(
+            params.opt_cfg, "mode", "Must provide optimization method.")
+        self.plan_hor = get_required_argument(
+            params.opt_cfg, "plan_hor", "Must provide planning horizon.")
+        self.obs_cost_fn = get_required_argument(
+            params.opt_cfg, "obs_cost_fn",
+            "Must provide cost on observations.")
+        self.ac_cost_fn = get_required_argument(
+            params.opt_cfg, "ac_cost_fn", "Must provide cost on actions.")
 
         self.reachability_hor = params.opt_cfg.get("reachability_hor", 2)
         self.save_all_models = params.log_cfg.get("save_all_models", False)
@@ -157,44 +170,59 @@ class MPC(Controller):
             lower_bound=np.tile(self.ac_lb, [self.plan_hor]),
             upper_bound=np.tile(self.ac_ub, [self.plan_hor]),
             cost_function=self._compile_cost,
-            **opt_cfg
-        )
+            **opt_cfg)
 
         # Controller state variables
         self.has_been_trained = params.prop_cfg.get("model_pretrained", False)
         self.ac_buf = np.array([]).reshape(0, self.dU)
         self.prev_sol = np.tile((self.ac_lb + self.ac_ub) / 2, [self.plan_hor])
-        self.init_var = np.tile(np.square(self.ac_ub - self.ac_lb) / 16, [self.plan_hor])
-        self.train_in = np.array([]).reshape(0, self.dU + self.obs_preproc(np.zeros([1, self.dO])).shape[-1])
+        self.init_var = np.tile(
+            np.square(self.ac_ub - self.ac_lb) / 16, [self.plan_hor])
+        self.train_in = np.array([]).reshape(
+            0, self.dU + self.obs_preproc(np.zeros([1, self.dO])).shape[-1])
         self.train_targs = np.array([]).reshape(
-            0, self.targ_proc(np.zeros([1, self.dO]), np.zeros([1, self.dO])).shape[-1]
-        )
+            0,
+            self.targ_proc(np.zeros([1, self.dO]),
+                           np.zeros([1, self.dO])).shape[-1])
 
-        print("Created an MPC controller, prop mode %s, %d particles. " % (self.prop_mode, self.npart) +
+        print("Created an MPC controller, prop mode %s, %d particles. " %
+              (self.prop_mode, self.npart) +
               ("Ignoring variance." if self.ign_var else ""))
 
         if self.save_all_models:
-            print("Controller will save all models. (Note: This may be memory-intensive.")
+            print(
+                "Controller will save all models. (Note: This may be memory-intensive."
+            )
         if self.log_particles:
-            print("Controller is logging particle predictions (Note: This may be memory-intensive).")
+            print(
+                "Controller is logging particle predictions (Note: This may be memory-intensive)."
+            )
             self.pred_particles = []
         elif self.log_traj_preds:
-            print("Controller is logging trajectory prediction statistics (mean+var).")
+            print(
+                "Controller is logging trajectory prediction statistics (mean+var)."
+            )
             self.pred_means, self.pred_vars = [], []
         else:
             print("Trajectory prediction logging is disabled.")
 
         # Set up pytorch model
         self.model = get_required_argument(
-            params.prop_cfg.model_init_cfg, "model_constructor", "Must provide a model constructor."
-        )(params.prop_cfg.model_init_cfg)
+            params.prop_cfg.model_init_cfg, "model_constructor",
+            "Must provide a model constructor.")(
+                params.prop_cfg.model_init_cfg)
 
         self.value_func = None
         self.use_value = params.get("use_value", False)
         self.use_qvalue = params.get("use_qvalue", False)
         self.pred_time = params.get("pred_time", False)
 
-    def train(self, obs_trajs, acs_trajs, random=False, next_obs=False, epochs=None):
+    def train(self,
+              obs_trajs,
+              acs_trajs,
+              random=False,
+              next_obs=False,
+              epochs=None):
         """Trains the internal model of this controller. Once trained,
         this controller switches from applying random actions to using MPC.
 
@@ -211,14 +239,19 @@ class MPC(Controller):
         if random:
             assert next_obs is not None
             # import IPython; IPython.embed()
-            new_train_in = [np.concatenate([self.obs_preproc(obs_trajs), acs_trajs], axis=-1)]
+            new_train_in = [
+                np.concatenate(
+                    [self.obs_preproc(obs_trajs), acs_trajs], axis=-1)
+            ]
             new_train_targs = [self.targ_proc(obs_trajs, next_obs)]
         else:
             for obs, acs in zip(obs_trajs, acs_trajs):
-                new_train_in.append(np.concatenate([self.obs_preproc(obs[:-1]), acs], axis=-1))
+                new_train_in.append(
+                    np.concatenate([self.obs_preproc(obs[:-1]), acs], axis=-1))
                 new_train_targs.append(self.targ_proc(obs[:-1], obs[1:]))
         self.train_in = np.concatenate([self.train_in] + new_train_in, axis=0)
-        self.train_targs = np.concatenate([self.train_targs] + new_train_targs, axis=0)
+        self.train_targs = np.concatenate(
+            [self.train_targs] + new_train_targs, axis=0)
 
         # Train the model
         self.has_been_trained = True
@@ -226,7 +259,9 @@ class MPC(Controller):
         # Train the pytorch model
         self.model.fit_input_stats(self.train_in)
 
-        idxs = np.random.randint(self.train_in.shape[0], size=[self.model.num_nets, self.train_in.shape[0]])
+        idxs = np.random.randint(
+            self.train_in.shape[0],
+            size=[self.model.num_nets, self.train_in.shape[0]])
 
         if epochs is None:
             epochs = self.model_train_cfg['epochs']
@@ -240,19 +275,23 @@ class MPC(Controller):
         for _ in epoch_range:
 
             for batch_num in range(num_batch):
-                batch_idxs = idxs[:, batch_num * batch_size : (batch_num + 1) * batch_size]
+                batch_idxs = idxs[:, batch_num * batch_size:(batch_num + 1) *
+                                  batch_size]
 
-                loss = 0.01 * (self.model.max_logvar.sum() - self.model.min_logvar.sum())
+                loss = 0.01 * (
+                    self.model.max_logvar.sum() - self.model.min_logvar.sum())
                 loss += self.model.compute_decays()
 
                 # TODO: move all training data to GPU before hand
-                train_in = torch.from_numpy(self.train_in[batch_idxs]).to(TORCH_DEVICE).float()
-                train_targ = torch.from_numpy(self.train_targs[batch_idxs]).to(TORCH_DEVICE).float()
+                train_in = torch.from_numpy(
+                    self.train_in[batch_idxs]).to(TORCH_DEVICE).float()
+                train_targ = torch.from_numpy(
+                    self.train_targs[batch_idxs]).to(TORCH_DEVICE).float()
 
                 mean, logvar = self.model(train_in, ret_logvar=True)
                 inv_var = torch.exp(-logvar)
 
-                train_losses = ((mean - train_targ) ** 2) * inv_var + logvar
+                train_losses = ((mean - train_targ)**2) * inv_var + logvar
                 train_losses = train_losses.mean(-1).mean(-1).sum()
                 # Only taking mean over the last 2 dimensions
                 # The first dimension corresponds to each model in the ensemble
@@ -265,14 +304,17 @@ class MPC(Controller):
 
             idxs = shuffle_rows(idxs)
 
-            val_in = torch.from_numpy(self.train_in[idxs[:5000]]).to(TORCH_DEVICE).float()
-            val_targ = torch.from_numpy(self.train_targs[idxs[:5000]]).to(TORCH_DEVICE).float()
+            val_in = torch.from_numpy(
+                self.train_in[idxs[:5000]]).to(TORCH_DEVICE).float()
+            val_targ = torch.from_numpy(
+                self.train_targs[idxs[:5000]]).to(TORCH_DEVICE).float()
 
             mean, _ = self.model(val_in)
-            mse_losses = ((mean - val_targ) ** 2).mean(-1).mean(-1)
+            mse_losses = ((mean - val_targ)**2).mean(-1).mean(-1)
 
             epoch_range.set_postfix({
-                "Training loss(es)": mse_losses.detach().cpu().numpy()
+                "Training loss(es)":
+                mse_losses.detach().cpu().numpy()
             })
 
     def reset(self):
@@ -289,23 +331,31 @@ class MPC(Controller):
     def reachability_test(self, obs, ac, eps_safe):
         self.sy_cur_obs = obs
         # init_mean = np.concatenate([np.copy(self.prev_sol)[self.per * self.dU:], np.zeros(self.per * self.dU)])
-        init_mean = np.tile((self.ac_lb + self.ac_ub) / 2, [self.reachability_hor - 1])
-        init_var = np.tile(np.square(self.ac_ub - self.ac_lb) / 16, [self.reachability_hor - 1])
+        init_mean = np.tile((self.ac_lb + self.ac_ub) / 2,
+                            [self.reachability_hor - 1])
+        init_var = np.tile(
+            np.square(self.ac_ub - self.ac_lb) / 16,
+            [self.reachability_hor - 1])
 
-        final_mean, best_cost = self.optimizer.obtain_solution(init_mean, init_var, query_action=ac, hor=self.reachability_hor - 1)
+        final_mean, best_cost = self.optimizer.obtain_solution(
+            init_mean,
+            init_var,
+            query_action=ac,
+            hor=self.reachability_hor - 1)
         return best_cost < eps_safe
-
 
     def lookahead_test(self, obs, ac, eps_safe):
         self.sy_cur_obs = obs
         # init_mean = np.concatenate([np.copy(self.prev_sol)[self.per * self.dU:], np.zeros(self.per * self.dU)])
-        init_mean = np.tile((self.ac_lb + self.ac_ub) / 2, [self.reachability_hor - 1])
-        init_var = np.tile(np.square(self.ac_ub - self.ac_lb) / 16, [self.reachability_hor - 1])
+        init_mean = np.tile((self.ac_lb + self.ac_ub) / 2,
+                            [self.reachability_hor - 1])
+        init_var = np.tile(
+            np.square(self.ac_ub - self.ac_lb) / 16,
+            [self.reachability_hor - 1])
 
-        final_mean, best_cost = self.optimizer.obtain_solution(init_mean, init_var, query_action=ac, hor=1)
+        final_mean, best_cost = self.optimizer.obtain_solution(
+            init_mean, init_var, query_action=ac, hor=1)
         return best_cost < eps_safe
-
-
 
     def act(self, obs, t, get_pred_cost=False):
         """Returns the action that this controller would take at time t given observation obs.
@@ -327,7 +377,9 @@ class MPC(Controller):
         self.sy_cur_obs = obs
 
         soln = self.optimizer.obtain_solution(self.prev_sol, self.init_var)
-        self.prev_sol = np.concatenate([np.copy(soln)[self.per * self.dU:], np.zeros(self.per * self.dU)])
+        self.prev_sol = np.concatenate(
+            [np.copy(soln)[self.per * self.dU:],
+             np.zeros(self.per * self.dU)])
         self.ac_buf = soln[:self.per * self.dU].reshape(-1, self.dU)
 
         return self.act(obs, t)
@@ -347,15 +399,18 @@ class MPC(Controller):
         # TODO: implement saving model for pytorch
         # self.model.save(iter_logdir if self.save_all_models else primary_logdir)
         if self.log_particles:
-            savemat(os.path.join(iter_logdir, "predictions.mat"), {"predictions": self.pred_particles})
+            savemat(
+                os.path.join(iter_logdir, "predictions.mat"),
+                {"predictions": self.pred_particles})
             self.pred_particles = []
         elif self.log_traj_preds:
             savemat(
-                os.path.join(iter_logdir, "predictions.mat"),
-                {"means": self.pred_means, "vars": self.pred_vars}
-            )
+                os.path.join(iter_logdir, "predictions.mat"), {
+                    "means": self.pred_means,
+                    "vars": self.pred_vars
+                })
             self.pred_means, self.pred_vars = [], []
-    
+
     @torch.no_grad()
     def _compile_cost(self, ac_seqs, reachability=False):
 
@@ -392,20 +447,21 @@ class MPC(Controller):
 
         costs = torch.zeros(nopt, self.npart, device=TORCH_DEVICE)
 
-
         for t in range(nsteps):
             cur_acs = ac_seqs[t]
 
             next_obs = self._predict_next_obs(cur_obs, cur_acs)
 
             if self.use_value:
-                assert(self.value_func)
+                assert (self.value_func)
                 if self.pred_time:
-                    cost = -self.value_func.get_value(next_obs).squeeze() #+ self.ac_cost_fn(cur_acs)
+                    cost = -self.value_func.get_value(
+                        next_obs).squeeze()  #+ self.ac_cost_fn(cur_acs)
                 else:
-                    cost = self.value_func.get_value(next_obs).squeeze() + self.ac_cost_fn(cur_acs)
+                    cost = self.value_func.get_value(
+                        next_obs).squeeze() + self.ac_cost_fn(cur_acs)
             elif self.use_qvalue:
-                assert(self.value_func and not self.pred_time)
+                assert (self.value_func and not self.pred_time)
                 cost = self.value_func.get_value(cur_obs, cur_acs).squeeze()
             else:
                 assert 0
@@ -441,7 +497,8 @@ class MPC(Controller):
 
         mean, var = self.model(inputs)
 
-        predictions = mean + torch.randn_like(mean, device=TORCH_DEVICE) * var.sqrt()
+        predictions = mean + torch.randn_like(
+            mean, device=TORCH_DEVICE) * var.sqrt()
 
         # TS Optimization: Remove additional dimension
         predictions = self._flatten_to_matrix(predictions)
@@ -452,7 +509,8 @@ class MPC(Controller):
         dim = mat.shape[-1]
 
         # Before, [10, 5] in case of proc_obs
-        reshaped = mat.view(-1, self.model.num_nets, self.npart // self.model.num_nets, dim)
+        reshaped = mat.view(-1, self.model.num_nets,
+                            self.npart // self.model.num_nets, dim)
         # After, [2, 5, 1, 5]
 
         transposed = reshaped.transpose(0, 1)
@@ -466,7 +524,8 @@ class MPC(Controller):
     def _flatten_to_matrix(self, ts_fmt_arr):
         dim = ts_fmt_arr.shape[-1]
 
-        reshaped = ts_fmt_arr.view(self.model.num_nets, -1, self.npart // self.model.num_nets, dim)
+        reshaped = ts_fmt_arr.view(self.model.num_nets, -1,
+                                   self.npart // self.model.num_nets, dim)
 
         transposed = reshaped.transpose(0, 1)
 

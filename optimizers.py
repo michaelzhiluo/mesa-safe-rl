@@ -21,9 +21,16 @@ class Optimizer:
 
 
 class CEMOptimizer(Optimizer):
-
-    def __init__(self, sol_dim, max_iters, popsize, num_elites, cost_function,
-                 upper_bound=None, lower_bound=None, epsilon=0.001, alpha=0.25):
+    def __init__(self,
+                 sol_dim,
+                 max_iters,
+                 popsize,
+                 num_elites,
+                 cost_function,
+                 upper_bound=None,
+                 lower_bound=None,
+                 epsilon=0.001,
+                 alpha=0.25):
         """Creates an instance of this class.
 
         Arguments:
@@ -52,12 +59,18 @@ class CEMOptimizer(Optimizer):
         self.cost_function = cost_function
 
         if num_elites > popsize:
-            raise ValueError("Number of elites must be at most the population size.")
+            raise ValueError(
+                "Number of elites must be at most the population size.")
 
     def reset(self):
         pass
 
-    def obtain_solution(self, init_mean, init_var, query_action=None, hor=None, iters=None):
+    def obtain_solution(self,
+                        init_mean,
+                        init_var,
+                        query_action=None,
+                        hor=None,
+                        iters=None):
         """Optimizes the cost function using the provided initial candidate distribution
 
         Arguments:
@@ -65,25 +78,29 @@ class CEMOptimizer(Optimizer):
             init_var (np.ndarray): The variance of the initial candidate distribution.
         """
         mean, var, t = init_mean, init_var, 0
-        X = stats.truncnorm(-2, 2, loc=np.zeros_like(mean), scale=np.ones_like(var))
+        X = stats.truncnorm(
+            -2, 2, loc=np.zeros_like(mean), scale=np.ones_like(var))
 
         if iters is None:
             iters = self.max_iters
 
         while (t < iters) and np.max(var) > self.epsilon:
-            lb_dist, ub_dist = mean - self.lb[:len(init_mean)], self.ub[:len(init_mean)] - mean
-            constrained_var = np.minimum(np.minimum(np.square(lb_dist / 2), np.square(ub_dist / 2)), var)
-            samples = X.rvs(size=[self.popsize, len(init_mean)]) * np.sqrt(constrained_var) + mean
+            lb_dist, ub_dist = mean - self.lb[:len(init_mean)], self.ub[:len(
+                init_mean)] - mean
+            constrained_var = np.minimum(
+                np.minimum(np.square(lb_dist / 2), np.square(ub_dist / 2)),
+                var)
+            samples = X.rvs(size=[self.popsize, len(init_mean)]) * np.sqrt(
+                constrained_var) + mean
             samples = samples.astype(np.float32)
 
             if query_action is None:
                 costs = self.cost_function(samples)
             else:
-                costs = self.cost_function(np.hstack((
-                    np.tile(query_action, (len(samples), 1)),
-                    samples)), reachability=True)
-
-
+                costs = self.cost_function(
+                    np.hstack((np.tile(query_action, (len(samples), 1)),
+                               samples)),
+                    reachability=True)
 
             elites = samples[np.argsort(costs)][:self.num_elites]
 

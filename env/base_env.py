@@ -9,6 +9,7 @@ from tensorflow.contrib.training import HParams
 from gym import Env
 from gym import utils
 
+
 class BaseEnv(Env, utils.EzPickle):
     def step(self, action):
         """
@@ -30,7 +31,7 @@ class BaseEnv(Env, utils.EzPickle):
 
     def _default_hparams(self):
         return HParams()
-    
+
     def reset(self):
         """
         Resets the environment. Returns initial observation as well as information needed to recreate initialization

@@ -8,11 +8,11 @@ import numpy as np
 from gym import utils
 from gym.envs.mujoco import mujoco_env
 
-
 # TARGET = np.array([0.13345871, 0.21923056, -0.10861196])
 TARGET = np.array([0., 0., -0.])
 THRESH = 0.07
 HORIZON = 150
+
 
 class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self):
@@ -24,7 +24,8 @@ class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         # self.obstacle = ReacherObstacle(np.array([0.5, 0.2, 0]), 0.15)
         self.obstacle = ReacherEEObstacle(np.array([0.5, 0.2, 0]), 0.15)
         self.transition_function = get_random_transitions
-        mujoco_env.MujocoEnv.__init__(self, os.path.join(dir_path, 'assets/reacher3d.xml'), 2)
+        mujoco_env.MujocoEnv.__init__(
+            self, os.path.join(dir_path, 'assets/reacher3d.xml'), 2)
 
     def step(self, a):
         # a = self.process_action(a)
@@ -34,21 +35,22 @@ class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.time += 1
         ob = self._get_obs().copy()
         obs_cost = np.sum(np.square(self.get_EE_pos(ob[None]) - self.goal))
-        ctrl_cost = 0.001*np.square(a).sum()
+        ctrl_cost = 0.001 * np.square(a).sum()
         cost = obs_cost + ctrl_cost
 
         if obs_cost < THRESH:
-            cost = -10000 + (1e-5)*np.square(a).sum()
+            cost = -10000 + (1e-5) * np.square(a).sum()
 
         if obs_cost < THRESH:
             print("goal", ctrl_cost, obs_cost, self.time)
         done = HORIZON <= self.time
         return ob, -cost, done, {
-                "constraint": self.obstacle(self.get_EE_pos(ob[None])),
-                "reward": -cost,
-                "state": old_state,
-                "next_state": ob,
-                "action": a}
+            "constraint": self.obstacle(self.get_EE_pos(ob[None])),
+            "reward": -cost,
+            "state": old_state,
+            "next_state": ob,
+            "action": a
+        }
 
     def process_action(self, action):
         return action
@@ -79,16 +81,26 @@ class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         theta1, theta2, theta3, theta4, theta5, theta6, theta7 = \
             states[:, :1], states[:, 1:2], states[:, 2:3], states[:, 3:4], states[:, 4:5], states[:, 5:6], states[:, 6:]
 
-        rot_axis = np.concatenate([np.cos(theta2) * np.cos(theta1), np.cos(theta2) * np.sin(theta1), -np.sin(theta2)],
-                                  axis=1)
-        rot_perp_axis = np.concatenate([-np.sin(theta1), np.cos(theta1), np.zeros(theta1.shape)], axis=1)
-        cur_end = np.concatenate([
-            0.1 * np.cos(theta1) + 0.4 * np.cos(theta1) * np.cos(theta2),
-            0.1 * np.sin(theta1) + 0.4 * np.sin(theta1) * np.cos(theta2) - 0.188,
-            -0.4 * np.sin(theta2)
-        ], axis=1)
+        rot_axis = np.concatenate(
+            [
+                np.cos(theta2) * np.cos(theta1),
+                np.cos(theta2) * np.sin(theta1), -np.sin(theta2)
+            ],
+            axis=1)
+        rot_perp_axis = np.concatenate(
+            [-np.sin(theta1),
+             np.cos(theta1),
+             np.zeros(theta1.shape)], axis=1)
+        cur_end = np.concatenate(
+            [
+                0.1 * np.cos(theta1) + 0.4 * np.cos(theta1) * np.cos(theta2),
+                0.1 * np.sin(theta1) + 0.4 * np.sin(theta1) * np.cos(theta2) -
+                0.188, -0.4 * np.sin(theta2)
+            ],
+            axis=1)
 
-        for length, hinge, roll in [(0.321, theta4, theta3), (0.16828, theta6, theta5)]:
+        for length, hinge, roll in [(0.321, theta4, theta3), (0.16828, theta6,
+                                                              theta5)]:
             perp_all_axis = np.cross(rot_axis, rot_perp_axis)
             x = np.cos(hinge) * rot_axis
             y = np.sin(hinge) * np.sin(roll) * rot_perp_axis
@@ -97,13 +109,16 @@ class ReacherSparse3DEnv(mujoco_env.MujocoEnv, utils.EzPickle):
             new_rot_perp_axis = np.cross(new_rot_axis, rot_axis)
             new_rot_perp_axis[np.linalg.norm(new_rot_perp_axis, axis=1) < 1e-30] = \
                 rot_perp_axis[np.linalg.norm(new_rot_perp_axis, axis=1) < 1e-30]
-            new_rot_perp_axis /= np.linalg.norm(new_rot_perp_axis, axis=1, keepdims=True)
+            new_rot_perp_axis /= np.linalg.norm(
+                new_rot_perp_axis, axis=1, keepdims=True)
             rot_axis, rot_perp_axis, cur_end = new_rot_axis, new_rot_perp_axis, cur_end + length * new_rot_axis
 
         return cur_end
 
     def is_stable(self, ob):
-        return (np.sum(np.square(self.get_EE_pos(ob[None]) - self.goal)) < THRESH).astype(bool)
+        return (np.sum(np.square(self.get_EE_pos(ob[None]) - self.goal)) <
+                THRESH).astype(bool)
+
 
 def get_random_transitions(num_transitions, task_demos=False):
     env = ReacherSparse3DEnv()
@@ -122,6 +137,7 @@ def get_random_transitions(num_transitions, task_demos=False):
     else:
         return transitions, task_transitions
 
+
 class ReacherEEObstacle:
     def __init__(self, center=[0., 0, 0], radius=0.1):
         self.center = np.array(center)
@@ -130,8 +146,10 @@ class ReacherEEObstacle:
     def __call__(self, x):
         return np.linalg.norm(x - self.center) <= self.radius
 
+
 class ReacherObstacle:
-    def __init__(self, center=[0., 0, 0], radius=0.1, arm_size=0.09, penalty=1):
+    def __init__(self, center=[0., 0, 0], radius=0.1, arm_size=0.09,
+                 penalty=1):
         # spherical obstacle
         # self.center = tf.convert_to_tensor(center, dtype=tf.dtypes.float32)
         self.center = np.array(center)
@@ -139,73 +157,80 @@ class ReacherObstacle:
         self.collision_radius = radius + arm_size
 
     def __call__(self, x):
-        x = x[:,:,:, :7]
+        x = x[:, :, :, :7]
         x_reshaped = tf.reshape(x, (-1, 7))
         bools = tf.zeros(shape[:1], dtype=tf.dtypes.bool)
         points = self.reacher_points(x_reshaped)
         for i in range(1, len(points)):
-            v1 = (points[i] - points[i-1])[:, :3]
-            v2 = points[i-1][:, :3] - self.center
+            v1 = (points[i] - points[i - 1])[:, :3]
+            v2 = points[i - 1][:, :3] - self.center
             v2_other = points[i][:, :3] - self.center
             lambda_num = -tf.reduce_sum(tf.multiply(v1, v2), axis=1)
-            lambda_denom = tf.multiply(tf.norm(v1, axis=1), tf.norm(v1, axis=1))
+            lambda_denom = tf.multiply(
+                tf.norm(v1, axis=1), tf.norm(v1, axis=1))
             v3 = tf.cross(v1, v2)
             shortest_dists = tf.norm(v3, axis=1) / tf.norm(v1, axis=1)
-            shortest_in_segment = tf.logical_and(lambda_num > 0, lambda_num < lambda_denom)
-            actual_dist = tf.multiply(tf.dtypes.cast(shortest_in_segment, tf.dtypes.float32), shortest_dists) + tf.multiply(tf.dtypes.cast(tf.logical_not(shortest_in_segment), tf.dtypes.float32), tf.minimum( tf.norm(v2, axis=1), tf.norm(v2_other, axis=1) ))
-            
+            shortest_in_segment = tf.logical_and(lambda_num > 0,
+                                                 lambda_num < lambda_denom)
+            actual_dist = tf.multiply(
+                tf.dtypes.cast(shortest_in_segment, tf.dtypes.float32),
+                shortest_dists) + tf.multiply(
+                    tf.dtypes.cast(
+                        tf.logical_not(shortest_in_segment),
+                        tf.dtypes.float32),
+                    tf.minimum(tf.norm(v2, axis=1), tf.norm(v2_other, axis=1)))
+
             #bools = tf.logical_or(bools, curr_bools)
             bools = tf.logical_or(bools, actual_dist < self.collision_radius)
             #print(bools.numpy())
-        bools_reshaped = tf.dtypes.cast(tf.reshape(bools, tf.shape(x)[:3]), tf.dtypes.float32)
+        bools_reshaped = tf.dtypes.cast(
+            tf.reshape(bools,
+                       tf.shape(x)[:3]), tf.dtypes.float32)
         return bools_reshaped
 
     @staticmethod
     def reacher_points(state):
         # state.shape should equal (-1, 7)
         #import ipdb; ipdb.set_trace()
-        points = [
-                [0, -0.188, 0, 1],
-                [0.1, -0.188, 0, 1],
-                [0.5, -0.188, 0, 1],
-                [0.821, -0.188, 0, 1],
-                [1.021, -0.188, 0, 1]
-                ]
-        points = [
-                [0, 0., 0, 1],
-                [0, 0., 0, 1],
-                [0, 0., 0, 1],
-                [0, 0., 0, 1],
-                [0, 0., 0, 1]
-                ]
+        points = [[0, -0.188, 0, 1], [0.1, -0.188, 0, 1], [0.5, -0.188, 0, 1],
+                  [0.821, -0.188, 0, 1], [1.021, -0.188, 0, 1]]
+        points = [[0, 0., 0, 1], [0, 0., 0, 1], [0, 0., 0, 1], [0, 0., 0, 1],
+                  [0, 0., 0, 1]]
 
         with tf.name_scope('p0'):
-            transform = TF_FK.translate(state[:, 0], [0, -0.188, 0]) # (-1, 4, 4)
-            points[0] = tf.tensordot(transform, points[0], axes=[[2], [0]]) # (-1, 4, 4) @ (4,)
+            transform = TF_FK.translate(state[:, 0],
+                                        [0, -0.188, 0])  # (-1, 4, 4)
+            points[0] = tf.tensordot(
+                transform, points[0], axes=[[2], [0]])  # (-1, 4, 4) @ (4,)
 
         with tf.name_scope('p1'):
-            transform = transform @ TF_FK.rot_z(state[:, 0]) 
-            transform = transform @ TF_FK.translate(state[:, 0], [0.1, 0, 0]) 
-            points[1] = tf.tensordot(transform, points[1], axes=[[2], [0]]) # (-1, 4, 4) @ (4,)
+            transform = transform @ TF_FK.rot_z(state[:, 0])
+            transform = transform @ TF_FK.translate(state[:, 0], [0.1, 0, 0])
+            points[1] = tf.tensordot(
+                transform, points[1], axes=[[2], [0]])  # (-1, 4, 4) @ (4,)
 
         with tf.name_scope('p2'):
-            transform = transform @ TF_FK.rot_y(state[:, 1]) 
-            transform = transform @ TF_FK.rot_x(state[:, 2]) 
-            transform = transform @ TF_FK.translate(state[:, 0], [0.4, 0, 0]) 
-            points[2] = tf.tensordot(transform, points[2], axes=[[2], [0]]) # (-1, 4, 4) @ (4,)
+            transform = transform @ TF_FK.rot_y(state[:, 1])
+            transform = transform @ TF_FK.rot_x(state[:, 2])
+            transform = transform @ TF_FK.translate(state[:, 0], [0.4, 0, 0])
+            points[2] = tf.tensordot(
+                transform, points[2], axes=[[2], [0]])  # (-1, 4, 4) @ (4,)
 
         with tf.name_scope('p3'):
-            transform = transform @ TF_FK.rot_y(state[:, 3]) 
-            transform = transform @ TF_FK.rot_x(state[:, 4]) 
-            transform = transform @ TF_FK.translate(state[:, 0], [0.321, 0, 0]) 
-            points[3] = tf.tensordot(transform, points[3], axes=[[2], [0]]) # (-1, 4, 4) @ (4,)
+            transform = transform @ TF_FK.rot_y(state[:, 3])
+            transform = transform @ TF_FK.rot_x(state[:, 4])
+            transform = transform @ TF_FK.translate(state[:, 0], [0.321, 0, 0])
+            points[3] = tf.tensordot(
+                transform, points[3], axes=[[2], [0]])  # (-1, 4, 4) @ (4,)
 
         with tf.name_scope('p4'):
-            transform = transform @ TF_FK.rot_y(state[:, 5]) 
-            transform = transform @ TF_FK.rot_x(state[:, 6]) 
-            transform = transform @ TF_FK.translate(state[:, 0], [0.2, 0, 0]) 
-            points[4] = tf.tensordot(transform, points[4], axes=[[2], [0]]) # (-1, 4, 4) @ (4,)
+            transform = transform @ TF_FK.rot_y(state[:, 5])
+            transform = transform @ TF_FK.rot_x(state[:, 6])
+            transform = transform @ TF_FK.translate(state[:, 0], [0.2, 0, 0])
+            points[4] = tf.tensordot(
+                transform, points[4], axes=[[2], [0]])  # (-1, 4, 4) @ (4,)
         return points
+
 
 class TF_FK():
     @staticmethod
@@ -215,35 +240,98 @@ class TF_FK():
 
     @staticmethod
     def rot_x(theta):
-        return TF_FK._transpose_correct(tf.convert_to_tensor([
-            [tf.ones_like(theta), tf.zeros_like(theta), tf.zeros_like(theta), tf.zeros_like(theta)], 
-            [tf.zeros_like(theta), tf.cos(theta), -tf.sin(theta), tf.zeros_like(theta)], 
-            [tf.zeros_like(theta), tf.sin(theta), tf.cos(theta), tf.zeros_like(theta)], 
-            [tf.zeros_like(theta), tf.zeros_like(theta), tf.zeros_like(theta), tf.ones_like(theta)]]))    
+        return TF_FK._transpose_correct(
+            tf.convert_to_tensor([[
+                tf.ones_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.cos(theta), -tf.sin(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.sin(theta),
+                tf.cos(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.ones_like(theta)
+            ]]))
 
     @staticmethod
     def rot_y(theta):
-        return TF_FK._transpose_correct(tf.convert_to_tensor([
-            [tf.cos(theta), tf.zeros_like(theta), tf.sin(theta), tf.zeros_like(theta)], 
-            [tf.zeros_like(theta), tf.ones_like(theta), tf.zeros_like(theta), tf.zeros_like(theta)], 
-            [-tf.sin(theta), tf.zeros_like(theta), tf.cos(theta), tf.zeros_like(theta)], 
-            [tf.zeros_like(theta), tf.zeros_like(theta), tf.zeros_like(theta), tf.ones_like(theta)]]))
+        return TF_FK._transpose_correct(
+            tf.convert_to_tensor([[
+                tf.cos(theta),
+                tf.zeros_like(theta),
+                tf.sin(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.ones_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta)
+            ], [
+                -tf.sin(theta),
+                tf.zeros_like(theta),
+                tf.cos(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.ones_like(theta)
+            ]]))
 
     @staticmethod
     def rot_z(theta):
-        return TF_FK._transpose_correct(tf.convert_to_tensor([
-            [tf.cos(theta), -tf.sin(theta), tf.zeros_like(theta), tf.zeros_like(theta)], 
-            [tf.sin(theta), tf.cos(theta), tf.zeros_like(theta), tf.zeros_like(theta)], 
-            [tf.zeros_like(theta), tf.zeros_like(theta), tf.ones_like(theta), tf.zeros_like(theta)], 
-            [tf.zeros_like(theta), tf.zeros_like(theta), tf.zeros_like(theta), tf.ones_like(theta)]]))
+        return TF_FK._transpose_correct(
+            tf.convert_to_tensor([[
+                tf.cos(theta), -tf.sin(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.sin(theta),
+                tf.cos(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.ones_like(theta),
+                tf.zeros_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.ones_like(theta)
+            ]]))
 
     @staticmethod
     def translate(theta, amount):
-        return TF_FK._transpose_correct(tf.convert_to_tensor([
-            [tf.ones_like(theta), tf.zeros_like(theta), tf.zeros_like(theta), amount[0] * tf.ones_like(theta)], 
-            [tf.zeros_like(theta), tf.ones_like(theta), tf.zeros_like(theta), amount[1] * tf.ones_like(theta)], 
-            [tf.zeros_like(theta), tf.zeros_like(theta), tf.ones_like(theta), amount[2] * tf.ones_like(theta)], 
-            [tf.zeros_like(theta), tf.zeros_like(theta), tf.zeros_like(theta), tf.ones_like(theta)]]))
+        return TF_FK._transpose_correct(
+            tf.convert_to_tensor([[
+                tf.ones_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta), amount[0] * tf.ones_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.ones_like(theta),
+                tf.zeros_like(theta), amount[1] * tf.ones_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.ones_like(theta), amount[2] * tf.ones_like(theta)
+            ], [
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.zeros_like(theta),
+                tf.ones_like(theta)
+            ]]))
 
     @staticmethod
     def translate_meta(amount):
