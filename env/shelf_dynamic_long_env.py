@@ -312,7 +312,7 @@ def npy_to_gif(im_list, filename, fps=4):
 
 
 if __name__ == '__main__':
-    env = ShelfDynamicEnv()
+    env = ShelfDynamicLongEnv()
     im_list = [env.render().squeeze()]
     for t in range(25):
         # if t < 7:

@@ -35,12 +35,19 @@
 # 	python -m main --cuda --env-name shelf_long_env --task_demos --tau 0.0002 --replay_size 100000 --num_task_transitions 1000 --use_recovery --recovery_policy_update_freq 20 --gamma_safe 0.75 --eps_safe 0.15 --use_qvalue --num_eps 4000 --logdir shelf_long_env --logdir_suffix recovery_0.75_0.15 --pos_fraction 0.3 --seed $i
 # done
 
-# # Recovery RL DDPG Recovey
+# # Recovery RL DDPG Recovery
 # Recovery RL DDPG
 # for i in {1..3}
 # do
 # 	python -m main --cuda --env-name shelf_long_env --task_demos --tau 0.0002 --replay_size 100000 --num_task_transitions 1000 --use_recovery --gamma_safe 0.85 --eps_safe 0.25 --use_qvalue --ddpg_recovery --num_eps 4000 --logdir shelf_long_env --logdir_suffix recovery_ddpg_0.85_0.25 --pos_fraction 0.3 --seed $i
 # done
+
+# # Recovery RL DDPG Recovery Images
+# Recovery RL DDPG
+for i in {3..3}
+do
+	python -m main --cuda --env-name shelf_long_env --cnn --critic_safe_pretraining_steps 30000 --num_constraint_transitions 50000 --task_demos --tau 0.0002 --alpha 0.05 --replay_size 100000 --num_task_transitions 5000 --use_recovery --gamma_safe 0.75 --eps_safe 0.15 --use_qvalue --ddpg_recovery --num_eps 4000 --logdir shelf_long_env --logdir_suffix recovery_ddpg_0.85_0.25_images --pos_fraction 0.3 --seed $i
+done
 
 # Unconstrained
 # for i in {1..3}

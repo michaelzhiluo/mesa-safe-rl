@@ -14,7 +14,7 @@ import os
 
 FIXED_ENV = False
 DENSE_REWARD = False
-GT_STATE = True
+GT_STATE = False
 EARLY_TERMINATION = True
 
 
@@ -256,14 +256,12 @@ def npy_to_gif(im_list, filename, fps=4):
 
 
 if __name__ == '__main__':
-    env = ShelfEnv()
+    env = ShelfLongEnv()
     im_list = []
     for i in range(25):
         # ac = env.expert_action(0.1, demo_quality='low')
-        if i < 12:
-            ac = env.expert_action(0.01, demo_quality='low')
-        else:
-            ac = env.expert_action(0.2, demo_quality='low')
+        ac = env.expert_action(
+            noise_std=0.001, demo_quality='high')
         # ac = env.expert_action(0)
         ns, r, done, info = env.step(ac)
         print(env.topple_check())
