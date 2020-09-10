@@ -175,21 +175,23 @@ class QSafeWrapper:
                         self.tau)
         self.updates += 1
 
-        # plot_interval = 1000
-        # if self.env_name == 'image_maze':
-        #     plot_interval = 29000
-        # if plot and self.updates % plot_interval == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'image_maze']:
-        #     self.plot(policy, self.updates, [1, 0], "right")
-        #     self.plot(policy, self.updates, [-1, 0], "left")
-        #     self.plot(policy, self.updates, [0, 1], "up")
-        #     self.plot(policy, self.updates, [0, -1], "down")
-        # if plot and self.updates % 1000 == 0 and self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
-        #     self.plot(policy, self.updates, [.1, 0], "right")
-        #     self.plot(policy, self.updates, [-.1, 0], "left")
-        #     self.plot(policy, self.updates, [0, .1], "up")
-        #     self.plot(policy, self.updates, [0, -.1], "down")
-        # if self.updates % 2000 == 0 and self.updates > 5000:
-        #     plt.show()
+        plot_interval = 1000
+        if self.env_name == 'image_maze':
+            plot_interval = 29000
+
+        if plot and self.updates % 1000 == 0:
+            if self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+                self.plot(policy, self.updates, [.1, 0], "right")
+                self.plot(policy, self.updates, [-.1, 0], "left")
+                self.plot(policy, self.updates, [0, .1], "up")
+                self.plot(policy, self.updates, [0, -.1], "down")
+            elif self.env_name == 'image_maze':
+                self.plot(policy, self.updates, [.3, 0], "right")
+                self.plot(policy, self.updates, [-.3, 0], "left")
+                self.plot(policy, self.updates, [0, .3], "up")
+                self.plot(policy, self.updates, [0, -.3], "down")
+            else:
+                raise NotImplementedError("Unsupported environment for plotting")          
 
     def get_value(self, states, actions, encoded=False):
         with torch.no_grad():
