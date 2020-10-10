@@ -13,11 +13,11 @@ import torch
 import torch.nn.functional as F
 from torch.optim import Adam
 from utils import soft_update, hard_update
-from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN, QNetworkConstraint, QNetworkConstraintCNN, DeterministicPolicyCNN
+from model import GaussianPolicy, QNetwork, DeterministicPolicy, QNetworkCNN, GaussianPolicyCNN, QNetworkConstraint, QNetworkConstraintCNN, DeterministicPolicyCNN, StochasticPolicy
 from dotmap import DotMap
 from constraint import ValueFunction
 import cv2
-
+from run_multitask import MAMLRAWR
 
 def process_obs(obs):
     im = np.transpose(obs, (2, 0, 1))
@@ -28,6 +28,7 @@ class QSafeWrapper:
     def __init__(self, obs_space, ac_space, hidden_size, logdir, action_space,
                  args, tmp_env):
         self.env_name = args.env_name
+        self.goal = args.goal
         self.logdir = logdir
         self.device = torch.device("cuda" if args.cuda else "cpu")
         self.ac_space = ac_space
@@ -55,6 +56,7 @@ class QSafeWrapper:
                 self.safety_critic_target = QNetworkConstraintCNN(
                     obs_space, ac_space.shape[0], hidden_size,
                     args.env_name).to(self.device)
+        self.awr = False
 
         self.lr = args.lr
         self.safety_critic_optim = Adam(
@@ -68,7 +70,7 @@ class QSafeWrapper:
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
         if not self.images:
             # self.policy = GaussianPolicy(obs_space.shape[0], ac_space.shape[0], args.hidden_size, action_space).to(self.device)
-            self.policy = DeterministicPolicy(obs_space.shape[0],
+            self.policy = StochasticPolicy(obs_space.shape[0],
                                               ac_space.shape[0], hidden_size,
                                               action_space).to(self.device)
         else:
@@ -86,7 +88,7 @@ class QSafeWrapper:
         self.recovery_lambda = args.recovery_lambda
         self.eps_safe = args.eps_safe
         self.alpha = args.alpha
-        if args.env_name == 'maze':
+        if args.env_name in ['maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
             self.tmp_env.reset(pos=(12, 12))
 
     def update_parameters(self,
@@ -99,7 +101,7 @@ class QSafeWrapper:
                           training_iterations=3000,
                           plot=1):
         # TODO: cleanup this is hardcoded for maze
-        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch = memory.sample(
+        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch, mc_reward_batch = memory.sample(
             batch_size=min(batch_size, len(memory)),
             pos_fraction=self.pos_fraction)
         state_batch = torch.FloatTensor(state_batch).to(self.device)
@@ -108,43 +110,54 @@ class QSafeWrapper:
         mask_batch = torch.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
         constraint_batch = torch.FloatTensor(constraint_batch).to(
             self.device).unsqueeze(1)
+        mc_reward_batch = torch.FloatTensor(mc_reward_batch).to(
+            self.device).unsqueeze(1)
 
         if self.encoding:
             state_batch_enc = self.encoder(state_batch)
             next_state_batch_enc = self.encoder(next_state_batch)
 
-        with torch.no_grad():
-            next_state_action, next_state_log_pi, _ = policy.sample(
-                next_state_batch)
-            if self.encoding:
-                qf1_next_target, qf2_next_target = self.safety_critic_target(
-                    next_state_batch_enc, next_state_action)
-            else:
-                qf1_next_target, qf2_next_target = self.safety_critic_target(
-                    next_state_batch, next_state_action)
-            min_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
-            next_q_value = constraint_batch + mask_batch * self.gamma_safe * (
-                min_qf_next_target)
+        if not self.awr:
+            with torch.no_grad():
+                next_state_action, next_state_log_pi, _ = policy.sample(
+                    next_state_batch)
+                if self.encoding:
+                    qf1_next_target, qf2_next_target = self.safety_critic_target(
+                        next_state_batch_enc, next_state_action)
+                else:
+                    qf1_next_target, qf2_next_target = self.safety_critic_target(
+                        next_state_batch, next_state_action)
+                min_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
+                next_q_value = constraint_batch + mask_batch * self.gamma_safe * (
+                    min_qf_next_target)
 
-        # qf1, qf2 = self.safety_critic(state_batch, policy.sample(state_batch)[0])  # Two Q-functions to mitigate positive bias in the policy improvement step
-        if self.encoding:
-            qf1, qf2 = self.safety_critic(
-                state_batch_enc, action_batch
-            )  # Two Q-functions to mitigate positive bias in the policy improvement step
+            # qf1, qf2 = self.safety_critic(state_batch, policy.sample(state_batch)[0])  # Two Q-functions to mitigate positive bias in the policy improvement step
+            if self.encoding:
+                qf1, qf2 = self.safety_critic(
+                    state_batch_enc, action_batch
+                )  # Two Q-functions to mitigate positive bias in the policy improvement step
+            else:
+                qf1, qf2 = self.safety_critic(
+                    state_batch, action_batch
+                )  # Two Q-functions to mitigate positive bias in the policy improvement step
+            qf1_loss = F.mse_loss(
+                qf1, next_q_value
+            )  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
+            qf2_loss = F.mse_loss(
+                qf2, next_q_value
+            )  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
+
+            self.safety_critic_optim.zero_grad()
+            (qf1_loss + qf2_loss).backward()
+            self.safety_critic_optim.step()
         else:
             qf1, qf2 = self.safety_critic(
-                state_batch, action_batch
-            )  # Two Q-functions to mitigate positive bias in the policy improvement step
-        qf1_loss = F.mse_loss(
-            qf1, next_q_value
-        )  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
-        qf2_loss = F.mse_loss(
-            qf2, next_q_value
-        )  # JQ = 𝔼(st,at)~D[0.5(Q1(st,at) - r(st,at) - γ(𝔼st+1~p[V(st+1)]))^2]
-
-        self.safety_critic_optim.zero_grad()
-        (qf1_loss + qf2_loss).backward()
-        self.safety_critic_optim.step()
+                    state_batch, action_batch
+            )
+            qf_loss = F.mse_loss(qf1, mc_reward_batch)
+            self.safety_critic_optim.zero_grad()
+            qf_loss.backward()
+            self.safety_critic_optim.step()
 
         if self.ddpg_recovery:
             pi, log_pi, _ = self.policy.sample(state_batch)
@@ -164,7 +177,17 @@ class QSafeWrapper:
                 )  # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
 
             else:
-                policy_loss = max_sqf_pi.mean()
+                if self.awr:
+                    with torch.no_grad():
+                        advantages = (mc_reward_batch - qf1).squeeze(-1)
+                        normalized_advantages = (1/1.0)*(advantages - advantages.mean())/advantages.std()
+                        weights = advantages.clamp(max=np.log(20.0)).exp()
+                    
+                    cur_dist = self.policy(state_batch)
+                    action_log_probs = cur_dist.log_prob(action_batch).sum(-1)  
+                    policy_loss = (action_log_probs * weights).mean()
+                else:
+                    policy_loss = max_sqf_pi.mean()
 
             self.policy_optim.zero_grad()
             policy_loss.backward()
@@ -179,12 +202,13 @@ class QSafeWrapper:
         if self.env_name == 'image_maze':
             plot_interval = 29000
 
-        if plot and self.updates % 1000 == 0:
-            if self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze']:
+        print(self.updates)
+        if plot and self.updates % 100 == 0:
+            if self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
                 self.plot(policy, self.updates, [.1, 0], "right")
-                self.plot(policy, self.updates, [-.1, 0], "left")
-                self.plot(policy, self.updates, [0, .1], "up")
-                self.plot(policy, self.updates, [0, -.1], "down")
+                #self.plot(policy, self.updates, [-.1, 0], "left")
+                #self.plot(policy, self.updates, [0, .1], "up")
+                #self.plot(policy, self.updates, [0, -.1], "down")
             elif self.env_name == 'image_maze':
                 self.plot(policy, self.updates, [.3, 0], "right")
                 self.plot(policy, self.updates, [-.3, 0], "left")
@@ -226,7 +250,7 @@ class QSafeWrapper:
 
     def plot(self, pi, ep, action=None, suffix="", critic=None):
         env = self.tmp_env
-        if self.env_name == 'maze':
+        if self.env_name in ['maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
             x_bounds = [-0.3, 0.3]
             y_bounds = [-0.3, 0.3]
         elif self.env_name == 'simplepointbot0':
@@ -255,7 +279,15 @@ class QSafeWrapper:
                     states.append([x, y])
 
         num_states = len(states)
-        states = self.torchify(np.array(states))
+        if not self.encoding and self.goal:
+            states = np.array(states)
+            goal_state = self.tmp_env.get_goal()
+            batch_size = states.shape[0]
+            goal_states = np.tile(goal_state, (batch_size, 1))
+            states = np.concatenate([states, goal_states], axis=1)
+            states = self.torchify(states)
+        else:
+            states = self.torchify(np.array(states))
         actions = self.torchify(np.tile(action, (len(states), 1)))
         # if ep > 0:
         #     actions = pi(states)
@@ -290,13 +322,15 @@ class QSafeWrapper:
                     edgecolor='r',
                     facecolor='none'))
 
-        if self.env_name == 'maze':
+        if self.env_name in ['maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
+            fig, ax = plt.subplots()
+            cmap = plt.get_cmap('jet', 10)
             background = cv2.resize(env._get_obs(images=True), (x_pts, y_pts))
             plt.imshow(background)
-            plt.imshow(grid.T, alpha=0.6)
+            im = ax.imshow(grid.T, alpha=0.6, cmap=cmap, vmin=0.0, vmax=1.0)
+            cbar = fig.colorbar(im, ax=ax)
         else:
             plt.imshow(grid.T)
-
         plt.savefig(
             osp.join(self.logdir, "qvalue_" + str(ep) + suffix),
             bbox_inches='tight')
@@ -429,7 +463,8 @@ class SAC(object):
         if args.use_value:
             self.safety_critic = self.V_safe
         else:
-            self.Q_safe = QSafeWrapper(
+            if args.meta:
+                self.Q_safe = MAMLRAWR(
                 observation_space,
                 action_space,
                 args.hidden_size,
@@ -437,6 +472,15 @@ class SAC(object):
                 action_space,
                 args,
                 tmp_env=tmp_env)
+            else:
+                self.Q_safe = QSafeWrapper(
+                    observation_space,
+                    action_space,
+                    args.hidden_size,
+                    logdir,
+                    action_space,
+                    args,
+                    tmp_env=tmp_env)
             self.safety_critic = self.Q_safe
 
     def plot(self, ep, action, suffix):
@@ -511,7 +555,7 @@ class SAC(object):
                             plot=False):
         # TODO: cleanup this is hardcoded for maze
 
-        if self.env_name == 'maze':
+        if self.env_name in ['maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
             lr = 1e-3
         self.safety_critic.train(ep, memory, pi, lr, batch_size,
                                  training_iterations, plot)

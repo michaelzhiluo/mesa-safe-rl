@@ -7,6 +7,12 @@ register(
     id='SimplePointBot-v1', entry_point='env.simplepointbot1:SimplePointBot')
 
 register(id='Maze-v0', entry_point='env.maze:MazeNavigation')
+register(id='Maze1-v0', entry_point='env.mazes:Maze1Navigation')
+register(id='Maze2-v0', entry_point='env.mazes:Maze2Navigation')
+register(id='Maze3-v0', entry_point='env.mazes:Maze3Navigation')
+register(id='Maze4-v0', entry_point='env.mazes:Maze4Navigation')
+register(id='Maze5-v0', entry_point='env.mazes:Maze5Navigation')
+register(id='Maze6-v0', entry_point='env.mazes:Maze6Navigation')
 
 register(id='ImageMaze-v0', entry_point='env.image_maze:MazeImageNavigation')
 

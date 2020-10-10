@@ -38,10 +38,10 @@ class ConstraintReplayMemory:
         self.position = 0
         self.pos_idx = np.zeros(self.capacity)
 
-    def push(self, state, action, reward, next_state, done):
+    def push(self, state, action, reward, next_state, done, mc_reward=None):
         if len(self.buffer) < self.capacity:
             self.buffer.append(None)
-        self.buffer[self.position] = (state, action, reward, next_state, done)
+        self.buffer[self.position] = (state, action, reward, next_state, done, mc_reward)
         self.pos_idx[self.position] = reward
         self.position = (self.position + 1) % self.capacity
 
@@ -62,8 +62,8 @@ class ConstraintReplayMemory:
             batch = itemgetter(*idx)(self.buffer)
         else:
             batch = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, done = map(np.stack, zip(*batch))
-        return state, action, reward, next_state, done
+        state, action, reward, next_state, done, mc_reward = map(np.stack, zip(*batch))
+        return state, action, reward, next_state, done, mc_reward
 
     def __len__(self):
         return len(self.buffer)

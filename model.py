@@ -9,6 +9,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.distributions import Normal
+import numpy as np
 
 LOG_SIG_MAX = 2
 LOG_SIG_MIN = -20
@@ -506,6 +507,49 @@ class DeterministicPolicyCNN(nn.Module):
         self.action_bias = self.action_bias.to(device)
         self.noise = self.noise.to(device)
         return super(DeterministicPolicyCNN, self).to(device)
+
+class StochasticPolicy(nn.Module):
+    def __init__(self, num_inputs, num_actions, hidden_dim, action_space=None):
+        super(StochasticPolicy, self).__init__()
+
+        self.linear1 = nn.Linear(num_inputs, hidden_dim)
+        self.linear2 = nn.Linear(hidden_dim, hidden_dim)
+
+        self.mean = nn.Linear(hidden_dim, num_actions)
+        self.log_std = torch.nn.Parameter(
+            torch.as_tensor([np.log(0.1)] * num_actions))
+        self.min_log_std = np.log(1e-6)
+
+        self.apply(weights_init_)
+        # action rescaling
+        if action_space is None:
+            self.action_scale = 1.
+            self.action_bias = 0.
+        else:
+            self.action_scale = torch.FloatTensor(
+                (action_space.high - action_space.low) / 2.)
+            self.action_bias = torch.FloatTensor(
+                (action_space.high + action_space.low) / 2.)
+
+    def forward(self, state):
+        x = F.relu(self.linear1(state))
+        x = F.relu(self.linear2(x))
+        mean = torch.tanh(self.mean(x)) * self.action_scale + self.action_bias
+        #print(self.log_std)
+        log_std = torch.clamp(self.log_std, min=self.min_log_std)
+        log_std = log_std.unsqueeze(0).repeat([len(mean), 1])
+        std = torch.exp(log_std)
+        return Normal(mean, std)
+
+    def sample(self, state):
+        dist = self.forward(state)
+        action = dist.rsample()
+        return action, dist.log_prob(action).sum(-1), dist.mean
+
+    def to(self, device):
+        self.action_scale = self.action_scale.to(device)
+        self.action_bias = self.action_bias.to(device)
+        return super(StochasticPolicy, self).to(device)
 
 
 class DeterministicPolicy(nn.Module):

@@ -204,6 +204,12 @@ ENV_ID = {
     'cliffwalker': 'CliffWalker-v0',
     'cliffcheetah': 'CliffCheetah-v0',
     'maze': 'Maze-v0',
+    'maze_1': 'Maze1-v0',
+    'maze_2': 'Maze2-v0',
+    'maze_3': 'Maze3-v0',
+    'maze_4': 'Maze4-v0',
+    'maze_5': 'Maze5-v0',
+    'maze_6': 'Maze6-v0',
     'image_maze': 'ImageMaze-v0',
     'shelf_env': 'Shelf-v0',
     'shelf_dynamic_env': 'ShelfDynamic-v0',
@@ -239,11 +245,40 @@ def get_constraint_demos(env, args):
             else:
                 constraint_demo_data = constraint_demo_data['lowdim']
         elif 'maze' in args.env_name:
-            if args.env_name == 'maze':
+            if args.env_name in ['maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
+                if args.goal:
+                    # Multitask Training
+                    constraint_demo_data_1 = pickle.load(open("demos/maze_goals/constraint_demos_0.0_0.0.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_2 = pickle.load(open("demos/maze_goals/constraint_demos_0.0_0.1.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_3 = pickle.load(open("demos/maze_goals/constraint_demos_0.0_-0.1.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_4 = pickle.load(open("demos/maze_goals/constraint_demos_0.1_0.0.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_5 = pickle.load(open("demos/maze_goals/constraint_demos_0.1_0.1.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_6 = pickle.load(open("demos/maze_goals/constraint_demos_0.1_-0.1.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_7 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_0.0.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_8 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_0.1.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_9 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_-0.1.pkl", "rb"))[30000:50000]
+                    """
+                    constraint_demo_data_1 = pickle.load(open("demos/maze/constraint_demos_1.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_2 = pickle.load(open("demos/maze/constraint_demos_2.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_3 = pickle.load(open("demos/maze/constraint_demos_3.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_4 = pickle.load(open("demos/maze/constraint_demos_4.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_5 = pickle.load(open("demos/maze/constraint_demos_5.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_6 = pickle.load(open("demos/maze/constraint_demos_6.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_7 = pickle.load(open("demos/maze/constraint_demos_7.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_8 = pickle.load(open("demos/maze/constraint_demos_8.pkl", "rb"))[30000:50000]
+                    constraint_demo_data_9 = pickle.load(open("demos/maze/constraint_demos_9.pkl", "rb"))[30000:50000]
+                    """
+                    constraint_demo_data = []
+                    constraint_demo_data = constraint_demo_data_1 + constraint_demo_data_2 + constraint_demo_data_3 + constraint_demo_data_4 + constraint_demo_data_5 + constraint_demo_data_6 + constraint_demo_data_7 + constraint_demo_data_8 + constraint_demo_data_9 
+                else:
+                    constraint_demo_data = pickle.load(open("demos/maze/constraint_demos_-0.2_0.15.pkl", "rb"))
+                #constraint_demo_data = pickle.load(open("demos/maze/constraint_demos.pkl", "rb"))
+                '''
                 constraint_demo_data = pickle.load(
                     open(
                         osp.join("demos", args.env_name,
                                  "constraint_demos.pkl"), "rb"))
+                '''
             else:
                 # constraint_demo_data, obs_seqs, ac_seqs, constraint_seqs = env.transition_function(args.num_constraint_transitions)
                 demo_data = pickle.load(
@@ -622,6 +657,13 @@ parser.add_argument('--vismpc_recovery', action="store_true")
 parser.add_argument('--load_vismpc', action="store_true")
 parser.add_argument('--model_fname', default='model1')
 
+# Reward Conditioning
+parser.add_argument('--eps_condition', type=float, default=0.3)
+parser.add_argument('--conditional', action="store_true")
+
+# Goal-based RL
+parser.add_argument('--goal', action="store_true")
+
 parser.add_argument(
     '-ca',
     '--ctrl_arg',
@@ -640,6 +682,8 @@ parser.add_argument(
     help=
     'Override default parameters, see https://github.com/kchua/handful-of-trials#overrides'
 )
+parser.add_argument("--meta", action="store_true")
+
 args = parser.parse_args()
 
 if args.nu_schedule:
@@ -672,6 +716,7 @@ recovery_memory = ConstraintReplayMemory(args.safe_replay_size)
 total_numsteps = 0
 updates = 0
 
+conditional_penalty = 0
 task_demos = args.task_demos
 
 constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_constraint_demos(
@@ -684,6 +729,15 @@ constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_c
 #             "constraint_seqs": constraint_seqs},
 #      open("demos/image_maze/demos.pkl", "wb") )
 # assert(False)
+
+
+if args.meta:
+    inner_replay = [ConstraintReplayMemory(args.safe_replay_size) for i in range(9)]
+    outer_replay = inner_replay
+    for i in range(9):
+        data = pickle.load(open("demos/maze/constraint_demos_" + str(i+1) + ".pkl", "rb"))
+        for transition in data:
+            inner_replay[i].push(*transition)
 
 num_constraint_violations = 0
 # Train recovery policy and associated value function on demos
@@ -708,8 +762,8 @@ if not args.disable_offline_updates:
                 recovery_memory.push(*transition)
                 num_constraint_violations += int(transition[2])
                 num_constraint_transitions += 1
-                if num_constraint_transitions == args.num_constraint_transitions:
-                    break
+                #if num_constraint_transitions == args.num_constraint_transitions:
+                    #break
             print("Number of Constraint Transitions: ",
                   num_constraint_transitions)
             print("Number of Constraint Violations: ",
@@ -724,12 +778,27 @@ if not args.disable_offline_updates:
                 for i in range(args.critic_safe_pretraining_steps):
                     if i % 100 == 0:
                         print("CRITIC SAFE UPDATE STEP: ", i)
-                    agent.safety_critic.update_parameters(
-                        memory=recovery_memory,
-                        policy=agent.policy,
-                        critic=agent.critic,
-                        batch_size=min(args.batch_size,
-                                       len(constraint_demo_data)))
+                    if args.meta:
+                        agent.safety_critic.meta_update_parameters(
+                            inner_buffers = inner_replay,
+                            outer_buffers = outer_replay,
+                            memory=recovery_memory,
+                            policy=agent.policy,
+                            critic=agent.critic,
+                            batch_size=min(args.batch_size,
+                                           len(constraint_demo_data)))
+                    else:
+                        agent.safety_critic.update_parameters(
+                            memory=recovery_memory,
+                            policy=agent.policy,
+                            critic=agent.critic,
+                            batch_size=min(args.batch_size,
+                                           len(constraint_demo_data)))
+                if args.goal:
+                    recovery_memory = ConstraintReplayMemory(args.safe_replay_size)
+                    constraint_demo_data = pickle.load(open("demos/maze_goals/constraint_demos_-0.2_0.15.pkl", "rb"))[:10000]
+                    for transition in constraint_demo_data:
+                        recovery_memory.push(*transition)
             else:
                 agent.train_safety_critic(
                     0, recovery_memory, agent.policy_sample, plot=0)
@@ -776,6 +845,7 @@ if not args.disable_offline_updates:
                         batch_size=min(args.batch_size,
                                        len(constraint_demo_data)))
 
+
 # If use task demos, add them to memory and train agent
 if task_demos:
     num_task_transitions = 0
@@ -804,6 +874,7 @@ num_successes = 0
 viol_and_recovery = 0
 viol_and_no_recovery = 0
 
+
 for i_episode in itertools.count(1):
     episode_reward = 0
     episode_steps = 0
@@ -819,6 +890,8 @@ for i_episode in itertools.count(1):
     ep_states = [state]
     ep_actions = []
     ep_constraints = []
+
+    rollouts = []
 
     while not done:
         if args.env_name == 'reacher':
@@ -843,7 +916,7 @@ for i_episode in itertools.count(1):
                         policy=agent.policy,
                         critic=agent.critic,
                         batch_size=args.batch_size,
-                        plot=0)
+                        plot=1)
                 writer.add_scalar('loss/critic_1', critic_1_loss, updates)
                 writer.add_scalar('loss/critic_2', critic_2_loss, updates)
                 writer.add_scalar('loss/policy', policy_loss, updates)
@@ -855,6 +928,7 @@ for i_episode in itertools.count(1):
             state, env, agent, recovery_policy, args)
         next_state, reward, done, info = env.step(real_action)  # Step
         info['recovery'] = recovery_used
+        #print(reward)
 
         if args.cnn:
             next_state = process_obs(next_state, args.env_name)
@@ -875,6 +949,14 @@ for i_episode in itertools.count(1):
 
         mask = float(not done)
         done = done or episode_steps == env._max_episode_steps
+
+        if args.conditional:
+            critic_val = agent.safety_critic.get_value(
+                torchify(state).unsqueeze(0),
+                torchify(action).unsqueeze(0)).detach().cpu().numpy()[0, 0]
+            if not abs(critic_val - args.eps_condition) < 0.07:
+                reward -= 0.5 
+
         if not args.disable_action_relabeling:
             memory.push(state, action, reward, next_state,
                         mask)  # Append transition to memory
@@ -882,9 +964,10 @@ for i_episode in itertools.count(1):
             memory.push(state, real_action, reward, next_state,
                         mask)  # Append transition to memory
 
+        rollouts.append([state, real_action, info['constraint'], next_state, mask])
         if args.use_recovery or args.DGD_constraints or args.RCPO:
-            recovery_memory.push(state, real_action, info['constraint'],
-                                 next_state, mask)
+            #recovery_memory.push(state, real_action, info['constraint'],
+                                 #next_state, mask)
             if recovery_used and args.add_both_transitions:
                 memory.push(state, real_action, reward, next_state,
                             mask)  # Append transition to memory
@@ -893,6 +976,14 @@ for i_episode in itertools.count(1):
         ep_states.append(state)
         ep_actions.append(real_action)
         ep_constraints.append([info['constraint']])
+
+    if args.use_recovery:
+        mc_reward =0
+        discount=0.5
+        for transition in rollouts[::-1]:
+            mc_reward = transition[2] + discount * mc_reward
+            transition.append(mc_reward)
+            recovery_memory.push(*transition)
 
     if args.env_name == 'reacher':
         recorder.capture_frame()
@@ -913,7 +1004,7 @@ for i_episode in itertools.count(1):
     if (args.use_recovery and not args.disable_learned_recovery
         ) and not args.disable_online_updates:
         all_ep_data.append({
-            'obs': np.array(ep_states),
+            'obs': np.array(ep_states), 
             'ac': np.array(ep_actions),
             'constraint': np.array(ep_constraints)
         })

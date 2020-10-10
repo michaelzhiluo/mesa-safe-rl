@@ -25,8 +25,9 @@ def process_obs(obs):
 def get_random_transitions(num_transitions,
                            images=False,
                            save_rollouts=False,
-                           task_demos=False):
-    env = MazeNavigation()
+                           task_demos=False,
+                           env_cls = None):
+    env = env_cls()
     transitions = []
     num_constraints = 0
     total = 0
@@ -124,7 +125,7 @@ def get_random_transitions(num_transitions,
 
 
 class MazeNavigation(Env, utils.EzPickle):
-    def __init__(self):
+    def __init__(self, goal_based=True):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
 
@@ -139,10 +140,14 @@ class MazeNavigation(Env, utils.EzPickle):
         self.action_space = Box(-MAX_FORCE * np.ones(2),
                                 MAX_FORCE * np.ones(2))
         self.transition_function = get_random_transitions
+        self.wall_pos = goal_based
+        self.reset()
         obs = self._get_obs()
+        #obs = self._get_obs(images=True)
         # print("OBS", obs.shape)
         # print("OBS", np.max(obs), np.min(obs))
-        # cv2.imwrite('maze.jpg', 255*obs)
+        #cv2.imwrite('runs/maze.jpg', 255*obs)
+        #exit()
         # assert(False)
         self.dense_reward = DENSE_REWARD
 
@@ -198,6 +203,8 @@ class MazeNavigation(Env, utils.EzPickle):
             [self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
 
         if not self.images and not images:
+            if self.wall_pos:
+                return np.concatenate([state[:2], self.get_goal()], axis=0)
             return state[:2]  # State is just (x, y) now
 
         #get images
@@ -229,8 +236,11 @@ class MazeNavigation(Env, utils.EzPickle):
         # assert(False)
 
         # Randomize wal positions
-        w1 = -0.08  #np.random.uniform(-0.2, 0.2)
-        w2 = 0.08  #np.random.uniform(-0.2, 0.2)
+        w1 = -0.2#-0.08  #np.random.uniform(-0.1, 0.1)
+        w2 = 0.15#0.08  #np.random.uniform(-0.1, 0.1)
+
+        self.w1 = w1
+        self.w2 = w2
         #     print(self.sim.model.geom_pos[:])
         #     print(self.sim.model.geom_pos[:].shape)
         self.sim.model.geom_pos[5, 1] = 0.5 + w1
@@ -274,6 +284,9 @@ class MazeNavigation(Env, utils.EzPickle):
         act = self.gain * delt
 
         return act
+
+    def get_goal(self):
+        return np.array([self.w1, self.w2])
 
 
 class MazeTeacher(object):
@@ -362,7 +375,7 @@ if __name__ == "__main__":
     teacher = MazeTeacher()
     reward_sum_completed = []
     constraint_sat = 0
-    for i in range(1000):
+    for i in range(1000):   
         rollout_stats = teacher.get_rollout()
         print("Iter: ", i)
         print(rollout_stats['reward_sum'])
