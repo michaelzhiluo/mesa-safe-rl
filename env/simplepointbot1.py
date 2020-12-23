@@ -59,7 +59,7 @@ def teacher_action(state, goal):
 
 
 class SimplePointBot(Env, utils.EzPickle):
-    def __init__(self):
+    def __init__(self, w1=None, w2=None):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
         self.A = np.eye(2)
@@ -71,6 +71,9 @@ class SimplePointBot(Env, utils.EzPickle):
                                      np.ones(2) * np.float('inf'))
         self._max_episode_steps = HORIZON
         self.obstacle = OBSTACLE
+        if w1 is not None and w2 is not None:
+            new_obstacle = [[[-30-w1, -20+w1], [-7.5-w2, 7.5+w2]]]
+            self.obstacle = ComplexObstacle(new_obstacle)
         self.caution_zone = CAUTION_ZONE
         self.transition_function = get_random_transitions
         self.safe_action = lambda x: safe_action(x)
@@ -105,7 +108,7 @@ class SimplePointBot(Env, utils.EzPickle):
 
     def _next_state(self, s, a, override=False):
         if self.obstacle(s):
-            print("obs", s, a)
+            #print("obs", s, a)
             return s
         return self.A.dot(s) + self.B.dot(a) + NOISE_SCALE * np.random.randn(
             len(s))

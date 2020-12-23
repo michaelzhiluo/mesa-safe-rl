@@ -38,7 +38,7 @@ class ConstraintReplayMemory:
         self.position = 0
         self.pos_idx = np.zeros(self.capacity)
 
-    def push(self, state, action, reward, next_state, done, mc_reward=None):
+    def push(self, state, action, reward, next_state, done, mc_reward=None, online_violation=False):
         if len(self.buffer) < self.capacity:
             self.buffer.append(None)
         self.buffer[self.position] = (state, action, reward, next_state, done, mc_reward)

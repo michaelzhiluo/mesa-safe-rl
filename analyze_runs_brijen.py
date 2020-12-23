@@ -19,66 +19,72 @@ def get_directory(dirname, suffix, parent="data"):
 experiment_map = {
     "maze": {
         "algs": {
-            "sac_norecovery": get_directory("maze", "vanilla"),
+            "multitask": get_directory("maze", "multi-maze"),
+            "meta": get_directory("maze", "meta-maze"),
+            #"sac_norecovery": get_directory("maze", "vanilla"),
             # "sac_penalty1": get_directory("maze", "reward_1"),
             # "sac_penalty10": get_directory("maze", "reward_10"),
-            "sac_penalty100": get_directory("maze", "reward_100"),
+            #"sac_penalty100": get_directory("maze", "reward_100"),
             # "sac_lagrangian_1": get_directory("maze", "nu_1_update"),
             # "sac_lagrangian_10": get_directory("maze", "nu_10_update"),
-            "sac_lagrangian_100": get_directory("maze", "nu_100_update"),
+            #"sac_lagrangian_100": get_directory("maze", "nu_100_update"),
             # "lookahead": get_directory("maze", "lookahead"),
-            "recovery": get_directory("maze", "recovery"),
-            "test": get_directory("temp", "test"),
+            #"recovery": get_directory("maze", "recovery"),
+            #"test": get_directory("temp", "test"),
         },
         "outfile": "maze_plot.png"
     },
     "pointbot0": {
         "algs": {
-            "sac_vanilla": get_directory("pointbot0", "vanilla"),
+            "multitask": get_directory("pointbot0", "meta-nav1"),
+            "meta": get_directory("pointbot0", "multi-nav1"),
+            #"sac_vanilla": get_directory("pointbot0", "vanilla"),
             # "sac_penalty1": get_directory("pointbot0", "reward_1"),
             # "sac_penalty10": get_directory("pointbot0", "reward_10"),
             # "sac_penalty100": get_directory("pointbot0", "reward_100"),
-            "sac_penalty": get_directory("pointbot0", "reward_1000"),
+            #"sac_penalty": get_directory("pointbot0", "reward_1000"),
             # "sac_penalty3000": get_directory("pointbot0", "reward_3000"),
             # "sac_lagrangian_1": get_directory("pointbot0", "nu_1"),
             # "sac_lagrangian_10": get_directory("pointbot0", "nu_10"),
             # "sac_lagrangian_100": get_directory("pointbot0", "nu_100"),
             # "sac_lagrangian_1000": get_directory("pointbot0", "nu_1000"),
-            "sac_lagrangian": get_directory("pointbot0", "nu_5000"),
+            #"sac_lagrangian": get_directory("pointbot0", "nu_5000"),
             # "sac_lagrangian_3000": get_directory("pointbot0", "nu_3000"),
             # "rcpo_1": get_directory("pointbot0", "rcpo_1"),
             # "rcpo_10": get_directory("pointbot0", "rcpo_10"),
             # "rcpo_100": get_directory("pointbot0", "rcpo_100"),
             # "rcpo_1000": get_directory("pointbot0", "rcpo_1000"),
             # "rcpo_5000": get_directory("pointbot0", "rcpo_5000"),
-            "sac_rcpo": get_directory("pointbot0", "rcpo_1000"),
+            #"sac_rcpo": get_directory("pointbot0", "rcpo_1000"),
             # "lookahead": get_directory("pointbot0", "lookahead"),
-            "sac_recovery_pets": get_directory("pointbot0", "pets"),
-            "sac_recovery_ddpg": get_directory("pointbot0", "ddpg"),
+            #"sac_recovery_pets": get_directory("pointbot0", "pets"),
+            #"sac_recovery_ddpg": get_directory("pointbot0", "ddpg"),
         },
         "outfile": "pointbot0.png"
     },
     "pointbot1": {
         "algs": {
-            "sac_vanilla": get_directory("pointbot1", "vanilla"),
+            "multitask": get_directory("pointbot1", "multi-nav2"),
+            "meta": get_directory("pointbot1", "meta-nav2"),
+            #"sac_vanilla": get_directory("pointbot1", "vanilla"),
             # "sac_penalty1": get_directory("pointbot1", "reward_1"),
             # "sac_penalty10": get_directory("pointbot1", "reward_10"),
             # "sac_penalty100": get_directory("pointbot1", "reward_100"),
             # "sac_penalty1000": get_directory("pointbot1", "reward_1000"),
-            "sac_penalty": get_directory("pointbot1", "reward_3000"),
+            #"sac_penalty": get_directory("pointbot1", "reward_3000"),
             # "sac_lagrangian_1": get_directory("pointbot1", "nu_1"),
             # "sac_lagrangian_10": get_directory("pointbot1", "nu_10"),
             # "sac_lagrangian_100": get_directory("pointbot1", "nu_100_update"),
             # "sac_lagrangian_500": get_directory("pointbot1", "nu_500_update"), # rerun this
-            "sac_lagrangian": get_directory("pointbot1", "nu_1000"),
+            #"sac_lagrangian": get_directory("pointbot1", "nu_1000"),
             # "sac_lagrangian_5000": get_directory("pointbot1", "nu_5000"),
             # "rcpo_1": get_directory("pointbot1", "rcpo_1"),
             # "rcpo_10": get_directory("pointbot1", "rcpo_10"),
             # "rcpo_100": get_directory("pointbot1", "rcpo_100"),
             # "rcpo_1000": get_directory("pointbot1", "rcpo_1000"),
-            "sac_rcpo": get_directory("pointbot1", "rcpo_5000"),
-            "sac_recovery_pets": get_directory("pointbot1", "pets"),
-            "sac_recovery_ddpg": get_directory("pointbot1", "ddpg"),
+            #"sac_rcpo": get_directory("pointbot1", "rcpo_5000"),
+            #"sac_recovery_pets": get_directory("pointbot1", "pets"),
+            #"sac_recovery_ddpg": get_directory("pointbot1", "ddpg"),
         },
         "outfile": "pointbot1.png"
     },
@@ -233,8 +239,8 @@ def get_stats(data):
 
 eps = {
     "maze": 1500,
-    "pointbot0": 300,
-    "pointbot1": 300,
+    "pointbot0": 500,
+    "pointbot1": 500,
     "shelf": 4000,
     "shelf_dynamic": 4000
 }
@@ -249,8 +255,8 @@ envname = {
 
 yscaling = {
     "maze": 0.25,
-    "pointbot0": 0.5,
-    "pointbot1": 0.3,
+    "pointbot0": 0.5/5.0,
+    "pointbot1": 0.3/5.0,
     "shelf": 0.15,
     "shelf_dynamic": 0.2
 }
@@ -382,5 +388,5 @@ def plot_experiment(experiment):  # 3000 for normal shelf...
 
 
 if __name__ == '__main__':
-    experiment = "shelf_dynamic"
+    experiment = "pointbot1"
     plot_experiment(experiment)

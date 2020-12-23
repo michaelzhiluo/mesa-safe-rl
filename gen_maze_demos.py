@@ -23,7 +23,10 @@ def get_random_episodes(num_transitions,
             if len(rollouts):
                 mc_reward =0
                 for transition in rollouts[::-1]:
-                    mc_reward = transition[2] + discount * mc_reward
+                    if transition[2] >= 1.0:
+                        mc_reward = 1.0
+                    else:
+                        mc_reward = transition[2] + discount * mc_reward
                     transition.append(mc_reward)
                 transitions.extend(rollouts)
                 if total > num_transitions //2:
@@ -40,7 +43,7 @@ def get_random_episodes(num_transitions,
             rollouts = []
         action = env.action_space.sample()
         next_state, reward, done, info = env.step(action)
-        print(next_state)
+        done = len(rollouts)==19
         constraint = info['constraint']
         rollouts.append([state, action, constraint, next_state, not done]) 
         total += 1
@@ -53,7 +56,10 @@ def get_random_episodes(num_transitions,
             if len(rollouts):
                 mc_reward =0
                 for transition in rollouts[::-1]:
-                    mc_reward = transition[2] + discount * mc_reward
+                    if transition[2] >= 1.0:
+                        mc_reward = 1.0
+                    else:
+                        mc_reward = transition[2] + discount * mc_reward
                     transition.append(mc_reward)
                 transitions.extend(rollouts)
                 if total > num_transitions:
@@ -71,6 +77,7 @@ def get_random_episodes(num_transitions,
         action = env.expert_action()
         next_state, reward, done, info = env.step(action)
         constraint = info['constraint']
+        done = len(rollouts)==19
         rollouts.append([state, action, constraint, next_state, not done]) 
         total += 1
         num_constraints += int(constraint)
@@ -80,7 +87,7 @@ def get_random_episodes(num_transitions,
     return transitions
 
 
-constraint_demo_data = get_random_episodes(100000, env_cls= MazeNavigation)
+constraint_demo_data = get_random_episodes(30000, env_cls= MazeNavigation)
 
 num_constraint_transitions = 0
 num_constraint_violations = 0
@@ -92,5 +99,5 @@ print("Number of Constraint Transitions: ",
 print("Number of Constraint Violations: ",
       num_constraint_violations)
 
-with open("demos/maze_goals/constraint_demos_-0.2_0.15.pkl", 'wb') as handle:
+with open("demos/maze/constraint_demos.pkl", 'wb') as handle:
     pickle.dump(constraint_demo_data, handle)

@@ -56,7 +56,9 @@ colors = {
     "sac_recovery_pets_ablations": "#349C26",
     "sac_recovery_pets_disable_relabel": "#34539C",
     "sac_recovery_pets_disable_offline": "#AA5D1F",
-    "sac_recovery_pets_disable_online": "#D43827"
+    "sac_recovery_pets_disable_online": "#D43827",
+    "multitask": "#AA5D1F",
+    "meta": "#BA2DC1",
 }
 
 # colors = {
@@ -107,7 +109,9 @@ names = {
     "eps_0.55": "$\epsilon_{risk} = 0.55$",
     "sac_recovery_pets_disable_relabel": "Ours - Action Relabeling",
     "sac_recovery_pets_disable_offline": "Ours - Offline Training",
-    "sac_recovery_pets_disable_online": "Ours - Online Training"
+    "sac_recovery_pets_disable_online": "Ours - Online Training",
+    "multitask": "Multitask",
+    "meta": "Metalearning",
 }
 
 

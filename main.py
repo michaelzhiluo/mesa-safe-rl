@@ -26,6 +26,8 @@ from video_recorder import VideoRecorder
 import cv2
 from model import VisualEncoderAttn, TransitionModel, VisualReconModel
 from torch import nn, optim
+from gen_pointbot0_demos import get_random_transitions_pointbot0
+from gen_pointbot1_demos import get_random_transitions_pointbot1
 
 TORCH_DEVICE = torch.device(
     'cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -257,7 +259,10 @@ def get_constraint_demos(env, args):
                     constraint_demo_data_7 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_0.0.pkl", "rb"))[30000:50000]
                     constraint_demo_data_8 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_0.1.pkl", "rb"))[30000:50000]
                     constraint_demo_data_9 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_-0.1.pkl", "rb"))[30000:50000]
-                    """
+
+                    constraint_demo_data = []
+                    constraint_demo_data = constraint_demo_data_1 + constraint_demo_data_2 + constraint_demo_data_3 + constraint_demo_data_4 + constraint_demo_data_5 + constraint_demo_data_6 + constraint_demo_data_7 + constraint_demo_data_8 + constraint_demo_data_9 
+                elif args.multitask:
                     constraint_demo_data_1 = pickle.load(open("demos/maze/constraint_demos_1.pkl", "rb"))[30000:50000]
                     constraint_demo_data_2 = pickle.load(open("demos/maze/constraint_demos_2.pkl", "rb"))[30000:50000]
                     constraint_demo_data_3 = pickle.load(open("demos/maze/constraint_demos_3.pkl", "rb"))[30000:50000]
@@ -267,11 +272,9 @@ def get_constraint_demos(env, args):
                     constraint_demo_data_7 = pickle.load(open("demos/maze/constraint_demos_7.pkl", "rb"))[30000:50000]
                     constraint_demo_data_8 = pickle.load(open("demos/maze/constraint_demos_8.pkl", "rb"))[30000:50000]
                     constraint_demo_data_9 = pickle.load(open("demos/maze/constraint_demos_9.pkl", "rb"))[30000:50000]
-                    """
-                    constraint_demo_data = []
                     constraint_demo_data = constraint_demo_data_1 + constraint_demo_data_2 + constraint_demo_data_3 + constraint_demo_data_4 + constraint_demo_data_5 + constraint_demo_data_6 + constraint_demo_data_7 + constraint_demo_data_8 + constraint_demo_data_9 
                 else:
-                    constraint_demo_data = pickle.load(open("demos/maze/constraint_demos_-0.2_0.15.pkl", "rb"))
+                    constraint_demo_data = pickle.load(open("demos/maze/constraint_demos.pkl", "rb"))
                 #constraint_demo_data = pickle.load(open("demos/maze/constraint_demos.pkl", "rb"))
                 '''
                 constraint_demo_data = pickle.load(
@@ -347,8 +350,23 @@ def get_constraint_demos(env, args):
             #         for j in range(obs_seqs.shape[1]-1):
             #             constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
         else:
-            constraint_demo_data = env.transition_function(
-                args.num_constraint_transitions)
+            if args.env_name =='simplepointbot0' and args.meta:
+                constraint_demo_data = get_random_transitions_pointbot0(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)
+            elif args.env_name =='simplepointbot1' and args.meta:
+                constraint_demo_data = get_random_transitions_pointbot1(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)
+            elif args.env_name =='simplepointbot0' and args.multitask:
+                constraint_demo_data = []
+                for i in range(24):
+                    data = pickle.load(open("demos/pointbot_0/constraint_demos_" + str(i) + ".pkl", "rb"))
+                    constraint_demo_data.extend(data)
+            elif args.env_name =='simplepointbot1' and args.multitask:
+                constraint_demo_data = []
+                for i in range(25):
+                    data = pickle.load(open("demos/pointbot_1/constraint_demos_" + str(i) + ".pkl", "rb"))
+                    constraint_demo_data.extend(data)
+            else:
+                constraint_demo_data = env.transition_function(
+                    args.num_constraint_transitions)
     else:
         if args.cnn and args.env_name == 'maze':
             constraint_demo_data, task_demo_data_images = env.transition_function(
@@ -683,6 +701,7 @@ parser.add_argument(
     'Override default parameters, see https://github.com/kchua/handful-of-trials#overrides'
 )
 parser.add_argument("--meta", action="store_true")
+parser.add_argument("--multitask", action="store_true")
 
 args = parser.parse_args()
 
@@ -732,12 +751,27 @@ constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_c
 
 
 if args.meta:
-    inner_replay = [ConstraintReplayMemory(args.safe_replay_size) for i in range(9)]
-    outer_replay = inner_replay
-    for i in range(9):
-        data = pickle.load(open("demos/maze/constraint_demos_" + str(i+1) + ".pkl", "rb"))
-        for transition in data:
-            inner_replay[i].push(*transition)
+    if args.env_name == 'maze':
+        inner_replay = [ConstraintReplayMemory(args.safe_replay_size) for i in range(9)]
+        outer_replay = inner_replay
+        for i in range(9):
+            data = pickle.load(open("demos/maze/constraint_demos_" + str(i+1) + ".pkl", "rb"))
+            for transition in data:
+                inner_replay[i].push(*transition)
+    elif args.env_name == 'simplepointbot0':
+        inner_replay = [ConstraintReplayMemory(args.safe_replay_size) for i in range(24)]
+        outer_replay = inner_replay
+        for i in range(24):
+            data = pickle.load(open("demos/pointbot_0/constraint_demos_" + str(i) + ".pkl", "rb"))
+            for transition in data:
+                inner_replay[i].push(*transition)
+    elif args.env_name == 'simplepointbot1':
+        inner_replay = [ConstraintReplayMemory(args.safe_replay_size) for i in range(25)]
+        outer_replay = inner_replay
+        for i in range(25):
+            data = pickle.load(open("demos/pointbot_1/constraint_demos_" + str(i) + ".pkl", "rb"))
+            for transition in data:
+                inner_replay[i].push(*transition)
 
 num_constraint_violations = 0
 # Train recovery policy and associated value function on demos
@@ -771,7 +805,7 @@ if not args.disable_offline_updates:
             if args.env_name in [
                     'simplepointbot0', 'simplepointbot1', 'maze', 'image_maze'
             ]:
-                plot = 0
+                plot = True
             else:
                 plot = False
             if args.use_qvalue:
@@ -873,6 +907,30 @@ num_viols = 0
 num_successes = 0
 viol_and_recovery = 0
 viol_and_no_recovery = 0
+
+
+if args.multitask:
+    recovery_memory = ConstraintReplayMemory(args.safe_replay_size)
+    if args.env_name =='simplepointbot0':
+        pass
+        constraint_demo_data = get_random_transitions_pointbot0(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)[:10]
+    elif args.env_name =='simplepointbot1':
+        pass
+        constraint_demo_data = get_random_transitions_pointbot1(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)[:10]
+    elif args.env_name == 'maze': 
+        constraint_demo_data = pickle.load(open("demos/maze/constraint_demos.pkl", "rb"))[:600]
+    
+    for transition in constraint_demo_data:
+        recovery_memory.push(*transition)
+
+if args.meta:
+    for i in range(200):
+        agent.safety_critic.update_parameters(
+                        memory=recovery_memory,
+                        policy=agent.policy,
+                        critic=agent.critic,
+                        batch_size=args.batch_size,
+                        plot=1)
 
 
 for i_episode in itertools.count(1):
@@ -997,6 +1055,8 @@ for i_episode in itertools.count(1):
             viol_and_no_recovery += 1
 
     if "shelf" in args.env_name and info['reward'] > -0.5:
+        num_successes += 1
+    elif "point" in args.env_name and info['reward'] > -4:
         num_successes += 1
     elif "maze" in args.env_name and -info['reward'] < 0.03:
         num_successes += 1

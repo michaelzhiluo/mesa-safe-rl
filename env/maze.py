@@ -125,7 +125,7 @@ def get_random_transitions(num_transitions,
 
 
 class MazeNavigation(Env, utils.EzPickle):
-    def __init__(self, goal_based=True):
+    def __init__(self, goal_based=False):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
 
@@ -236,8 +236,8 @@ class MazeNavigation(Env, utils.EzPickle):
         # assert(False)
 
         # Randomize wal positions
-        w1 = -0.2#-0.08  #np.random.uniform(-0.1, 0.1)
-        w2 = 0.15#0.08  #np.random.uniform(-0.1, 0.1)
+        w1 = -0.08#-0.2#-0.08  #np.random.uniform(-0.1, 0.1)
+        w2 = 0.08#0.15#0.08  #np.random.uniform(-0.1, 0.1)
 
         self.w1 = w1
         self.w2 = w2

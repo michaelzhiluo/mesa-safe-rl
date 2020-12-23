@@ -58,6 +58,16 @@ class QSafeWrapper:
                     args.env_name).to(self.device)
         self.awr = False
 
+        import os
+        try:
+            os.makedirs(logdir + "/right")
+            os.makedirs(logdir + "/left")
+            os.makedirs(logdir + "/up")
+            os.makedirs(logdir + "/down")
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
         self.lr = args.lr
         self.safety_critic_optim = Adam(
             self.safety_critic.parameters(), lr=args.lr)
@@ -101,6 +111,9 @@ class QSafeWrapper:
                           training_iterations=3000,
                           plot=1):
         # TODO: cleanup this is hardcoded for maze
+        #state_batch, action_batch, constraint_batch, next_state_batch, mask_batch, mc_reward_batch = memory.sample(
+            #batch_size=min(batch_size, len(memory)),
+            #pos_fraction=self.pos_fraction)
         state_batch, action_batch, constraint_batch, next_state_batch, mask_batch, mc_reward_batch = memory.sample(
             batch_size=min(batch_size, len(memory)),
             pos_fraction=self.pos_fraction)
@@ -112,6 +125,20 @@ class QSafeWrapper:
             self.device).unsqueeze(1)
         mc_reward_batch = torch.FloatTensor(mc_reward_batch).to(
             self.device).unsqueeze(1)
+
+        '''
+        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch, mc_reward_batch = memory.sample(
+            batch_size=min(batch_size, len(memory)),
+            pos_fraction=self.pos_fraction)
+        state_batch = torch.FloatTensor(state_batch).to(self.device)
+        next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
+        action_batch = torch.FloatTensor(action_batch).to(self.device)
+        mask_batch = torch.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
+        constraint_batch = torch.FloatTensor(constraint_batch).to(
+            self.device).unsqueeze(1)
+        mc_reward_batch = torch.FloatTensor(mc_reward_batch).to(
+            self.device).unsqueeze(1)
+        '''
 
         if self.encoding:
             state_batch_enc = self.encoder(state_batch)
@@ -125,7 +152,7 @@ class QSafeWrapper:
                     qf1_next_target, qf2_next_target = self.safety_critic_target(
                         next_state_batch_enc, next_state_action)
                 else:
-                    qf1_next_target, qf2_next_target = self.safety_critic_target(
+                    qf1_next_target, qf2_next_target = self.safety_critic(
                         next_state_batch, next_state_action)
                 min_qf_next_target = torch.max(qf1_next_target, qf2_next_target)
                 next_q_value = constraint_batch + mask_batch * self.gamma_safe * (
@@ -154,7 +181,7 @@ class QSafeWrapper:
             qf1, qf2 = self.safety_critic(
                     state_batch, action_batch
             )
-            qf_loss = F.mse_loss(qf1, mc_reward_batch)
+            qf_loss = F.mse_loss(qf1, mc_reward_batch) + F.mse_loss(qf2, mc_reward_batch)
             self.safety_critic_optim.zero_grad()
             qf_loss.backward()
             self.safety_critic_optim.step()
@@ -180,12 +207,13 @@ class QSafeWrapper:
                 if self.awr:
                     with torch.no_grad():
                         advantages = (mc_reward_batch - qf1).squeeze(-1)
-                        normalized_advantages = (1/1.0)*(advantages - advantages.mean())/advantages.std()
+                        normalized_advantages = (1/0.333333)*(advantages - advantages.mean())/advantages.std()
+                        normalized_advantages = - normalized_advantages
                         weights = advantages.clamp(max=np.log(20.0)).exp()
                     
                     cur_dist = self.policy(state_batch)
                     action_log_probs = cur_dist.log_prob(action_batch).sum(-1)  
-                    policy_loss = (action_log_probs * weights).mean()
+                    policy_loss = -(action_log_probs * weights).mean()
                 else:
                     policy_loss = max_sqf_pi.mean()
 
@@ -198,17 +226,16 @@ class QSafeWrapper:
                         self.tau)
         self.updates += 1
 
-        plot_interval = 1000
+        plot_interval = 100
         if self.env_name == 'image_maze':
             plot_interval = 29000
 
-        print(self.updates)
-        if plot and self.updates % 100 == 0:
+        if plot and self.updates % plot_interval == 0:
             if self.env_name in ['simplepointbot0', 'simplepointbot1', 'maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
-                self.plot(policy, self.updates, [.1, 0], "right")
-                #self.plot(policy, self.updates, [-.1, 0], "left")
-                #self.plot(policy, self.updates, [0, .1], "up")
-                #self.plot(policy, self.updates, [0, -.1], "down")
+                self.plot(policy, self.updates, [.1, 0], "right", folder_prefix="/right/")
+                self.plot(policy, self.updates, [-.1, 0], "left", folder_prefix="/left/")
+                self.plot(policy, self.updates, [0, .1], "down", folder_prefix="/down/")
+                self.plot(policy, self.updates, [0, -.1], "up", folder_prefix="/up/")
             elif self.env_name == 'image_maze':
                 self.plot(policy, self.updates, [.3, 0], "right")
                 self.plot(policy, self.updates, [-.3, 0], "left")
@@ -248,7 +275,7 @@ class QSafeWrapper:
         else:
             assert False
 
-    def plot(self, pi, ep, action=None, suffix="", critic=None):
+    def plot(self, pi, ep, action=None, suffix="", folder_prefix="", critic=None):
         env = self.tmp_env
         if self.env_name in ['maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
             x_bounds = [-0.3, 0.3]
@@ -258,7 +285,7 @@ class QSafeWrapper:
             y_bounds = [-10, 10]
         elif self.env_name == 'simplepointbot1':
             x_bounds = [-75, 25]
-            y_bounds = [-75, 25]
+            y_bounds = [-20, 20]
         elif self.env_name == 'image_maze':
             x_bounds = [-0.05, 0.25]
             y_bounds = [-0.05, 0.25]
@@ -315,9 +342,9 @@ class QSafeWrapper:
         elif self.env_name == 'simplepointbot1':
             plt.gca().add_patch(
                 Rectangle(
-                    (45, 65),
-                    10,
-                    20,
+                    (112.5, 31.25),
+                    10*2.5,
+                    15*2.5,
                     linewidth=1,
                     edgecolor='r',
                     facecolor='none'))
@@ -331,8 +358,9 @@ class QSafeWrapper:
             cbar = fig.colorbar(im, ax=ax)
         else:
             plt.imshow(grid.T)
+        log_string = self.logdir + "/" + folder_prefix + "qvalue_" + str(ep) + suffix
         plt.savefig(
-            osp.join(self.logdir, "qvalue_" + str(ep) + suffix),
+            log_string,
             bbox_inches='tight')
 
     def __call__(self, states, actions):
@@ -473,7 +501,7 @@ class SAC(object):
                 args,
                 tmp_env=tmp_env)
             else:
-                self.Q_safe = QSafeWrapper(
+                self.Q_safe =  QSafeWrapper(
                     observation_space,
                     action_space,
                     args.hidden_size,
