@@ -125,7 +125,7 @@ def get_random_transitions(num_transitions,
 
 
 class MazeNavigation(Env, utils.EzPickle):
-    def __init__(self, goal_based=False):
+    def __init__(self, goal_cond=True, w1 = -0.2, w2 = 0.15):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
 
@@ -139,8 +139,10 @@ class MazeNavigation(Env, utils.EzPickle):
         self.images = not GT_STATE
         self.action_space = Box(-MAX_FORCE * np.ones(2),
                                 MAX_FORCE * np.ones(2))
+        self.w1 = w1
+        self.w2 = w2
         self.transition_function = get_random_transitions
-        self.wall_pos = goal_based
+        self.goal_cond = goal_cond
         self.reset()
         obs = self._get_obs()
         #obs = self._get_obs(images=True)
@@ -203,7 +205,7 @@ class MazeNavigation(Env, utils.EzPickle):
             [self.sim.data.qpos[:].copy(), self.sim.data.qvel[:].copy()])
 
         if not self.images and not images:
-            if self.wall_pos:
+            if self.goal_cond:
                 return np.concatenate([state[:2], self.get_goal()], axis=0)
             return state[:2]  # State is just (x, y) now
 
@@ -236,17 +238,17 @@ class MazeNavigation(Env, utils.EzPickle):
         # assert(False)
 
         # Randomize wal positions
-        w1 = -0.08#-0.2#-0.08  #np.random.uniform(-0.1, 0.1)
-        w2 = 0.08#0.15#0.08  #np.random.uniform(-0.1, 0.1)
+        #w1 = -0.08#-0.2#-0.08  #np.random.uniform(-0.1, 0.1)
+        #w2 = 0.08#0.15#0.08  #np.random.uniform(-0.1, 0.1)
 
-        self.w1 = w1
-        self.w2 = w2
+        #self.w1 = w1
+        #self.w2 = w2
         #     print(self.sim.model.geom_pos[:])
         #     print(self.sim.model.geom_pos[:].shape)
-        self.sim.model.geom_pos[5, 1] = 0.5 + w1
-        self.sim.model.geom_pos[7, 1] = -0.25 + w1
-        self.sim.model.geom_pos[6, 1] = 0.4 + w2
-        self.sim.model.geom_pos[8, 1] = -0.25 + w2
+        self.sim.model.geom_pos[5, 1] = 0.5 + self.w1
+        self.sim.model.geom_pos[7, 1] = -0.25 + self.w1
+        self.sim.model.geom_pos[6, 1] = 0.4 + self.w2
+        self.sim.model.geom_pos[8, 1] = -0.25 + self.w2
         self.sim.forward()
         # print("RESET!", self._get_obs())
         constraint = int(self.sim.data.ncon > 3)

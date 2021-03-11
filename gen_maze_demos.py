@@ -9,8 +9,10 @@ def get_random_episodes(num_transitions,
                            images=False,
                            save_rollouts=False,
                            task_demos=False,
-                           env_cls = None):
-    env = env_cls()
+                           env_cls = None,
+                           w1 = 0.0,
+                           w2 = 0.0):
+    env = env_cls(goal_cond=True, w1 = w1, w2 = w2)
     transitions = []
     num_constraints = 0
     total = 0
@@ -86,18 +88,40 @@ def get_random_episodes(num_transitions,
     print("data dist", total, num_constraints)
     return transitions
 
+if __name__ == '__main__':
+    '''
+    counter = 0
+    num_transitions = 30000
+    for i in range(100):
+        w1 = np.random.uniform(-0.05, 0.05)
+        w2 = np.random.uniform(-0.05, 0.05)
+        constraint_demo_data = get_random_episodes(num_transitions, env_cls= MazeNavigation, w1 = w1, w2 = w2)
 
-constraint_demo_data = get_random_episodes(30000, env_cls= MazeNavigation)
+        num_constraint_transitions = 0
+        num_constraint_violations = 0
+        for transition in constraint_demo_data:
+            num_constraint_violations += int(transition[2])
+            num_constraint_transitions += 1
+        print("Number of Constraint Transitions: ",
+              num_constraint_transitions)
+        print("Number of Constraint Violations: ",
+              num_constraint_violations)
 
-num_constraint_transitions = 0
-num_constraint_violations = 0
-for transition in constraint_demo_data:
-    num_constraint_violations += int(transition[2])
-    num_constraint_transitions += 1
-print("Number of Constraint Transitions: ",
-      num_constraint_transitions)
-print("Number of Constraint Violations: ",
-      num_constraint_violations)
+        with open("demos/maze_goals/constraint_demos_" + str(i) + ".pkl", 'wb') as handle:
+            pickle.dump(constraint_demo_data, handle)
+    '''
+    num_transitions = 30000
+    constraint_demo_data = get_random_episodes(num_transitions, env_cls= MazeNavigation, w1 = -0.2, w2 = 0.15)
 
-with open("demos/maze/constraint_demos.pkl", 'wb') as handle:
-    pickle.dump(constraint_demo_data, handle)
+    num_constraint_transitions = 0
+    num_constraint_violations = 0
+    for transition in constraint_demo_data:
+        num_constraint_violations += int(transition[2])
+        num_constraint_transitions += 1
+    print("Number of Constraint Transitions: ",
+          num_constraint_transitions)
+    print("Number of Constraint Violations: ",
+          num_constraint_violations)
+
+    with open("demos/maze_goals/constraint_demos_test"  + ".pkl", 'wb') as handle:
+        pickle.dump(constraint_demo_data, handle)

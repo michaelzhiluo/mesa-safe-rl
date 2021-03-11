@@ -21,7 +21,7 @@ colors = {
     "sac_sqrl": "#D43827",
     "sac_penalty": "#4899C5",
     "sac_rcpo": "#34539C",
-    "sac_recovery_ddpg": "#60CC38",
+    "sac_recovery_ddpg": "red",
     "sac_recovery_pets": "#349C26",
     "sac_recovery_pets_100": "#AA5D1F",
     "sac_recovery_pets_500": "#34539C",

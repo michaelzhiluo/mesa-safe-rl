@@ -11,6 +11,7 @@ def get_random_transitions_pointbot0(w1,
     env = SimplePointBot(w1 = w1, w2 = w2)
     transitions = []
     rollouts = []
+    step = 0
     done = True
     while True:
         if done:
@@ -37,7 +38,7 @@ def get_random_transitions_pointbot0(w1,
         action = np.clip(np.random.randn(2), -1, 1)
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
-        done = constraint
+        done = len(rollouts)==10 or constraint
         reward = env.step_cost(state, action)
         rollouts.append([state, action, constraint, next_state,
                              not constraint])
@@ -52,7 +53,7 @@ if __name__ == '__main__':
         for j in range(-2, 3):
             if i==0 and j==0:
                 continue
-            constraint_demo_data = get_random_transitions_pointbot0(w1=i, w2=j, discount=0.8, num_transitions = num_constraint_transitions)
+            constraint_demo_data = get_random_transitions_pointbot0(w1=0, w2=0, discount=0.8, num_transitions = num_constraint_transitions)
 
             num_constraint_transitions = 0
             num_constraint_violations = 0
@@ -64,7 +65,7 @@ if __name__ == '__main__':
             print("Number of Constraint Violations: ",
                   num_constraint_violations)
 
-            with open("demos/pointbot_0/constraint_demos_" + str(counter) + ".pkl", 'wb') as handle:
+            with open("demos/pointbot0_dynamics/constraint_demos_" + str(counter) + ".pkl", 'wb') as handle:
                 pickle.dump(constraint_demo_data, handle)
             print(counter)
             counter+=1

@@ -242,6 +242,7 @@ class QSafeWrapper:
                 self.plot(policy, self.updates, [0, .3], "up")
                 self.plot(policy, self.updates, [0, -.3], "down")
             else:
+                return
                 raise NotImplementedError("Unsupported environment for plotting")          
 
     def get_value(self, states, actions, encoded=False):
@@ -306,7 +307,7 @@ class QSafeWrapper:
                     states.append([x, y])
 
         num_states = len(states)
-        if not self.encoding and self.goal:
+        if not self.encoding and self.env_name=='maze':
             states = np.array(states)
             goal_state = self.tmp_env.get_goal()
             batch_size = states.shape[0]

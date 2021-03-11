@@ -13,6 +13,9 @@ def get_random_transitions_pointbot1(w1,
     rollouts = []
     done = True
     total =0
+    if w1 is None or w2 is None:
+        w1 = 0.0
+        w2 = 0.0
     print(w1, w2, discount, len(transitions))
     while True:
         if done:
@@ -26,18 +29,18 @@ def get_random_transitions_pointbot1(w1,
                     break
 
             state = np.array(
-                [np.random.uniform(-50, 10),
+                [np.random.uniform(-40, 10),
                 np.random.uniform(-25, 25)])
             while env.obstacle(state):
                 state = np.array(
-                    [np.random.uniform(-50, 10),
+                    [np.random.uniform(-40, 10),
                      np.random.uniform(-25, 25)])
             rollouts = []
 
         action = np.clip(np.random.randn(2), -1, 1)
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
-        done = constraint or len(rollouts)==9
+        done = constraint or len(rollouts)==10
         reward = env.step_cost(state, action)
         rollouts.append([state, action, constraint, next_state,
                              not constraint])
@@ -69,7 +72,7 @@ def get_random_transitions_pointbot1(w1,
                           np.random.randn(1)]), -1, 1).ravel()
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
-        done = constraint or len(rollouts)==9
+        done = constraint or len(rollouts)==10
         reward = env.step_cost(state, action)
         rollouts.append([state, action, constraint, next_state,
                              not constraint])
@@ -101,7 +104,7 @@ def get_random_transitions_pointbot1(w1,
                           np.random.randn(1)]), -1, 1).ravel()
         next_state = env._next_state(state, action, override=True)
         constraint = env.obstacle(next_state)
-        done = constraint or len(rollouts)==9
+        done = constraint or len(rollouts)==10
         reward = env.step_cost(state, action)
         rollouts.append([state, action, constraint, next_state,
                              not constraint])
@@ -183,7 +186,7 @@ if __name__ == '__main__':
         print(counter)
         w_1 = np.random.uniform(low=-5.0, high=5.0)
         w_2 = np.random.uniform(low=-5.0, high=5.0)
-        constraint_demo_data = get_random_transitions_pointbot1(w1=w_1, w2=w_2, discount=0.65, num_transitions = num_transitions)
+        constraint_demo_data = get_random_transitions_pointbot1(w1=None, w2=None, discount=0.65, num_transitions = num_transitions)
 
         num_constraint_transitions = 0
         num_constraint_violations = 0
@@ -195,6 +198,6 @@ if __name__ == '__main__':
         print("Number of Constraint Violations: ",
               num_constraint_violations)
 
-        with open("demos/pointbot_1/constraint_demos_" + str(counter) + ".pkl", 'wb') as handle:
+        with open("demos/pointbot1_dynamics/constraint_demos_" + str(counter) + ".pkl", 'wb') as handle:
             pickle.dump(constraint_demo_data, handle)
         counter+=1

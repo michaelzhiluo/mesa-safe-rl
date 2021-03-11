@@ -64,8 +64,8 @@ class SimplePointBot(Env, utils.EzPickle):
     def __init__(self, w1=0, w2=0):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
-        self.A = np.eye(2)
-        self.B = np.eye(2)
+        self.A = np.array([[1,0],[0,1]])#np.eye(2)
+        self.B = np.array([[np.random.uniform(0.5, 1.5),0],[0,np.random.uniform(0.5, 1.5)]])#np.eye(2)
         self.horizon = HORIZON
         self.action_space = Box(-np.ones(2) * MAX_FORCE,
                                 np.ones(2) * MAX_FORCE)
@@ -182,9 +182,9 @@ def get_random_transitions(num_transitions,
             constraint = env.obstacle(next_state)
             reward = env.step_cost(state, action)
             transitions.append((state, action, constraint, next_state,
-                                not constraint))
+                                not constraint, 0.0))
             rollouts[-1].append((state, action, constraint, next_state,
-                                 not constraint))
+                                not constraint, 0.0))
             state = next_state
             if constraint:
                 break

@@ -63,7 +63,8 @@ class SimplePointBot(Env, utils.EzPickle):
         utils.EzPickle.__init__(self)
         self.hist = self.cost = self.done = self.time = self.state = None
         self.A = np.eye(2)
-        self.B = np.eye(2)
+        self.B = np.array([[np.random.uniform(0.5, 1.5),0],[0,np.random.uniform(0.5, 1.5)]])#np.eye(2) #np.array([[2.0,0],[0,1.6]])
+        #self.B = np.eye(2)
         self.horizon = HORIZON
         self.action_space = Box(-np.ones(2) * MAX_FORCE,
                                 np.ones(2) * MAX_FORCE)

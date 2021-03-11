@@ -43,6 +43,12 @@ register(id='DVRKReacher-v0', entry_point='env.dvrk_reacher:DVRK_Reacher')
 
 register(id='Minitaur-v0', entry_point='env.minitaur:MinitaurGoalVelocityEnv')
 
+# Mujoco Envs
+register(id='CartPoleLength-v0', entry_point='env.cartpole:CartPoleEnv', max_episode_steps=200)
+
+
+register(id='Push-v0', entry_point='env.push:FetchPushEnv', max_episode_steps=50)
+#register(id='HalfCheetah-Disabled-v0', entry_point='env.half_cheetah_disabled:HalfCheetahEnv')
 # register(
 #     id='MBRLPusherSparse-v0',
 #     entry_point='dmbrl.env.pushersparse:PusherSparseEnv'
