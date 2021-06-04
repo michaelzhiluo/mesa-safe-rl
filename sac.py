@@ -79,7 +79,6 @@ class QSafeWrapper:
         self.target_update_interval = args.target_update_interval
         self.torchify = lambda x: torch.FloatTensor(x).to(self.device)
         if not self.images:
-            # self.policy = GaussianPolicy(obs_space.shape[0], ac_space.shape[0], args.hidden_size, action_space).to(self.device)
             self.policy = StochasticPolicy(obs_space.shape[0],
                                               ac_space.shape[0], hidden_size,
                                               action_space).to(self.device)
@@ -125,20 +124,6 @@ class QSafeWrapper:
             self.device).unsqueeze(1)
         mc_reward_batch = torch.FloatTensor(mc_reward_batch).to(
             self.device).unsqueeze(1)
-
-        '''
-        state_batch, action_batch, constraint_batch, next_state_batch, mask_batch, mc_reward_batch = memory.sample(
-            batch_size=min(batch_size, len(memory)),
-            pos_fraction=self.pos_fraction)
-        state_batch = torch.FloatTensor(state_batch).to(self.device)
-        next_state_batch = torch.FloatTensor(next_state_batch).to(self.device)
-        action_batch = torch.FloatTensor(action_batch).to(self.device)
-        mask_batch = torch.FloatTensor(mask_batch).to(self.device).unsqueeze(1)
-        constraint_batch = torch.FloatTensor(constraint_batch).to(
-            self.device).unsqueeze(1)
-        mc_reward_batch = torch.FloatTensor(mc_reward_batch).to(
-            self.device).unsqueeze(1)
-        '''
 
         if self.encoding:
             state_batch_enc = self.encoder(state_batch)
@@ -204,6 +189,7 @@ class QSafeWrapper:
                 )  # Jπ = 𝔼st∼D,εt∼N[α * logπ(f(εt;st)|st) − Q(st,f(εt;st))]
 
             else:
+                # Ignore AWR doesn't work with Recovery RL
                 if self.awr:
                     with torch.no_grad():
                         advantages = (mc_reward_batch - qf1).squeeze(-1)
