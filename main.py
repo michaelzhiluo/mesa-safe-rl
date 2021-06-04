@@ -271,48 +271,11 @@ def get_constraint_demos(env, args):
             else:
                 constraint_demo_data = constraint_demo_data['lowdim']
         elif 'maze' in args.env_name:
-            if args.env_name in ['maze', 'maze_1', 'maze_2', 'maze_3', 'maze_4', 'maze_5', 'maze_6']:
-                if args.goal:
-                    # Multitask Training
-                    constraint_demo_data_1 = pickle.load(open("demos/maze_goals/constraint_demos_0.0_0.0.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_2 = pickle.load(open("demos/maze_goals/constraint_demos_0.0_0.1.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_3 = pickle.load(open("demos/maze_goals/constraint_demos_0.0_-0.1.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_4 = pickle.load(open("demos/maze_goals/constraint_demos_0.1_0.0.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_5 = pickle.load(open("demos/maze_goals/constraint_demos_0.1_0.1.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_6 = pickle.load(open("demos/maze_goals/constraint_demos_0.1_-0.1.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_7 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_0.0.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_8 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_0.1.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_9 = pickle.load(open("demos/maze_goals/constraint_demos_-0.1_-0.1.pkl", "rb"))[30000:50000]
-
-                    constraint_demo_data = []
-                    constraint_demo_data = constraint_demo_data_1 + constraint_demo_data_2 + constraint_demo_data_3 + constraint_demo_data_4 + constraint_demo_data_5 + constraint_demo_data_6 + constraint_demo_data_7 + constraint_demo_data_8 + constraint_demo_data_9 
-                elif args.multitask:
-                    '''
-                    constraint_demo_data_1 = pickle.load(open("demos/maze/constraint_demos_1.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_2 = pickle.load(open("demos/maze/constraint_demos_2.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_3 = pickle.load(open("demos/maze/constraint_demos_3.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_4 = pickle.load(open("demos/maze/constraint_demos_4.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_5 = pickle.load(open("demos/maze/constraint_demos_5.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_6 = pickle.load(open("demos/maze/constraint_demos_6.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_7 = pickle.load(open("demos/maze/constraint_demos_7.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_8 = pickle.load(open("demos/maze/constraint_demos_8.pkl", "rb"))[30000:50000]
-                    constraint_demo_data_9 = pickle.load(open("demos/maze/constraint_demos_9.pkl", "rb"))[30000:50000]
-                    constraint_demo_data = constraint_demo_data_1 + constraint_demo_data_2 + constraint_demo_data_3 + constraint_demo_data_4 + constraint_demo_data_5 + constraint_demo_data_6 + constraint_demo_data_7 + constraint_demo_data_8 + constraint_demo_data_9 
-                    '''
-                    constraint_demo_data = []
-                    for i in range(10):
-                        data = pickle.load(open("demos/maze_goals/constraint_demos_" + str(i) + ".pkl", "rb"))
-                        constraint_demo_data.extend(data)
-
-                else:
-                    constraint_demo_data = pickle.load(open("demos/maze_goals/constraint_demos_test.pkl", "rb"))#[1000:2000]
-                #constraint_demo_data = pickle.load(open("demos/maze/constraint_demos.pkl", "rb"))
-                '''
+            if args.env_name == 'maze':
                 constraint_demo_data = pickle.load(
                     open(
                         osp.join("demos", args.env_name,
                                  "constraint_demos.pkl"), "rb"))
-                '''
             else:
                 # constraint_demo_data, obs_seqs, ac_seqs, constraint_seqs = env.transition_function(args.num_constraint_transitions)
                 demo_data = pickle.load(
@@ -362,30 +325,14 @@ def get_constraint_demos(env, args):
                     open(
                         osp.join("demos", folder_name,
                                  "constraint_demos_images.pkl"), "rb"))
-            # else:
-            #     constraint_demo_data = []
-            #     data = pickle.load(open(osp.join("demos", folder_name, "constraint_demos_images_seqs.pkl"), "rb"))
-            #     obs_seqs = data['obs'][:args.num_constraint_transitions//25]
-            #     ac_seqs = data['ac'][:args.num_constraint_transitions//25]
-            #     constraint_seqs = data['constraint'][:args.num_constraint_transitions//25]
-            #     for i in range(len(ac_seqs)):
-            #         ac_seqs[i] = np.array(ac_seqs[i])
-            #     for i in range(len(obs_seqs)):
-            #         obs_seqs[i] = np.array(obs_seqs[i])
-            #     for i in range(len(constraint_seqs)):
-            #         constraint_seqs[i] = np.array(constraint_seqs[i])
-            #     ac_seqs = np.array(ac_seqs)
-            #     obs_seqs = np.array(obs_seqs)
-            #     constraint_seqs = np.array(constraint_seqs)
-            #     for i in range(obs_seqs.shape[0]):
-            #         for j in range(obs_seqs.shape[1]-1):
-            #             constraint_demo_data.append((obs_seqs[i,j], ac_seqs[i,j], constraint_seqs[i,j], obs_seqs[i,j+1], False))
         else:
             if args.env_name =='simplepointbot0' and args.multitask:
                 constraint_demo_data = []
                 for i in range(24):
                     data = pickle.load(open("demos/pointbot0_dynamics/constraint_demos_" + str(i) + ".pkl", "rb"))
                     constraint_demo_data.extend(data)
+            elif args.env_name =='simplepointbot0' and args.meta:
+                constraint_demo_data = get_random_transitions_pointbot0(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)[:200]
             elif args.env_name =='simplepointbot0':
                 constraint_demo_data = get_random_transitions_pointbot0(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)
             elif args.env_name =='simplepointbot1' and args.multitask:
@@ -393,23 +340,28 @@ def get_constraint_demos(env, args):
                 for i in range(25):
                     data = pickle.load(open("demos/pointbot1_dynamics/constraint_demos_" + str(i) + ".pkl", "rb"))
                     constraint_demo_data.extend(data)
+            elif args.env_name =='simplepointbot1' and args.meta:
+                constraint_demo_data = get_random_transitions_pointbot1(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)[:200]
             elif args.env_name =='simplepointbot1':
-                constraint_demo_data = get_random_transitions_pointbot1(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)[:1000]
-            elif args.env_name == 'cartpole': #and args.meta:
-                constraint_demo_data = []
-                data = pickle.load(open("demos/cartpole_no_task/constraint_demos_" + "test" + ".pkl", "rb"))[:2000]
-                constraint_demo_data.extend(data)#transition_function(num_transitions= args.num_constraint_transitions, length=1.0, discount=args.gamma_safe)
+                constraint_demo_data = get_random_transitions_pointbot1(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)
             elif args.env_name =='cartpole' and args.multitask:
                 constraint_demo_data = []
                 for i in range(20):
                     data = pickle.load(open("demos/cartpole_no_task/constraint_demos_" + str(i) + ".pkl", "rb"))
                     constraint_demo_data.extend(data)
+            elif args.env_name == 'cartpole':
+                constraint_demo_data = []
+                data = pickle.load(open("demos/cartpole_no_task/constraint_demos_" + "test" + ".pkl", "rb"))
+                import random
+                data = random.sample(data, args.test_size)
+                constraint_demo_data.extend(data)
             elif args.env_name == "HalfCheetah-Disabled" and args.multitask:
                 constraint_demo_data = []
                 for i in range(1, 5):
                     data = pickle.load(open("demos/halfcheetah_disabled_no_task/constraint_demos_" + str(i) + ".pkl", "rb"))
                     constraint_demo_data.extend(data)
-            elif args.env_name == "HalfCheetah-Disabled": #and args.meta:
+            elif args.env_name == "HalfCheetah-Disabled":
+                # Loading Test Set Data for MESA or for RRL Baseline
                 constraint_demo_data = []
                 data = pickle.load(open("demos/halfcheetah_disabled_no_task/constraint_demos_" + "5" + ".pkl", "rb"))
                 import random
@@ -420,9 +372,12 @@ def get_constraint_demos(env, args):
                 for i in range(0, 3):
                     data = pickle.load(open("demos/ant_disabled_no_task/constraint_demos_" + str(i) + ".pkl", "rb"))
                     constraint_demo_data.extend(data)
-            elif args.env_name == "Ant-Disabled": #and args.meta:
+            elif args.env_name == "Ant-Disabled":
+                # Loading Test Set Data for MESA or for RRL Baseline
                 constraint_demo_data = []
-                data = pickle.load(open("demos/ant_disabled_no_task/constraint_demos_" + "3" + ".pkl", "rb"))[:args.test_size]
+                data = pickle.load(open("demos/ant_disabled_no_task/constraint_demos_" + "3" + ".pkl", "rb"))
+                import random
+                data = random.sample(data, args.test_size)
                 constraint_demo_data.extend(data)
             else:
                 constraint_demo_data = env.transition_function(
@@ -741,7 +696,6 @@ parser.add_argument('--conditional', action="store_true")
 
 # Goal-based RL
 parser.add_argument('--goal', action="store_true")
-parser.add_argument('--save_replay', action="store_true")
 
 parser.add_argument(
     '-ca',
@@ -761,13 +715,24 @@ parser.add_argument(
     help=
     'Override default parameters, see https://github.com/kchua/handful-of-trials#overrides'
 )
+
+# MESA Arguments
 parser.add_argument("--meta", action="store_true")
+
+# Multitask Benchmark
 parser.add_argument("--multitask", action="store_true")
+
+# Save Replay Buffer (Data Generation for Training and Testing Datasets)
+parser.add_argument('--save_replay', action="store_true")
+
+# Iterations to adapt offline-trained agent to test set data (See Phase 2: MESA)
 parser.add_argument(
     '--online_iters', type=int, default=500
 )
+
+# Size of Test Set (10K for HalfCheetah-Disabled)
 parser.add_argument(
-    '--test_size', type=int, default=400000
+    '--test_size', type=int, default=10000
 )
 
 args = parser.parse_args()
@@ -805,19 +770,10 @@ updates = 0
 conditional_penalty = 0
 task_demos = args.task_demos
 
-#constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = None, None, None, None, None
 constraint_demo_data, task_demo_data, obs_seqs, ac_seqs, constraint_seqs = get_constraint_demos(
    env, args)
-# Save constraint demos
-# import pickle
-# pickle.dump({"constraint_demo_data": constraint_demo_data,
-#             "obs_seqs": obs_seqs,
-#             "ac_seqs": ac_seqs,
-#             "constraint_seqs": constraint_seqs},
-#      open("demos/image_maze/demos.pkl", "wb") )
-# assert(False)
 
-
+# Phase 1 MESA: Load in multiple training datasets (N Datasets) into N Replay Buffers
 if args.meta:
     if args.env_name == 'maze':
         inner_replay = [ConstraintReplayMemory(args.safe_replay_size) for i in range(100)]
@@ -862,6 +818,8 @@ if args.meta:
             for transition in data:
                 inner_replay[i].push(*transition)
 
+
+# Phase 1: MESA, Offline Training
 num_constraint_violations = 0
 # Train recovery policy and associated value function on demos
 if not args.disable_offline_updates:
@@ -999,6 +957,7 @@ viol_and_no_recovery = 0
 total_viols = 0
 
 
+# Phase 2: MESA
 if args.multitask:
     recovery_memory = ConstraintReplayMemory(args.safe_replay_size)
     if args.env_name =='simplepointbot0':
@@ -1006,21 +965,28 @@ if args.multitask:
     elif args.env_name =='simplepointbot1':
         constraint_demo_data = get_random_transitions_pointbot1(w1=0.0, w2=0.0, discount=args.gamma_safe, num_transitions=args.num_constraint_transitions)[:200]
     elif args.env_name == 'maze': 
-        constraint_demo_data = pickle.load(open("demos/maze_goals/constraint_demos_test.pkl", "rb"))#[1000:2000]
+        constraint_demo_data = pickle.load(open("demos/maze_goals/constraint_demos_test.pkl", "rb"))[:1000]
     elif args.env_name == "cartpole":
-        constraint_demo_data = pickle.load(open("demos/cartpole_no_task/constraint_demos_test.pkl", "rb"))[:400]#transition_function(args.num_constraint_transitions, length=1.0, discount=0.8)
+        data = pickle.load(open("demos/cartpole_no_task/constraint_demos_test.pkl", "rb"))
+        import random
+        data = random.sample(data, args.test_size)
+        constraint_demo_data.extend(data)
     elif args.env_name == "HalfCheetah-Disabled":
-        constraint_demo_data = pickle.load(open("demos/halfcheetah_disabled_no_task/constraint_demos_5.pkl", "rb"))[:20000]
+        data = pickle.load(open("demos/halfcheetah_disabled_no_task/constraint_demos_5.pkl", "rb"))
+        import random
+        data = random.sample(data, args.test_size)
+        constraint_demo_data.extend(data)
     elif args.env_name == "Ant-Disabled":
-        constraint_demo_data = pickle.load(open("demos/ant_disabled_no_task/constraint_demos_3.pkl", "rb"))[:20000]
-    
+        data = pickle.load(open("demos/ant_disabled_no_task/constraint_demos_3.pkl", "rb"))
+        import random
+        data = random.sample(data, args.test_size)
+        constraint_demo_data.extend(data)
     for transition in constraint_demo_data:
         recovery_memory.push(*transition)
 
 if args.save_replay:
     recovery_memory = ConstraintReplayMemory(args.safe_replay_size)
 
-# Quick Adaptation to Real-life
 if args.meta or args.multitask:
     for i in range(args.online_iters):
         agent.safety_critic.update_parameters(
@@ -1031,6 +997,7 @@ if args.meta or args.multitask:
                         plot=1)
 
 
+# Phase 3: MESA (Rest is standard Recovery RL)
 for i_episode in itertools.count(1):
     episode_reward = 0
     episode_steps = 0
@@ -1146,8 +1113,6 @@ for i_episode in itertools.count(1):
             mc_reward = transition[2] + discount * mc_reward
             transition.append(mc_reward)
             recovery_memory.push(*transition)
-    print(len(recovery_memory.buffer))
-    print(ep_constraints)
 
     if args.env_name == 'reacher':
         recorder.capture_frame()
@@ -1271,8 +1236,8 @@ for i_episode in itertools.count(1):
                     osp.join(logdir, "test_" + str(i_episode) + "_" + str(j)))
             
 
+            # Save Replay Buffer
             if "HalfCheetah" in args.env_name and args.save_replay:
-                # Save Replay
                 with open("demos/halfcheetah_disabled_no_task/constraint_demos_5"  + ".pkl", 'wb') as handle:
                     pickle.dump(recovery_memory.buffer, handle)
             elif "cartpole" in args.env_name and args.save_replay:

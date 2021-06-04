@@ -200,8 +200,8 @@ class MAMLRAWR(object):
         self.lrlr = 0.001
         self.inner_policy_lr = 0.001 #0.001#0.0003#0.001
         self.inner_value_lr = 0.001#0.001#0.0003#0.001
-        #self.num_tasks = 9
         self.task_batch_size = 5
+        self.use_og_policy = False
         self.advantage_head_coef = 0.01
         self._adaptation_temperature = 1.0
         self._gradient_steps_per_iteration = 1
@@ -214,8 +214,7 @@ class MAMLRAWR(object):
         self.updates = 0
         self.value_target = None
 
-        self.use_og_policy = False
-
+        # Value Function doesn't work anymore, Q_value should be true (DDPG Loss)
         self.q_value = True
 
         import os
@@ -239,7 +238,6 @@ class MAMLRAWR(object):
                                       [self.net_width] * self.net_depth +
                                       [self._action_dim],
                                       final_activation=torch.tanh,
-                                      #extra_head_layers=self.policy_head,
                                       w_linear=False,
                                       scale=ac_space.high[0]).to(self.device)
 
@@ -255,8 +253,6 @@ class MAMLRAWR(object):
                                        [1],
                                        final_activation=torch.sigmoid,
                                        w_linear=True).to(self.device)
-
-        print(self._adaptation_policy, self._value_function)
 
         # For Meta Update
         self._adaptation_policy_optimizer = O.Adam(self._adaptation_policy.parameters(), lr=self.outer_policy_lr)
@@ -357,7 +353,6 @@ class MAMLRAWR(object):
 
 
     def adaptation_policy_loss_on_batch(self, policy, value_function, state_batch, action_batch, mc_reward_batch, inner: bool = False):
-        #self._adaptation_temperature = 0.33333
         if self.q_value:
             actions = self.policy_output(policy, state_batch)
             q_value_estimate = value_function(torch.cat([state_batch, actions], 1))
@@ -544,7 +539,7 @@ class MAMLRAWR(object):
         # Meta-update value function [L14]
         grad = self.update_model(self._value_function, self._value_function_optimizer, clip=self._grad_clip)
 
-        # Meta-update adaptation policy [L15]
+        # Meta-update adaptation policy [L15] (Not really metaupdated)
         ap_opt = self._adaptation_policy_optimizer
         ap_opt.zero_grad()
         state_batch, action_batch, constraint_batch, next_state_batch, mask_batch, mc_reward_batch = memory.sample(
@@ -579,6 +574,7 @@ class MAMLRAWR(object):
                 return
             if self._args.env_name=='HalfCheetah-Disabled':
                 return
+            # For Maze
             self.plot(policy, self.updates, [.1, 0], "right", folder_prefix="/right/")
             self.plot(policy, self.updates, [-.1, 0], "left", folder_prefix="/left/")
             self.plot(policy, self.updates, [0, .1], "down", folder_prefix="/down/")
@@ -626,6 +622,7 @@ class MAMLRAWR(object):
                     return
                 if self._args.env_name=='HalfCheetah-Disabled':
                     return
+                # For Maze
                 self.plot(policy, self.updates, [.1, 0], "right", folder_prefix="/" + str(step+1) + "/", critic=vf)
 
     def update_parameters(self, ep=None, memory=None, policy=None, critic=None, lr=None, batch_size=None, training_iterations=None, plot=None):
@@ -671,11 +668,12 @@ class MAMLRAWR(object):
         self.updates+=1
         if self.updates%100==0:
             if self._args.env_name == 'cartpole':
-                    return
+                return
             if self._args.env_name == 'Ant-Disabled':
-                    return
+                return
             if self._args.env_name=='HalfCheetah-Disabled':
                 return
+            # For Maze
             if self.q_value:
                 self.plot(policy, self.updates, [.1, 0], "right", folder_prefix="/right/")
                 self.plot(policy, self.updates, [-.1, 0], "left", folder_prefix="/left/")
