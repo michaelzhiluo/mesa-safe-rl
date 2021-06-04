@@ -23,7 +23,7 @@
 			<geom name="cart" pos="0 0 0" quat="0.707 0 0.707 0" size="0.1 0.1" type="capsule" />
 			<body name="pole" pos="0 0 0">
 				<joint axis="0 1 0" limited="false" name="hinge" pos="0 0 0" range="-180 180" type="hinge" />
-				<geom fromto="0 0 0 0.001 0 1.000" name="cpole" rgba="0 0.7 0.7 1" size="0.049 0.3" type="capsule" />
+				<geom fromto="0 0 0 0.001 0 0.645" name="cpole" rgba="0 0.7 0.7 1" size="0.049 0.3" type="capsule" />
 			</body>
 		</body>
 	</worldbody>

@@ -1,6 +1,6 @@
 <mujoco model="ant">
   <compiler inertiafromgeom="true" angle="degree" coordinate="local" />
-  <option timestep="0.02" integrator="RK4" />
+  <option timestep="0.01" integrator="RK4" />
   <custom>
     <numeric name="init_qpos" data="0.0 0.0 0.55 1.0 0.0 0.0 0.0 0.0 1.0 0.0 -1.0 0.0 -1.0 0.0 1.0" />
   </custom>
@@ -68,13 +68,13 @@
     </body>
   </worldbody>
   <actuator>
-    <motor joint="hip_4" ctrlrange="-150.0 150.0" ctrllimited="true" />
-    <motor joint="ankle_4" ctrlrange="-150.0 150.0" ctrllimited="true" />
-    <motor joint="hip_1" ctrlrange="-150.0 150.0" ctrllimited="true" />
-    <motor joint="ankle_1" ctrlrange="-150.0 150.0" ctrllimited="true" />
-    <motor joint="hip_2" ctrlrange="-150.0 150.0" ctrllimited="true" />
-    <motor joint="ankle_2" ctrlrange="-150.0 150.0" ctrllimited="true" />
-    <motor joint="hip_3" ctrlrange="-150.0 150.0" ctrllimited="true" />
-    <motor joint="ankle_3" ctrlrange="-150.0 150.0" ctrllimited="true" />
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="hip_4" gear="150"/>
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="ankle_4" gear="150"/>
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="hip_1" gear="150"/>
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="ankle_1" gear="150"/>
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="hip_2" gear="150"/>
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="ankle_2" gear="150"/>
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="hip_3" gear="150"/>
+    <motor ctrllimited="true" ctrlrange="-1.0 1.0" joint="ankle_3" gear="150"/>
   </actuator>
 </mujoco>

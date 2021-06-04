@@ -43,7 +43,6 @@ def transition_function(num_transitions, length=None, discount=0.8):
 
 class CartPoleEnv(mujoco_env.MujocoEnv, utils.EzPickle):
     def __init__(self, init_length=None, no_task=True):
-        init_length = 1.0#np.random.uniform(0.4, 0.8)
         print("Carpole Length: ", init_length)
         self.no_task = no_task
         utils.EzPickle.__init__(self)

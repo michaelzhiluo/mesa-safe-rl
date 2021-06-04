@@ -23,15 +23,15 @@ class FetchPushEnv(fetch_env.FetchEnv, utils.EzPickle):
             initial_qpos=initial_qpos, reward_type=reward_type)
         utils.EzPickle.__init__(self)
 
-
+'''
 env = FetchPushEnv()
 env.seed(9)
 env.reset()
 obs = env.render(mode='rgb_array')
 obs = ~(255*obs)
 cv2.imwrite('temp.jpg', obs)
-# import IPython; IPython.embed()
 for _ in range(1000):
     #env.render()
     env.step(np.array([.1, 0, 0, 0])) # take a random action
 env.close()
+'''
