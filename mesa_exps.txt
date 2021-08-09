@@ -1,0 +1,125 @@
+Meta Recovery RL Runs
+
+#=============Navigation 1=============#
+# Generating Data
+
+python gen_pointbot0_demos.py
+
+# SAC Baseline
+python main.py --env-name simplepointbot0 --cuda --num_eps 300 --logdir nav1_recovery_notask --logdir_suffix sac_baseline --start_steps 100
+
+# Recovery RL (model-free recovery)
+python main.py --env-name simplepointbot0 --cuda --use_recovery --gamma_safe 0.8 --eps_safe 0.3 --use_qvalue --ddpg_recovery --num_eps 300 --logdir nav1_recovery_notask --logdir_suffix recovery_rl_0.8_0.3_recovery --online_iters 100
+
+# Meta
+python main.py --env-name simplepointbot0 --cuda --use_recovery --gamma_safe 0.8 --eps_safe 0.3 --use_qvalue --ddpg_recovery --num_eps 300 --logdir nav1_recovery_notask --logdir_suffix recovery_rl_0.8_0.3_meta --online_iters 100 --meta
+
+# Multitask
+python main.py --env-name simplepointbot0 --cuda --use_recovery --gamma_safe 0.8 --eps_safe 0.3 --use_qvalue --ddpg_recovery --num_eps 300 --logdir nav1_recovery_notask --logdir_suffix recovery_rl_0.8_0.3_multitask --online_iters 100 --multitask
+
+#=============Navigation 2=============#
+# Generating Data
+
+python gen_pointbot1_demos.py
+
+# SAC Baseline
+python main.py --env-name simplepointbot1 --cuda --num_eps 300 --logdir nav2_recovery_notask --logdir_suffix sac_baseline --start_steps 100
+
+# Recovery RL (model-free recovery)
+python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --ddpg_recovery --num_eps 300 --logdir nav2_recovery_notask --logdir_suffix recovery_rl_0.65_0.1_recovery
+
+# Meta
+python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --ddpg_recovery --num_eps 300 --logdir nav2_recovery_notask --logdir_suffix recovery_rl_0.65_0.1_meta --online_iters 100 --meta
+
+# Multitask
+python main.py --env-name simplepointbot1 --cuda --use_recovery --gamma_safe 0.65 --eps_safe 0.1 --use_qvalue --ddpg_recovery --num_eps 300 --logdir nav2_recovery_notask --logdir_suffix recovery_rl_0.65_0.1_multitask --online_iters 100 --multitask
+
+#=============Cartpole-Length=============#
+# Gathering Data
+# Change logdir_suffix length accordingly to train env cartpole length
+python main.py --env-name cartpole --cuda --logdir cartpole_notask_data  --logdir_suffix length_0.4 --num_eps 100 --gamma_safe 0.8 --save_replay --start_steps 100
+
+# SAC Baseline
+python main.py --env-name cartpole --cuda --logdir cartpole_recovery_notask  --logdir_suffix sac_baseline --num_eps 400 --start_steps 100 
+
+
+# Recovery RL
+python -m main --cuda --env-name cartpole --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.8 --eps_safe 0.1 --num_eps 400 --logdir cartpole_recovery_notask --logdir_suffix recovery_0.8_0.1
+
+
+# Multitask
+python -m main --cuda --env-name cartpole --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.8 --eps_safe 0.1 --num_eps 400 --logdir cartpole_recovery_notask --logdir_suffix recovery_0.8_0.1_multitask --online_iters 100 --multitask
+
+# Meta
+python -m main --cuda --env-name cartpole --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.8 --eps_safe 0.1 --num_eps 400 --logdir cartpole_recovery_notask --logdir_suffix recovery_0.8_0.1_meta --online_iters 100 --meta --test_size 400
+
+#=============HalfCheetah-Disabled=============#
+# Generating Data (for each disabled joint index [1,2,3,4,5])
+# Change logdir_suffix with corresponding joint index
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_notask_data  --logdir_suffix joint_5 --num_eps 400 --gamma_safe 0.85 --save_replay --start_steps 10000
+
+# SAC Baseline
+python main.py --env-name HalfCheetah-Disabled --cuda --num_eps 500 --logdir hc_recovery_notask --logdir_suffix sac_baseline --start_steps 10000	
+
+# Recovery RL (0.8, 0.1) were the best
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_recovery_notask  --logdir_suffix recovery_rl_0.8_0.1 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3
+
+# Meta
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_recovery_notask  --logdir_suffix recovery_rl_0.8_0.1_meta --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 10000 --online_iters 500
+
+# Multitask
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_recovery_notask  --logdir_suffix recovery_rl_0.8_0.1_multitask --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --multitask --test_size 10000 --online_iters 500
+
+#=============Ant-Disabled=============#
+# Generating Data (For each Disabled Join [0,1,2,3]
+# Similarly, modify  logdir_suffix accordingly
+python main.py --env-name Ant-Disabled --cuda --logdir ant_notask_data  --logdir_suffix joint_3 --num_eps 800 --gamma_safe 0.8 --save_replay --start_steps 10000
+
+# SAC Baseline
+python main.py --env-name Ant-Disabled --cuda --num_eps 1000 --logdir ant_recovery_notask --logdir_suffix sac_baseline --start_steps 10000
+
+# Recovery
+python main.py --env-name Ant-Disabled --cuda --logdir ant_recovery_notask  --logdir_suffix recovery_rl_0.8_0.3_small --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.3 --num_eps 1000 --critic_safe_pretraining_steps 15000
+
+# Multitask
+python main.py --env-name Ant-Disabled --cuda --logdir ant_recovery_notask  --logdir_suffix recovery_rl_0.8_0.3_multitask --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.3 --num_eps 1000 --critic_safe_pretraining_steps 15000 --multitask --test_size 20000 --online_iters 600
+
+# Meta
+python main.py --env-name Ant-Disabled --cuda --logdir ant_recovery_notask  --logdir_suffix recovery_rl_0.8_0.3_meta --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.3 --num_eps 1000 --critic_safe_pretraining_steps 15000 --meta --test_size 20000 --online_iters 600
+
+#===========Ablation 1: Train Dataset Size============#
+# 1x
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_1 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 400000
+
+# 1/2x
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_2 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 200000
+
+# 1/4x
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_4 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 100000
+
+# 1/8x
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_8 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 50000
+
+# 1/16x
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_16 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 25000
+
+# 1/32x
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_32 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 12500
+
+# 1/64
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_64 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 6250
+
+# 1/128
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_testsize_notask  --logdir_suffix recovery_rl_0.8_0.1_meta_128 --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta --test_size 3125
+
+#===========Ablation 2: Partial Joint Disabled============#
+# Meta
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_partial_notask  --logdir_suffix recovery_rl_0.8_0.1_meta --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --meta
+
+
+# Multitask
+python main.py --env-name HalfCheetah-Disabled --cuda --logdir hc_partial_notask  --logdir_suffix recovery_rl_0.8_0.1_multitask --start_steps 10000 --use_recovery --ddpg_recovery --use_qvalue --critic_safe_update_freq 5 --recovery_policy_update_freq 5 --gamma_safe 0.80 --eps_safe 0.1 --num_eps 500 --critic_safe_pretraining_steps 10000 --pos_fraction 0.3 --multitask
+
+#=============FetchPush=============#
+# WIP
+
